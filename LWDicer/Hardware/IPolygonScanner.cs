@@ -143,15 +143,36 @@ namespace LWDicer.Control
             public int JobstartAutorepeat;
         }
 
+        public class LineData
+        {
+            public int nLineCount;
+
+            public float[,] fLineData = new float[500, 4];
+                   
+            public int nWaferSize;
+                   
+            public float fPitch;
+        }
+
     }
     public interface IPolygonScanner
     {
+        // LSE Controller Serial Interface  Function
         int GetSerialData(out string Message);
+
+
+        // ini File 처리 Function
         bool LoadPolygonPara(CPolygonParameter PolygonPara);
         bool SavePolygonPara();
+
+
+        // LSE Controller FTP Interface Function
         bool SendConfig(string strFile);
         bool SendBitMap(string strFile);
         void SetIPData(CPolygonScannerData ScannerData);
+
+
+        // LSE Controller Parameter Function
         CPolygonParameter GetPolygonPara();
         void SetPixelGridX(double pX);
         void SetPixelGridY(double pY);
@@ -173,5 +194,13 @@ namespace LWDicer.Control
         void SetSwapCarSig(int nSig);
         void SetStartFacet(int nFaceTNo);
         void SetAutoIncStartFacet(int nSig);
+
+
+        // Image 생성을 위한 Function
+        void SetPicSize(int nX, int nY);
+        void SetDrawLine(float X1, float Y1, float X2, float Y2, float Width);
+        void SaveImage(string strBMP);
+        void DrawRound(LineData Data);
+        void DrawSquare(LineData Data);
     }
 }
