@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.IO;
+using System.Drawing;
+using System.Windows.Forms;
 
 using System.Runtime.InteropServices;
 using System.IO.Ports;
@@ -27,6 +29,10 @@ namespace LWDicer.Control
 
         protected CPolygonParameter m_PolygonData;
 
+        private Graphics m_Grapic;
+        private Image Image;
+        private PictureBox PicWafer;
+
         public MPolygonScanner(CObjectInfo objInfo, CPolygonParameter PolygonPara , CPolygonScannerData ScannerData, ISerialPort SerialPort)
             : base(objInfo)
         {
@@ -39,6 +45,9 @@ namespace LWDicer.Control
             m_COM = SerialPort;
 
             SetIPData(ScannerData);
+
+            PicWafer = new PictureBox();
+
         }
 
         public bool LoadPolygonPara(CPolygonParameter PolygonPara)
@@ -964,6 +973,122 @@ namespace LWDicer.Control
                 FTPUploader = null;
 
                 return false;
+            }
+        }
+
+        /*------------------------------------------------------------------------------------
+        * Date : 2016.02.26
+        * Author : HSLEE
+        * Function : SetPicSize(int nX, int nY)
+        * Description : BitMap Image를 그리기 위해 가로 세로 Picture Box Size를 생성
+        * Parameter : nX - Image 가로 Size
+        *             nY - Image 세로 Size
+        ------------------------------------------------------------------------------------*/
+        public void SetPicSize(int nX, int nY)
+        {
+            PicWafer.Width = nX;
+            PicWafer.Height = nY;
+
+            // BitMap Image 생성
+            Image = new Bitmap(PicWafer.Width, PicWafer.Height);
+
+            // 생성된 BitMap Image에 Graphic 속성을 생성
+            m_Grapic = Graphics.FromImage(Image);       
+            
+            // PictureBox Image 생성         
+            PicWafer.Image = Image;
+        }
+
+        /*------------------------------------------------------------------------------------
+        * Date : 2016.02.26
+        * Author : HSLEE
+        * Function : SetDrawLine(float X1, float Y1, float X2, float Y2)
+        * Description : 생성된 Image에 Line을 그린다.
+        * Parameter : X1 - Line 시작 지점의 X Point
+        *             Y1 - Line 시작 지점의 Y Point
+        *             X2 - Line 끝 지점의 X Point      
+        *             Y2 - Line 끝 지점의 Y Point
+        *             Width - Line 굵기  
+        ------------------------------------------------------------------------------------*/
+        public void SetDrawLine(float X1, float Y1, float X2, float Y2, float Width)
+        {
+            Pen m_Pen = new Pen(Color.Black, Width);
+
+            m_Grapic.DrawLine(m_Pen, (float)X1, (float)Y1, (float)X2, (float)Y2);
+        }
+
+
+        /*------------------------------------------------------------------------------------
+        * Date : 2016.02.26
+        * Author : HSLEE
+        * Function : SaveImage(string strBMP)
+        * Description : Bitmap Type Iamge 저장
+        * Parameter : strBMP - Image 생성 하고자 하는 파일 이름
+        ------------------------------------------------------------------------------------*/
+        public void SaveImage(string strBMP)
+        {
+            string strFile = "";
+
+            strFile = string.Format("{0:s}{1:s}.bmp", m_DBInfo.ScannerLogDir,strBMP);
+
+            Bitmap bmp = new Bitmap(PicWafer.Width, PicWafer.Height);
+            PicWafer.DrawToBitmap(bmp, new Rectangle(0, 0, PicWafer.Width, PicWafer.Height));
+            bmp.Save(strFile);
+        }
+
+
+        /*------------------------------------------------------------------------------------
+        * Date : 2016.02.26
+        * Author : HSLEE
+        * Function : DrawRound(LineData Data)
+        * Description : Wafer 원형 모양의 Line
+        * Parameter : LineData Data - Cut Line 가공 데이타
+        ------------------------------------------------------------------------------------*/
+        public void DrawRound(LineData Data)
+        {
+            int nCount = 0, i = 0;
+            double X1 = 0.0, X2 = 0.0, dPitch = 0.0;
+            double dA = 0.0, dB = 0.0, dSum = 0.0;
+
+            nCount = Data.nLineCount;
+
+            for (i = 0; i < nCount; i++)
+            {
+                dA = Math.Pow((Data.nWaferSize / 2) - dPitch, 2);
+                dB = Math.Pow((Data.nWaferSize / 2), 2);
+                dSum = dB - dA;
+
+                X1 = (Data.nWaferSize / 2) - Math.Sqrt(dSum);   // X1
+                X2 = ((Math.Sqrt(dSum)) * 2) + X1;              // X2
+
+                Data.fLineData[i, 0] = Convert.ToSingle(string.Format("{0:f4}", X1));
+                Data.fLineData[i, 2] = Convert.ToSingle(string.Format("{0:f4}", X2));
+
+                dPitch = dPitch + Data.fPitch;
+            }
+        }
+
+
+        /*------------------------------------------------------------------------------------
+        * Date : 2016.02.26
+        * Author : HSLEE
+        * Function : DrawSquare(LineData Data)
+        * Description : 정사각형 모양의 Line
+        * Parameter : LineData Data - Cut Line 가공 데이타
+        ------------------------------------------------------------------------------------*/
+        public void DrawSquare(LineData Data)
+        {
+            float fPitch = 0;
+            int i = 0;
+
+            for (i = 0; i < Data.nLineCount; i++)
+            {
+                Data.fLineData[i, 0] = 0;                                                    // X1
+                Data.fLineData[i, 1] = Convert.ToSingle(string.Format("{0:f4}", fPitch));    // Y1
+                Data.fLineData[i, 2] = Data.nWaferSize;                                      // X2
+                Data.fLineData[i, 3] = Convert.ToSingle(string.Format("{0:f4}", fPitch));    // Y2
+
+                fPitch = Data.fPitch + fPitch;
             }
         }
     }
