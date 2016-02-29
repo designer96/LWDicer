@@ -6,7 +6,10 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+
 using LWDicer.Control;
+using LWDicer.UI;
+using static LWDicer.Control.DEF_Vision;
 
 namespace LWDicer.UI
 {
@@ -44,6 +47,9 @@ namespace LWDicer.UI
             this.DesktopLocation = new Point(DEF_UI.MAIN_POS_X, DEF_UI.MAIN_POS_Y);
             this.Size = new Size(DEF_UI.MAIN_SIZE_WIDTH, DEF_UI.MAIN_SIZE_HEIGHT);
             this.FormBorderStyle = FormBorderStyle.None;
+            
+            
+
         }
 
         private void BtnNext_Click(object sender, EventArgs e)
@@ -54,6 +60,12 @@ namespace LWDicer.UI
             }
 
             CMainFrame.MainFrame.MoveToPage(NextPage);
+
+            CMainFrame.m_LWDicer.m_Vision.InitialLocalView(PRE__CAM, VisionView1.Handle);
+            CMainFrame.m_LWDicer.m_Vision.InitialLocalView(FINE_CAM, VisionView2.Handle);
+
+            CMainFrame.m_LWDicer.m_Vision.LiveVideo(PRE__CAM);
+            CMainFrame.m_LWDicer.m_Vision.LiveVideo(FINE_CAM);
         }
 
         private void BtnExit_Click(object sender, EventArgs e)

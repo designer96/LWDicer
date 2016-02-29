@@ -17,6 +17,7 @@ using static LWDicer.Control.DEF_DataManager;
 
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
+using static LWDicer.Control.DEF_Vision;
 
 namespace LWDicer.Control
 {
@@ -36,6 +37,8 @@ namespace LWDicer.Control
         public IVacuum m_Stage2Vac;
 
         // Mechanical Layer
+
+        public MVision m_Vision { get; set; }
 
         // Control Layer
         public MCtrlLoader m_ctrlLoader { get; private set; }
@@ -134,6 +137,9 @@ namespace LWDicer.Control
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
 
+            m_SystemInfo.GetObjectInfo(20, out objInfo);
+            CreateVision(objInfo);
+
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
             ////////////////////////////////////////////////////////////////////////
@@ -206,6 +212,12 @@ namespace LWDicer.Control
             return iResult;
         }
 
+        void CreateVision(CObjectInfo objInfo)
+        {
+            CVisionData data = new CVisionData();
+
+            m_Vision = new MVision(objInfo, data);
+        }
 
         void CreateCtrlStage1(CObjectInfo objInfo)
         {

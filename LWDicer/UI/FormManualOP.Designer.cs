@@ -31,6 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormManualOP));
             this.BtnExit = new Syncfusion.Windows.Forms.ButtonAdv();
             this.BtnNext = new Syncfusion.Windows.Forms.ButtonAdv();
+            this.VisionView1 = new System.Windows.Forms.Panel();
+            this.VisionView2 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // BtnExit
@@ -51,6 +53,20 @@
             this.BtnNext.Text = "Next";
             this.BtnNext.Click += new System.EventHandler(this.BtnNext_Click);
             // 
+            // VisionView1
+            // 
+            this.VisionView1.Location = new System.Drawing.Point(12, 12);
+            this.VisionView1.Name = "VisionView1";
+            this.VisionView1.Size = new System.Drawing.Size(480, 400);
+            this.VisionView1.TabIndex = 10;
+            // 
+            // VisionView2
+            // 
+            this.VisionView2.Location = new System.Drawing.Point(511, 12);
+            this.VisionView2.Name = "VisionView2";
+            this.VisionView2.Size = new System.Drawing.Size(480, 400);
+            this.VisionView2.TabIndex = 11;
+            // 
             // FormManualOP
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -58,6 +74,8 @@
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(1280, 754);
+            this.Controls.Add(this.VisionView2);
+            this.Controls.Add(this.VisionView1);
             this.Controls.Add(this.BtnNext);
             this.Controls.Add(this.BtnExit);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -71,5 +89,7 @@
 
         private Syncfusion.Windows.Forms.ButtonAdv BtnExit;
         private Syncfusion.Windows.Forms.ButtonAdv BtnNext;
+        private System.Windows.Forms.Panel VisionView1;
+        private System.Windows.Forms.Panel VisionView2;
     }
 }

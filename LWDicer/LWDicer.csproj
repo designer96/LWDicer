@@ -55,6 +55,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="bonetwrap">
+      <HintPath>DLL\CAM dll\bonetwrap.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
@@ -62,6 +65,9 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Matrox.MatroxImagingLibrary.v3.5">
+      <HintPath>DLL\MIL dll\Matrox.MatroxImagingLibrary.v3.5.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -91,6 +97,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Messaging" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -109,6 +116,13 @@
     <Compile Include="Common\Util\DBManager.cs" />
     <Compile Include="Hardware\IPolygonScanner.cs" />
     <Compile Include="Hardware\MPolygonScanner.cs" />
+    <Compile Include="Hardware\Vision\DEF_Vision.cs" />
+    <Compile Include="Hardware\Vision\IVision.cs" />
+    <Compile Include="Hardware\Vision\MVision.cs" />
+    <Compile Include="Hardware\Vision\MVisionCamera.cs" />
+    <Compile Include="Hardware\Vision\MVisionDisplay.cs" />
+    <Compile Include="Hardware\Vision\MVisionModelData.cs" />
+    <Compile Include="Hardware\Vision\MVisionSystem.cs" />
     <Compile Include="System\Define.cs" />
     <Compile Include="Common\ObjectExtensions.cs" />
     <Compile Include="Common\Position\MPosition.cs" />
@@ -579,6 +593,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.99.0\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.99.0\build\net46\System.Data.SQLite.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

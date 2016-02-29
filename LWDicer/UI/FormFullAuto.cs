@@ -118,9 +118,9 @@ namespace LWDicer.UI
 
             //CMainFrame.LWDicer.Initialize(CMainFrame.MainFrame);
 
-            worker1 = CMainFrame.LWDicer.m_trsLoader;
-            worker2 = CMainFrame.LWDicer.m_trsPushPull;
-            worker3 = CMainFrame.LWDicer.m_trsStage1;
+            worker1 = CMainFrame.m_LWDicer.m_trsLoader;
+            worker2 = CMainFrame.m_LWDicer.m_trsPushPull;
+            worker3 = CMainFrame.m_LWDicer.m_trsStage1;
 
             worker1.PostMsg(TrsStage1, 912);
             Thread.Sleep(nSleep);
@@ -167,13 +167,13 @@ namespace LWDicer.UI
 
         private void button4_Click(object sender, EventArgs e)
         {
-            CMainFrame.LWDicer.m_DataManager.SaveSystemData();
+            CMainFrame.m_LWDicer.m_DataManager.SaveSystemData();
 
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            CMainFrame.LWDicer.m_DataManager.LoadSystemData();
+            CMainFrame.m_LWDicer.m_DataManager.LoadSystemData();
 
         }
 
@@ -187,7 +187,7 @@ namespace LWDicer.UI
             CLoginData login = new CLoginData();
             login.Type = ELoginType.OPERATOR;
             login.Number = DateTime.Now.Second.ToString();
-            CMainFrame.LWDicer.m_DataManager.SetLogin(login);
+            CMainFrame.m_LWDicer.m_DataManager.SetLogin(login);
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -195,7 +195,7 @@ namespace LWDicer.UI
             CLoginData login = new CLoginData();
             login.Type = ELoginType.MAKER;
             login.Number = DateTime.Now.Second.ToString();
-            CMainFrame.LWDicer.m_DataManager.SetLogin(login);
+            CMainFrame.m_LWDicer.m_DataManager.SetLogin(login);
         }
 
         private void button9_Click(object sender, EventArgs e)
