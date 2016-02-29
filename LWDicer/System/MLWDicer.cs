@@ -140,6 +140,12 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(20, out objInfo);
             CreateVision(objInfo);
 
+            CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
+            CMainFrame.LWDicer.m_Vision.InitialLocalView(FINE_CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView2.Handle);
+
+            CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
+            CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
+
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
             ////////////////////////////////////////////////////////////////////////

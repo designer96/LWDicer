@@ -249,9 +249,11 @@ namespace LWDicer.Control
         // Local View 를 생성한다.	     
         public int InitialLocalView(int iCamNo, IntPtr pObject)
         {
-        #if SIMULATION_VISION
+#if SIMULATION_VISION
                 retrun SUCCESS;
-        #endif
+#endif
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             if (iCamNo > DEF_MAX_CAMERA_NO) return ERR_VISION_ERROR;
 
             // 설정할 객체의 Handle값이 다른 View에 있으면 빠져 나감.

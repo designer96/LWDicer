@@ -588,7 +588,7 @@ namespace LWDicer.Control
             m_hCustomDC = (IntPtr)MIL.MbufInquire(m_MilOverlay, MIL.M_DC_HANDLE, MIL.M_NULL);
             if (m_hCustomDC.Equals(IntPtr.Zero)) return false;
 
-            MIL.MappControl(MIL.M_DEFAULT, MIL.M_ERROR, MIL.M_PRINT_ENABLE);
+           // MIL.MappControl(MIL.M_DEFAULT, MIL.M_ERROR, MIL.M_PRINT_ENABLE);
             m_DrawGraph = Graphics.FromHdc(m_hCustomDC);
 
             return true;

@@ -28,7 +28,7 @@ namespace LWDicer.UI
 {
     public partial class CMainFrame : Form
     {
-        public static MLWDicer m_LWDicer = new MLWDicer();
+        public static MLWDicer LWDicer = new MLWDicer();
 
         public static CMainFrame MainFrame = null;
 
@@ -45,11 +45,11 @@ namespace LWDicer.UI
         private FormFullAuto_3 m_FormFullAuto_3;
         private FormFullAutoBottom m_FormFullAutoBottom;
 
-        private FormManualOP m_FormManualOP;
-        private FormManualOP_1 m_FormManualOP_1;
-        private FormManualOP_2 m_FormManualOP_2;
-        private FormManualOP_3 m_FormManualOP_3;
-        private FormManualOPBottom m_FormManualOPBottom;
+        public FormManualOP m_FormManualOP;
+        public FormManualOP_1 m_FormManualOP_1;
+        public FormManualOP_2 m_FormManualOP_2;
+        public FormManualOP_3 m_FormManualOP_3;
+        public FormManualOPBottom m_FormManualOPBottom;
 
         private FormDeviceData m_FormDeviceData;
         private FormDeviceData_1 m_FormDeviceData_1;
@@ -558,7 +558,7 @@ namespace LWDicer.UI
 
         public bool InitializeLWDicer()
         {
-            int iResult = m_LWDicer.Initialize(MainFrame);
+            int iResult = LWDicer.Initialize(MainFrame);
             if(iResult != SUCCESS)
             {
                 // Show Error Message & 프로그램 종료?

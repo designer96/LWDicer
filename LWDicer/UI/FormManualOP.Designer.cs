@@ -89,7 +89,7 @@
 
         private Syncfusion.Windows.Forms.ButtonAdv BtnExit;
         private Syncfusion.Windows.Forms.ButtonAdv BtnNext;
-        private System.Windows.Forms.Panel VisionView1;
-        private System.Windows.Forms.Panel VisionView2;
+        public System.Windows.Forms.Panel VisionView1;
+        public System.Windows.Forms.Panel VisionView2;
     }
 }
