@@ -31,7 +31,7 @@ namespace LWDicer.Control
 
         private Graphics m_Grapic;
         private Image Image;
-        private PictureBox PicWafer;
+        public PictureBox PicWafer;
 
         public MPolygonScanner(CObjectInfo objInfo, CPolygonParameter PolygonPara , CPolygonScannerData ScannerData, ISerialPort SerialPort)
             : base(objInfo)
