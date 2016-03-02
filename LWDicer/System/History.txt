@@ -44,6 +44,7 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 // Date : 2016-03-02
 // Context
 1. Error info file save/load 기능 추가
+2. T:\SFA\LWDicer\dll\Syncfusion 디렉토리로 syncfusion dll 참조 파일 모아놓음
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LJJ
