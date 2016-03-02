@@ -103,6 +103,9 @@ namespace LWDicer.Control
             //
             public string PassWord;     // Engineer Password
 
+            public string PolygonIP = "192.168.22.60";
+            public string PolygonPort = "21";
+
             // Timer
             public CCylinderTime[] CylinderTimer = new CCylinderTime[(int)EObjectCylinder.MAX_OBJ];
             public CVacuumTime[] VacuumTimer = new CVacuumTime[(int)EObjectVacuum.MAX_OBJ];

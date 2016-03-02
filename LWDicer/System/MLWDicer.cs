@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.IO.Ports;
+
+using System.Windows.Forms;
 
 using LWDicer.UI;
 
@@ -17,6 +20,9 @@ using static LWDicer.Control.DEF_DataManager;
 
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
+
+using static LWDicer.Control.DEF_SerialPort;
+using static LWDicer.Control.DEF_PolygonScanner;
 
 namespace LWDicer.Control
 {
@@ -35,7 +41,10 @@ namespace LWDicer.Control
         public IVacuum m_Stage1Vac;
         public IVacuum m_Stage2Vac;
 
+        public ISerialPort m_PolygonComPort;
+
         // Mechanical Layer
+        public MPolygonScanner m_Scanner { get; private set; }
 
         // Control Layer
         public MCtrlLoader m_ctrlLoader { get; private set; }
@@ -130,9 +139,15 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(151, out objInfo);
             CreateVacuum(objInfo, vacData, (int)EObjectVacuum.STAGE2, out m_Stage2Vac);
 
+            // Polygon Scanner Serial Com Port
+            m_SystemInfo.GetObjectInfo(10, out objInfo);
+            CreatePolygonSerialPort(objInfo, out m_PolygonComPort);
+
             ////////////////////////////////////////////////////////////////////////
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
+            m_SystemInfo.GetObjectInfo(200, out objInfo);
+            CreatePolygonScanner(objInfo, m_PolygonComPort);
 
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
@@ -274,6 +289,33 @@ namespace LWDicer.Control
             m_trsStage1 = new MTrsStage1(objInfo, TrsLoader, refComp, data);
         }
 
+        void CreatePolygonScanner(CObjectInfo objInfo, ISerialPort m_ComPort)
+        {
+            string strIP = m_DataManager.m_SystemData.PolygonIP;
+            string strPort = m_DataManager.m_SystemData.PolygonPort;
+
+            CPolygonParameter PolygonPara = new CPolygonParameter();
+
+            CPolygonScannerData ScannerData = new CPolygonScannerData(strIP, strPort);
+
+            m_Scanner = new MPolygonScanner(objInfo, PolygonPara, ScannerData, m_ComPort);
+        }
+
+        void CreatePolygonSerialPort(CObjectInfo objInfo, out ISerialPort pComport)
+        {
+            // Polygon Scanner Serial Port 
+            string PortName = "COM1";
+            int BaudRate = 115200;
+            Parity _Parity = Parity.Even;
+            int DataBits = 8;
+            StopBits _StopBits = StopBits.One;
+
+            CSerialPortData SerialCom = new CSerialPortData(PortName, BaudRate, _Parity, DataBits, _StopBits);
+
+            pComport = new MSerialPort(objInfo, SerialCom);
+
+        }
+
         void SetThreadChannel()
         {
             // AutoManager
@@ -318,6 +360,52 @@ namespace LWDicer.Control
         void SetModelDataToComponent()
         {
 
+        }
+
+        public bool GetKeyPad(string StrCurrent, out string strModify)
+        {
+            FormKeyPad KeyPad = new FormKeyPad();
+            KeyPad.SetValue(StrCurrent);
+            KeyPad.ShowDialog();
+
+            if (KeyPad.DialogResult == DialogResult.OK)
+            {
+                if (KeyPad.ModifyNo.Text == "")
+                {
+                    strModify = "0";
+                }
+                else
+                {
+                    strModify = KeyPad.ModifyNo.Text;
+                }
+            }
+            else
+            {
+                strModify = StrCurrent;
+                KeyPad.Dispose();
+                return false;
+            }
+            KeyPad.Dispose();
+            return true;
+        }
+
+        public bool GetKeyboard(out string strModify)
+        {
+            FormKeyBoard Keyboard = new FormKeyBoard();
+            Keyboard.ShowDialog();
+
+            if (Keyboard.DialogResult == DialogResult.OK)
+            {
+                strModify = Keyboard.PresentNo.Text;
+            }
+            else
+            {
+                strModify = "";
+                Keyboard.Dispose();
+                return false;
+            }
+            Keyboard.Dispose();
+            return true;
         }
     }
 }

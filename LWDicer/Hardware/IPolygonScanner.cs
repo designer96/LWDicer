@@ -11,15 +11,34 @@ namespace LWDicer.Control
 {
     public class DEF_PolygonScanner
     {
-        public static readonly String PATH_APPLICATION = "T:/SFA/LWDicer/";
-        public static readonly String PATH_SYSTEM = PATH_APPLICATION + "System/";
-        public static readonly String PATH_DATA = PATH_APPLICATION + "Data/";
-        public static readonly String PATH_IMAGE = PATH_APPLICATION + "Image/";
-        public static readonly String PATH_PROGRAM = PATH_APPLICATION + "Program/";
-        public static readonly String PATH_LOG = PATH_APPLICATION + "Log/";
-        public static readonly String PATH_CONFIG = PATH_APPLICATION + "Configure/";
+        public const int BLACK = 0;  //0 = Black에서Laser On
+        public const int WHITE = 1;  //1 = White 에서Laser On
 
-        public static readonly String PATH_CONFIG_INI = PATH_CONFIG + "config.ini";
+        public const int SPIN = 0;  // 계속 spinning 유지
+        public const int STOP = 1;  // 정지 
+
+        public const int RATIO_0 = 0;
+        public const int RATIO_2 = 2;
+        public const int RATIO_4 = 4;
+        public const int RATIO_8 = 8;
+
+        public const int Facet0 = 0;
+        public const int Facet1 = 1;
+        public const int Facet2 = 2;
+        public const int Facet3 = 3;
+        public const int Facet4 = 4;
+        public const int Facet5 = 5;
+        public const int Facet6 = 6;
+        public const int Facet7 = 7;
+
+        public enum LaserOP
+        {
+            SuperSync=0,        // SuperSync 동작
+            NotUsed,            // Not-used
+            PulseOut,           // PULSE_OUT 출력만사용, SuperSync 중지
+            NoneSeedClock,      // Trumph TruMicro Laser 전용(SEED CLOCK 미사용)
+            InternalSeedClock   // AVIA 등나노초레이저용(내부SEED CLOCK 사용)
+        };
 
 
         [DllImport("kernel32.dll")]
@@ -38,11 +57,15 @@ namespace LWDicer.Control
             String val,
             String filePath);
 
-        public class PolygonScannerData
+        public class CPolygonScannerData
         {
-            public PolygonScannerData()
-            {
+            public string strIP;
+            public string strPort;
 
+            public CPolygonScannerData(string strIP, string strPort)
+            {
+                this.strIP = strIP;
+                this.strPort = strPort;
             }
         }
 
@@ -58,22 +81,22 @@ namespace LWDicer.Control
             public int PrecedingBlankLines;     // USER ENABLE
 
             /* [Laser Configuration] */
-            public int LaserOperationMode;
-            public Int32 SeedClockFrequency;      // USER ENABLE
-            public Int32 RepetitionRate;          // USER ENABLE
-            public int PulsePickWidth;
-            public int PixelWidth;
+            public int LaserOperationMode;         // USER ENABLE 
+            public double SeedClockFrequency;      // USER ENABLE
+            public double RepetitionRate;          // USER ENABLE
+            public int PulsePickWidth;             // Seed Clock과 Rep Rate값이 변하면 Width 변경해야함
+            public int PixelWidth;                 // Seed Clock과 Rep Rate값이 변하면 Width 변경해야함
             public int PulsePickAlgor;
             public int UseCoaxIf;
 
             /* [CrossScan Configuration] */
-            public double CrossScanEncoderResol;// USER ENABLE
-            public int CrossScanMaxAccel;       // USER ENABLE  
-            public int EnCarSig;                // USER ENABLE
-            public int SwapCarSig;              // USER ENABLE
+            public double CrossScanEncoderResol;    // USER ENABLE
+            public double CrossScanMaxAccel;        // USER ENABLE  
+            public int EnCarSig;                    // USER ENABLE
+            public int SwapCarSig;                  // USER ENABLE
 
             /* [Head Configuration] */
-            public Int32 SerialNumber;
+            public double SerialNumber;
             public double FThetaConstant;
             public double ExposeLineLength;
             public int EncoderIndexDelay;
@@ -120,17 +143,64 @@ namespace LWDicer.Control
             public int JobstartAutorepeat;
         }
 
+        public class LineData
+        {
+            public int nLineCount;
+
+            public float[,] fLineData = new float[500, 4];
+                   
+            public int nWaferSize;
+                   
+            public float fPitch;
+        }
+
     }
     public interface IPolygonScanner
     {
+        // LSE Controller Serial Interface  Function
         int GetSerialData(out string Message);
 
-        void LoadPolygonPara(CPolygonParameter PolygonPara);
 
-        void SavePolygonPara(CPolygonParameter PolygonPara);
+        // ini File 처리 Function
+        bool LoadPolygonPara(CPolygonParameter PolygonPara);
+        bool SavePolygonPara();
 
-        bool SendConfig(string strPath, string strFTP);
 
-        bool SendBitMap(string strPath, string strFTP);
+        // LSE Controller FTP Interface Function
+        bool SendConfig(string strFile);
+        bool SendBitMap(string strFile);
+        void SetIPData(CPolygonScannerData ScannerData);
+
+
+        // LSE Controller Parameter Function
+        CPolygonParameter GetPolygonPara();
+        void SetPixelGridX(double pX);
+        void SetPixelGridY(double pY);
+        void SetBitMapColor(int nColor);
+        void SetSuperSync(double OffSet, int nNo);
+        void SetStartOffset(double OffSet);
+        void SetSeedClock(double Frequency);
+        void SetRepRate(double Frequency);
+        void SetPixelWidth(double SeedClock, double RepRate);
+        void SetLaserOP(int nOption);
+        void SetBufferTime(int nSec);
+        void SetDummyBlankLine(int nScanLine);
+        void SetMotorBetweenJob(int nOption);
+        void SetMotorStableTime(int nTime);
+        void SetLeaveRatio(int nRatio);
+        void SetEncoderResol(double dResol);
+        void SetMaxAccel(double dAcc);
+        void SetEnCarSig(int nSig);
+        void SetSwapCarSig(int nSig);
+        void SetStartFacet(int nFaceTNo);
+        void SetAutoIncStartFacet(int nSig);
+
+
+        // Image 생성을 위한 Function
+        void SetPicSize(int nX, int nY);
+        void SetDrawLine(float X1, float Y1, float X2, float Y2, float Width);
+        void SaveImage(string strBMP);
+        void DrawRound(LineData Data);
+        void DrawSquare(LineData Data);
     }
 }
