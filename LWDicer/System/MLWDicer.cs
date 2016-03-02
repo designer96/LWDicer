@@ -19,6 +19,7 @@ using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 using static LWDicer.Control.DEF_Vision;
 
+
 namespace LWDicer.Control
 {
     public class MLWDicer

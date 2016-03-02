@@ -38,7 +38,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WRITE_LOG_ON_FILE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WRITE_LOG_ON_FILE,</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>3</WarningLevel>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
@@ -55,8 +55,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="bonetwrap">
-      <HintPath>DLL\CAM dll\bonetwrap.dll</HintPath>
+    <Reference Include="bonetwrap, Version=1.7.1.12305, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>T:\SFA\LWDicer\DLL\CAM dll\bonetwrap.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
@@ -66,8 +67,9 @@
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Matrox.MatroxImagingLibrary.v3.5">
-      <HintPath>DLL\MIL dll\Matrox.MatroxImagingLibrary.v3.5.dll</HintPath>
+    <Reference Include="Matrox.MatroxImagingLibrary.v3.5, Version=10.0.2564.2, Culture=neutral, PublicKeyToken=5a83d419d44a9d98, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>T:\SFA\LWDicer\DLL\MIL dll\Matrox.MatroxImagingLibrary.v3.5.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -603,7 +605,11 @@
     <Error Condition="!Exists('..\packages\System.Data.SQLite.Core.1.0.99.0\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Data.SQLite.Core.1.0.99.0\build\net46\System.Data.SQLite.Core.targets'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>copy "D:\BackUp\Git\LWDicer\LWDicer\DLL\CAM dll"</PostBuildEvent>
+    <PostBuildEvent>copy "T:\SFA\LWDicer\DLL\CAM dll"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

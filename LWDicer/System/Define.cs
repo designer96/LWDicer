@@ -20,6 +20,8 @@
 #endif
 */
 
+#define SIMULATION_VISION
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +33,7 @@ namespace LWDicer.Control
 {
     public class DEF_System
     {
+
         // SYSTEM_VER 및 개인의 작업 내용에 대한 History 관리는 History.txt 에 기록합니다.
         public const string SYSTEM_VER = "Ver 0.0.3";
 

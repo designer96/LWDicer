@@ -12,6 +12,7 @@ using static LWDicer.Control.DEF_Error;
 using static LWDicer.Control.DEF_Common;
 using Matrox.MatroxImagingLibrary;
 
+
 namespace LWDicer.Control
 {
 
@@ -66,7 +67,7 @@ namespace LWDicer.Control
         {
 
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             int iResult = 0;
 
@@ -145,7 +146,7 @@ namespace LWDicer.Control
         public void CloseVisionSystem()
         {
 #if SIMULATION_VISION
-                retrun;
+                return;
 #endif
             // System의 상태 확인
             if (m_bSystemInit == false) return;
@@ -175,9 +176,9 @@ namespace LWDicer.Control
         //  파일에서 데이타를 로드 한다.	     
         public int LoadParameter(string strModelFilePath)
         {
-        #if SIMULATION_VISION
-                retrun SUCCESS;
-        #endif
+#if SIMULATION_VISION
+                return SUCCESS;
+#endif
             int iResult;
             int i = 0;
 
@@ -210,9 +211,9 @@ namespace LWDicer.Control
 
         bool isValidCameraNo(int iCamNo)
         {
-        #if SIMULATION_VISION
-            retrun SUCCESS;
-        #endif
+#if SIMULATION_VISION
+                return true;
+#endif
 
             int i = 0;
             for (i = 0; i < DEF_MAX_CAMERA_NO; i++)
@@ -234,9 +235,9 @@ namespace LWDicer.Control
         // 생성된 Local View 를 제거한다.	     
         public int DestroyLocalView(int iCamNo)
         {
-        #if SIMULATION_VISION
-            retrun SUCCESS;
-        #endif
+#if SIMULATION_VISION
+                return SUCCESS;
+#endif
 
             if (m_pView[iCamNo].IsLocalView())
             {
@@ -250,7 +251,7 @@ namespace LWDicer.Control
         public int InitialLocalView(int iCamNo, IntPtr pObject)
         {
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
@@ -278,7 +279,7 @@ namespace LWDicer.Control
         public int InitialImageView(Rectangle RectSize, IntPtr pObject)
         {
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             
             // View 를 Display로 등록한다.
@@ -291,7 +292,7 @@ namespace LWDicer.Control
         public void DisplayViewImage(MIL_ID image,IntPtr handle)
         {
 #if SIMULATION_VISION
-                retrun;
+                return;
 #endif
             m_pSystem.DisplayViewImage(image,handle);
         }
@@ -300,7 +301,7 @@ namespace LWDicer.Control
         public void Grab(int iCamNo)
         {
 #if SIMULATION_VISION
-                retrun;
+                return;
 #endif
             m_pCamera[iCamNo].SetTrigger();
         }
@@ -309,14 +310,14 @@ namespace LWDicer.Control
         public void GetGrabImage(int iViewNo)
         {
 #if SIMULATION_VISION
-                retrun;
+                return;
 #endif
             m_pView[iViewNo].GetImage();
         }
         public void DisplayMarkImage(int iViewNo, IntPtr pDisplayHandle )
         {
         #if SIMULATION_VISION
-                retrun;
+                return;
         #endif
             m_pView[iViewNo].GetMarkModelImage();
         }
@@ -325,7 +326,7 @@ namespace LWDicer.Control
         public void ConnectCam(int iCamNo)
         {
 #if SIMULATION_VISION
-            retrun;
+            return;
 #endif
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
@@ -341,7 +342,7 @@ namespace LWDicer.Control
         public int WriteModelData(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
-            retrun SUCCESS;
+            return SUCCESS;
 #endif
             if (isValidPatternMarkNo(iModelNo))
             {
@@ -357,7 +358,7 @@ namespace LWDicer.Control
         public int SelectCamera(int iCamNo, int iViewNo)
         {
 #if SIMULATION_VISION
-            retrun SUCCESS;
+            return SUCCESS;
 #endif
             m_pView[iViewNo].SelectCamera(m_pCamera[iCamNo]);
             return SUCCESS;
@@ -367,7 +368,7 @@ namespace LWDicer.Control
         public int CheckModel(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
-            retrun SUCCESS;
+            return SUCCESS;
 #endif
             if (isValidPatternMarkNo(iModelNo))
             {
@@ -384,7 +385,7 @@ namespace LWDicer.Control
         public void DeleteMark(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
-                retrun;
+                return;
 #endif
             if (isValidPatternMarkNo(iModelNo))
             {
@@ -398,7 +399,7 @@ namespace LWDicer.Control
         public int SaveImage(int iCamNo, int iModelNo, double dScore)
         {
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             DateTime time = DateTime.Now;
             string strDirName = DEF_IMAGE_LOG_FILE + String.Format("{0:yyyy_MM_dd}",time); 
@@ -425,7 +426,7 @@ namespace LWDicer.Control
         public int SaveModelImage(int iCamNo, int iModelNo, double dScore)
         {
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             DateTime time = DateTime.Now;
             string strDirName = DEF_IMAGE_LOG_FILE + String.Format("{0:yyyy_MM_dd}", time);
@@ -455,7 +456,7 @@ namespace LWDicer.Control
         public int DeleteOldImageFiles()
         {
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             return SUCCESS;
         }
@@ -465,7 +466,7 @@ namespace LWDicer.Control
         public void EnableSaveErrorImage(bool bFlag = false)
         {
 #if SIMULATION_VISION
-                retrun;
+                return;
 #endif
             m_bSaveErrorImage = bFlag;
             //return 0;
@@ -475,6 +476,9 @@ namespace LWDicer.Control
 	    
         public int GetGrabSettlingTime(int iCamNo)
         {
+#if SIMULATION_VISION
+                return SUCCESS;
+#endif
             return SUCCESS;
         }
 
@@ -482,12 +486,18 @@ namespace LWDicer.Control
 	 
         public void SetGrabSettlingTime(int iCamNo, int iGrabSettlingTime)
         {
+#if SIMULATION_VISION
+                return;
+#endif
             //return 0;
         }
 
         // Get Camera Change Time.	     
         public int GetCameraChangeTime(int iCamNo)
         {
+#if SIMULATION_VISION
+                return SUCCESS;
+#endif
             return SUCCESS;
         }
 
@@ -516,7 +526,7 @@ namespace LWDicer.Control
                                        ref Point ReferencePoint)
         {
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             // 모델 갯수 보다 큰 경우 Err
             if (iModelNo > DEF_USE_SEARCH_MARK_NO) return ERR_VISION_ERROR;
@@ -609,7 +619,7 @@ namespace LWDicer.Control
         public int SetSearchArea(int iCamNo, int iModelNo, ref Rectangle SArea)
         {
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             if (SArea.Width <= DEF_SEARCH_MIN_WIDTH || SArea.Height <= DEF_SEARCH_MIN_HEIGHT ||
                 SArea.Width > m_pCamera[iCamNo].m_CamPixelSize.Width || SArea.Height > m_pCamera[iCamNo].m_CamPixelSize.Height)
@@ -639,10 +649,6 @@ namespace LWDicer.Control
 	    
         public int RecognitionPatternMark(int iCamNo, int iModelNo, out CResultData pPatResult, bool bUseGMF = false)
         {
-#if SIMULATION_VISION
-                retrun SUCCESS;
-#endif
-
             int iResult = 0;
             CSearchData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
             CResultData pSResult;// = m_pCamera[iCamNo].GetResultData(iModelNo);
@@ -692,9 +698,7 @@ namespace LWDicer.Control
 
         public MIL_ID GetMarkImage(int iCamNo, int iModelNo)
         {
-#if SIMULATION_VISION
-                retrun MIL.M_NULL;
-#endif
+
             CSearchData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
             
             return pSData.m_milModel;
@@ -716,7 +720,7 @@ namespace LWDicer.Control
         public int MaskImage(int iCamNo, int iModelNo, ref Rectangle MaskRect, ref Rectangle ModelRect, bool bMakeEndFlag)
         {
 #if SIMULATION_VISION
-                retrun SUCCESS;
+                return SUCCESS;
 #endif
             return SUCCESS;
         }
