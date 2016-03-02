@@ -26,8 +26,7 @@ namespace LWDicer.Control
         private bool m_bLocal;
         private bool m_bMarkSearch = false;
         private double dGrabInterval = 0.0;
-
-        //private Bitmap m_Bitmap;
+        
         private Byte[] m_ImgBits;
         private IntPtr m_ImageBuffer;
         private IntPtr m_ImageHandle;
