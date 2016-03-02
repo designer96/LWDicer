@@ -374,40 +374,39 @@ namespace LWDicer.Control
         public class CDBInfo
         {
             // System and Model DB
-            public string DBDir             ;
-            public string DBName            ;
-            public string DBName_Backup     ;
-            public string DBConn;
-            public string DBConn_Backup;
-            public string DBName_Info       ;
-            public string DBConn_Info;
+            public string DBDir             ; // Directory
+            public string DBName            ; // Main System and Model Database
+            public string DBName_Backup     ; // backup for main db
+            public string DBConn            ; // DB Connection string
+            public string DBConn_Backup     ; // DB Connection string for backup
+            public string DBName_Info       ; // Information DB
+            public string DBConn_Info       ; // DB Connection string for Information
 
-            public string TableSystem       ;
-            public string TableModel;
-            public string TableModelHeader;
-            public string TableCylinder;
-            public string TableVacuum;
+            public string TableSystem       ; // System Data
+            public string TableModel        ; // Model Data
+            public string TableModelHeader  ; // Model and Parent directory Header
 
-            public string TableIO       ;
-            public string TableError    ;
-            public string TableMsg      ;
+            // Information Database
+            public string TableIO           ; // IO Information
+            public string TableError        ; // Error Information
+            public string TableMsg          ; // Message Information
 
             // Developer's and Event Log DB
-            public string DBDir_Log         ;
-            public string DBName_DLog       ;
-            public string DBConn_DLog;
-            public string DBName_ELog       ;
-            public string DBConn_ELog;
+            public string DBDir_Log         ; // Directory
+            public string DBName_DLog       ; // 개발자용 Log를 남기는 DB를 따로 만들어 둠.
+            public string DBConn_DLog       ; // Backup
+            public string DBName_ELog       ; // Error, Login, Event 등의 History를 관리하는 DB
+            public string DBConn_ELog       ; // Backup
 
-            public string TableLoginHistory ;
-            public string TableDebugLog ;
-            public string TableEventLog     ;
+            public string TableLoginHistory ; // Login History
+            public string TableDebugLog     ; // 개발자용 Log
+            public string TableEventLog     ; // Event History
 
             // Common Dir
-            public string SystemDir;
-            public string ModelDir;
-            public string ScannerLogDir;   // Poligon Scanner와의 전송에 필요한 image, ini file 저장용
-            public string ImageLogDir;     // Vision에서 모델에 관계없이 image file 저장할 필요가 있을때 사용
+            public string SystemDir         ; // System Data가 저장되는 디렉토리
+            public string ModelDir          ; // Model Data가 저장되는 디렉토리 
+            public string ScannerLogDir     ; // Poligon Scanner와의 전송에 필요한 image, ini file 저장용
+            public string ImageLogDir       ; // Vision에서 모델에 관계없이 image file 저장할 필요가 있을때 사용
 
             public CDBInfo()
             {
@@ -423,8 +422,6 @@ namespace LWDicer.Control
                 TableSystem       = "SystemDB";
                 TableModel        = "ModelDB";
                 TableModelHeader  = "ModelHeader";
-                TableCylinder     = "Cylinder";
-                TableVacuum       = "Vacuum";
 
                 TableIO           = "IO";
                 TableError        = "Error";
@@ -806,8 +803,42 @@ namespace LWDicer.Control
 
     }
 
-    class DEF_Error
+    public class DEF_Error
     {
+        public enum EErrorType
+        {
+            E1, // Error의 경알람 중알람 등등을 정의?
+            E2,
+            E3,
+        }
+
+        public class CErrorInfo
+        {
+            public int Index;
+            public EErrorType Type;
+            public string[] Description = new string[(int)DEF_Common.ELanguage.MAX];
+            public string[] Solution = new string[(int)DEF_Common.ELanguage.MAX];
+
+            public CErrorInfo(int Index = 0, EErrorType Type = EErrorType.E1)
+            {
+                this.Index = Index;
+                this.Type = Type;
+                //for (int i = 0; i < (int)DEF_Common.ELanguage.MAX; i++)
+                //{
+                //    Name[i] = "reserved";
+                //}
+                Description[(int)DEF_Common.ELanguage.KOREAN] = "예약";
+                Description[(int)DEF_Common.ELanguage.ENGLISH] = "reserved";
+                Description[(int)DEF_Common.ELanguage.CHINESE] = "预留";
+                Description[(int)DEF_Common.ELanguage.JAPANESE] = "リザーブド";
+
+                Solution[(int)DEF_Common.ELanguage.KOREAN] = "해결방법";
+                Solution[(int)DEF_Common.ELanguage.ENGLISH] = "solution";
+                Solution[(int)DEF_Common.ELanguage.CHINESE] = "解法";
+                Solution[(int)DEF_Common.ELanguage.JAPANESE] = "解決策";
+            }
+        }
+
         public const int SUCCESS                                                  = 0;
 
         ////////////////////////////////////////////////////////////////////

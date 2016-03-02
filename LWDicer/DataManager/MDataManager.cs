@@ -383,6 +383,9 @@ namespace LWDicer.Control
         public DEF_IO.CIOInfo[] m_InputArray { get; set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_INPUT];
         public DEF_IO.CIOInfo[] m_OutputArray { get; set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_OUTPUT];
 
+        // Error Info는 필요할 때, 하나씩 불러와도 될 것 같은데, db test겸 초기화 편의성 때문에 임시로 만들어 둠
+        public List<CErrorInfo> m_ErrorInfoList { get; set; } = new List<CErrorInfo>();
+
         public MDataManager(CObjectInfo objInfo, CDBInfo dbInfo)
             : base(objInfo)
         {
@@ -398,7 +401,7 @@ namespace LWDicer.Control
                 m_OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.INDEX_OUTPUT, DEF_IO.EIOType.DO);
             }
 
-            TestFunction();
+            //TestFunction();
 
             LoadGeneralData();
             LoadSystemData();
@@ -430,6 +433,13 @@ namespace LWDicer.Control
             //SaveModelList();
             //SaveModel();
 
+            for(int i = 0; i < 10; i++)
+            {
+                CErrorInfo errorInfo = new CErrorInfo(i);
+                errorInfo.Description[(int)DEF_Common.ELanguage.KOREAN] = $"{i}번 에러";
+                errorInfo.Solution[(int)DEF_Common.ELanguage.KOREAN] = $"{i}번 해결책";
+                m_ErrorInfoList.Add(errorInfo);
+            }
             SaveGeneralData();
 
             ///////////////////////////////////////
@@ -777,6 +787,9 @@ namespace LWDicer.Control
             iResult = LoadIOList();
             //if (iResult != SUCCESS) return iResult;
 
+            iResult = LoadErrorInfoList();
+            //if (iResult != SUCCESS) return iResult;
+
             return SUCCESS;
         }
         public int LoadIOList()
@@ -826,11 +839,84 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        public int LoadErrorInfoList()
+        {
+            try
+            {
+                string query;
+
+                // 0. select table
+                query = $"SELECT * FROM {m_DBInfo.TableError}";
+
+                // 1. get table
+                DataTable datatable;
+                if (DBManager.GetTable(m_DBInfo.DBConn_Info, query, out datatable) != true)
+                {
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
+                }
+
+                // 2. delete list
+                m_ErrorInfoList.Clear();
+
+                // 3. get list
+                foreach (DataRow row in datatable.Rows)
+                {
+                    int index;
+                    if (int.TryParse(row["name"].ToString(), out index))
+                    {
+                        string output = row["data"].ToString();
+                        DEF_Error.CErrorInfo errorInfo = JsonConvert.DeserializeObject<DEF_Error.CErrorInfo>(output);
+
+                        m_ErrorInfoList.Add(errorInfo);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
+            }
+
+            WriteLog($"success : load error info list", ELogType.Debug);
+            return SUCCESS;
+        }
+
+        public int LoadErrorInfo(int index, out CErrorInfo errorInfo)
+        {
+            errorInfo = new CErrorInfo();
+            try
+            {
+                string output;
+
+                // select row
+                if (DBManager.SelectRow(m_DBInfo.DBConn_Info, m_DBInfo.TableError, "name", index.ToString(), out output) == true)
+                {
+                    errorInfo = JsonConvert.DeserializeObject<CErrorInfo>(output);
+                }
+                else
+                {
+                    WriteLog($"fail : load error info [index = {index}]", ELogType.Debug);
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
+            }
+
+            WriteLog($"success : load error info", ELogType.Debug);
+            return SUCCESS;
+        }
+
         public int SaveGeneralData()
         {
             int iResult;
 
             iResult = SaveIOList();
+            //if (iResult != SUCCESS) return iResult;
+
+            iResult = SaveErrorInfoList();
             //if (iResult != SUCCESS) return iResult;
 
             return SUCCESS;
@@ -882,5 +968,44 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        public int SaveErrorInfoList()
+        {
+            try
+            {
+                List<string> querys = new List<string>();
+                string query;
+
+                // 0. create table
+                query = $"CREATE TABLE IF NOT EXISTS {m_DBInfo.TableError} (name string primary key, data string)";
+                querys.Add(query);
+
+                // 1. delete all
+                query = $"DELETE FROM {m_DBInfo.TableError}";
+                querys.Add(query);
+
+                // 2. save list
+                string output;
+                foreach (CErrorInfo errorInfo in m_ErrorInfoList)
+                {
+                    output = JsonConvert.SerializeObject(errorInfo);
+                    query = $"INSERT INTO {m_DBInfo.TableError} VALUES ('{errorInfo.Index}', '{output}')";
+                    querys.Add(query);
+                }
+
+                // 3. execute query
+                if (DBManager.ExecuteNonQuerys(m_DBInfo.DBConn_Info, querys) != true)
+                {
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA);
+            }
+
+            WriteLog($"success : save error info list", ELogType.Debug);
+            return SUCCESS;
+        }
     }
 }
