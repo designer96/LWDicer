@@ -12,15 +12,15 @@ using static LWDicer.Control.DEF_Error;
 using static LWDicer.Control.DEF_Common;
 using Matrox.MatroxImagingLibrary;
 
-
 namespace LWDicer.Control
 {
 
     public class MVision : MObject,IVision,IDisposable
     {
-        private bool m_bSystemInit;
+        public bool m_bSystemInit { get; private set; }
         private bool m_bErrorPrint;
         private bool m_bSaveErrorImage;
+
         public int m_iCurrentViewNum { get; set; }
         public int m_iHairLineWidth { get; set; }
         public int m_iMarkROIWidth { get; set; }
@@ -86,6 +86,7 @@ namespace LWDicer.Control
             iResult=  m_pSystem.Initialize();
 
             if (iResult != SUCCESS) return ERR_VISION_ERROR;
+
             // MIL 의 Err Print하는 기능 Enable
             if (!m_bErrorPrint)
             {
@@ -108,6 +109,8 @@ namespace LWDicer.Control
 
                 return ERR_VISION_ERROR;
             }
+
+            m_bSystemInit = true;
 
             m_pCamera = new MVisionCamera[iCameraNum];
             m_pView = new MVisionDisplay[iCameraNum];
@@ -138,7 +141,7 @@ namespace LWDicer.Control
             Debug.Write("\n====================================\n");
             Debug.Write("System & Camera & View 생성 완료\n");
 
-            m_bSystemInit = true;
+            
 
             return SUCCESS;
         }
@@ -148,7 +151,7 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return;
 #endif
-            // System의 상태 확인
+            // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return;
 
             // Camera Distroy
@@ -179,6 +182,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             int iResult;
             int i = 0;
 
@@ -238,6 +244,8 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
             if (m_pView[iCamNo].IsLocalView())
             {
@@ -253,8 +261,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return ERR_VISION_ERROR;
-
+            // 설정할 Camera 번호가 Max 를 초과 여부 확인
             if (iCamNo > DEF_MAX_CAMERA_NO) return ERR_VISION_ERROR;
 
             // 설정할 객체의 Handle값이 다른 View에 있으면 빠져 나감.
@@ -281,7 +290,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
-            
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             // View 를 Display로 등록한다.
             // View에 맞쳐 Zoom 설정을 한다
             // Mil의 SelectDisplayWindow 함수로 등록한다. 
@@ -294,6 +305,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             m_pSystem.DisplayViewImage(image,handle);
         }
 
@@ -303,6 +317,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             m_pCamera[iCamNo].SetTrigger();
         }
 
@@ -312,13 +329,19 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             m_pView[iViewNo].GetImage();
         }
         public void DisplayMarkImage(int iViewNo, IntPtr pDisplayHandle )
         {
-        #if SIMULATION_VISION
+#if SIMULATION_VISION
                 return;
-        #endif
+#endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             m_pView[iViewNo].GetMarkModelImage();
         }
 
@@ -328,6 +351,8 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
@@ -344,6 +369,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             if (isValidPatternMarkNo(iModelNo))
             {
                 if (m_pCamera[iCamNo].GetSearchData(iModelNo).m_bIsModel)
@@ -360,6 +388,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             m_pView[iViewNo].SelectCamera(m_pCamera[iCamNo]);
             return SUCCESS;
         }
@@ -370,6 +401,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             if (isValidPatternMarkNo(iModelNo))
             {
                 if (m_pCamera[iCamNo].GetSearchData(iModelNo).m_bIsModel)
@@ -387,20 +421,30 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             if (isValidPatternMarkNo(iModelNo))
             {
                 m_pCamera[iCamNo].DeleteSearchModel(iModelNo);
             }
         }
-
-        // Save Current Camera Image in file
-	    // @param iCamNo : Camera Number
-	    // @param iModelNo : Model Number
-        public int SaveImage(int iCamNo, int iModelNo, double dScore)
+        
+        /// <summary>
+        /// Camera의 이미지를 적용 모델 번호와 Maching Score를 이름으로 저장한다.
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Number></param>
+        /// <param name="dScore": Pattern Score></param>
+        /// <returns></returns>
+        public int SaveImage(int iCamNo, int iModelNo=0, double dScore=0)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             DateTime time = DateTime.Now;
             string strDirName = DEF_IMAGE_LOG_FILE + String.Format("{0:yyyy_MM_dd}",time); 
 
@@ -413,7 +457,6 @@ namespace LWDicer.Control
                     return ERR_VISION_ERROR;
                 }
             }
-
             string strFileName = String.Format("LogImage {0:HH.mm.ss.fff} [Cam{1:0}_Mark{2:0} Score_{3:0.00}].bmp",
                                                time, iCamNo + 1, iModelNo, dScore);
 
@@ -423,11 +466,14 @@ namespace LWDicer.Control
 
         }
 
-        public int SaveModelImage(int iCamNo, int iModelNo, double dScore)
+        public int SaveImage(int iModelNo=0, double dScore=0)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             DateTime time = DateTime.Now;
             string strDirName = DEF_IMAGE_LOG_FILE + String.Format("{0:yyyy_MM_dd}", time);
 
@@ -442,7 +488,37 @@ namespace LWDicer.Control
             }
 
             string strFileName = String.Format("LogImage {0:HH.mm.ss.fff} [Cam{1:0}_Mark{2:0} Score_{3:0.00}].bmp",
-                                               time, iCamNo + 1, iModelNo, dScore);
+                                               time, m_iCurrentViewNum + 1, iModelNo, dScore);
+
+            m_pView[m_iCurrentViewNum].SaveImage(strDirName + "\\" + strFileName);
+
+            return SUCCESS;
+
+        }
+
+        public int SaveModelImage(int iCamNo, int iModelNo)
+        {
+#if SIMULATION_VISION
+                return SUCCESS;
+#endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
+            DateTime time = DateTime.Now;
+            string strDirName = DEF_IMAGE_LOG_FILE + String.Format("{0:yyyy_MM_dd}", time);
+
+            if (!Directory.Exists(strDirName))
+            {
+                DirectoryInfo DirInfo = Directory.CreateDirectory(strDirName);
+                if (!DirInfo.Exists)
+                {
+                    // 104060 = LogPicture 폴더를 생성할 수 없어 Image 를 저장할 수 없습니다.
+                    return ERR_VISION_ERROR;
+                }
+            }
+
+            string strFileName = String.Format("[Cam{0:0}_Mark{1:0}].bmp",
+                                               iCamNo + 1, iModelNo);
 
             m_pView[iCamNo].SaveModelImage(strDirName + "\\" + strFileName, iModelNo);
 
@@ -452,7 +528,6 @@ namespace LWDicer.Control
 
 
         // Delete Old Error Image Files
-
         public int DeleteOldImageFiles()
         {
 #if SIMULATION_VISION
@@ -469,7 +544,6 @@ namespace LWDicer.Control
                 return;
 #endif
             m_bSaveErrorImage = bFlag;
-            //return 0;
         }
 
         // Get Grab Settling Time.
@@ -507,18 +581,16 @@ namespace LWDicer.Control
             //return 0;
         }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //     Related Pattern Matching Operations
-         
 
-        // Register NGC & GMF Model
-        // @return boolean type : TRUE or FALSE
-        // @param iCamNo : Camera Number
-        // @param SelectMark : Model Mark Number
-        // @param SearchArea : Search Area Rectangle
-        // @param ModelArea : Model Area Rectangle
-        // @param ReferencePoint : Reference Point
-
+        /// <summary>
+        /// Pattern Maching으로 Mark의 위치 확인
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Mark Number></param>
+        /// <param name="SearchArea": Search Area Rectangle></param>
+        /// <param name="ModelArea": Model Area Rectangle></param>
+        /// <param name="ReferencePoint": Reference Point></param>
+        /// <returns></returns>
         public int RegisterPatternMark(int iCamNo,
                                        int iModelNo,
                                        ref Rectangle SearchArea,
@@ -528,6 +600,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             // 모델 갯수 보다 큰 경우 Err
             if (iModelNo > DEF_USE_SEARCH_MARK_NO) return ERR_VISION_ERROR;
             // Search Size 확인 
@@ -558,8 +633,6 @@ namespace LWDicer.Control
             // 설정한 Data로 Mark 모델을 등록한다.
             if(m_pSystem.RegisterMarkModel(iCamNo,ref pSData))
             {
-                // Display Mark Rectagle
-                
                 pSData.m_bIsModel = true;
                 return SUCCESS;
             }
@@ -567,60 +640,53 @@ namespace LWDicer.Control
             {
                 pSData.m_bIsModel = false;
                 return ERR_VISION_ERROR;
-            }       
-                 
+            }                 
         }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //     Related Vision View Display Operations
-
-
-        //     Dispaly the registered Model Image or Model Area like below ;
-        //     NGC Pattern Matching Model Image
-        //     @return Error Code : 0 [SUCCESS] - Success, etc. - Error
-        //    
-        public int DisplayPatternImage(int iCamNo, int iModelNo)
+        
+        /// <summary>
+        /// Dispaly the registered Model Image or Model Area like below ;
+        /// </summary>
+        /// <param name="iCamNo" : Camera Number></param>
+        /// <param name="iModelNo": Model Number></param>
+        /// <param name="pHandle": Display 객체 Handle></param>
+        /// <returns></returns>
+        public int DisplayPatternImage(int iCamNo, int iModelNo, IntPtr pHandle)
         {
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            // Model No 확인
+            if (isValidPatternMarkNo(iModelNo)==false) return ERR_VISION_ERROR;
+            
+            // 저장된 Pattern 정보를 읽어옴
+            CSearchData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
 
-            if (isValidPatternMarkNo(iModelNo))
-            {
-                CSearchData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
+            // Data에 MIL 정보를 확인함.
+            if (pSData.m_milModel==MIL.M_NULL) return ERR_VISION_ERROR;
 
-                int iWidth = (int)(pSData.m_rectModel.Width);
-                int iHeight = (int)(pSData.m_rectModel.Height);
-
-                MIL_ID tmpModel = MIL.MbufChild2d(m_pView[iCamNo].GetLocalView(),
-                                    (DEF_IMAGE_SIZE_X - iWidth) / 2,
-                                    (DEF_IMAGE_SIZE_Y - iHeight) / 2,
-                                    iWidth,
-                                    iHeight,
-                                    MIL.M_NULL);
-
-                MIL.MpatDraw(MIL.M_DEFAULT,
-                                    pSData.m_milModel,
-                                    tmpModel,
-                                    MIL.M_DRAW_BOX + MIL.M_DRAW_POSITION,
-                                    MIL.M_DEFAULT,
-                                    MIL.M_DEFAULT);
-
-            }
-
-
+            // Image Display 호출
+            m_pView[iCamNo].DisplayImage(pSData.m_ModelImage, pHandle);
+            
             return SUCCESS;
         }
-        // Reset Search Area
-        // @param iCamNo : Camera Number
-        // @param iModelNo : Model Mark Number
-        // @param SArea : Search Area Rectangle
 
+        /// <summary>
+        /// Search Area 설정
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Mark Number></param>
+        /// <param name="SArea": Search Area Rectangle></param>
+        /// <returns></returns>
         public int SetSearchArea(int iCamNo, int iModelNo, ref Rectangle SArea)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             if (SArea.Width <= DEF_SEARCH_MIN_WIDTH || SArea.Height <= DEF_SEARCH_MIN_HEIGHT ||
                 SArea.Width > m_pCamera[iCamNo].m_CamPixelSize.Width || SArea.Height > m_pCamera[iCamNo].m_CamPixelSize.Height)
                 // 104040 = Search Area Size 가 부적절합니다.
@@ -639,20 +705,28 @@ namespace LWDicer.Control
 
             return SUCCESS;
         }
-        
-          //Recognition Model Mark (NGC Algorithm)
-	      //@return int type Error Code : 0 - SUCCESS, etc. - Error
-	      //@param iCamNo : Camera Number
-	      //@param iModelNo : Model Mark Number
-	      //@param bUseGMF : True  - Use GMF(Geometry Model Finder)
-	      //                 False - Not Use GMF(Geometry Model Finder) 
-	    
+
+        /// <summary>
+        /// 등록된 Mark Search.. GMF는 적용안됨.
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Mark Number></param>
+        /// <param name="pPatResult" : Result value Check></param>
+        /// <param name="bUseGMF" : Not Use></param>
+        /// <returns></returns>
         public int RecognitionPatternMark(int iCamNo, int iModelNo, out CResultData pPatResult, bool bUseGMF = false)
         {
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) goto ERR_VISION_ERROR;
+            
             int iResult = 0;
             CSearchData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
-            CResultData pSResult;// = m_pCamera[iCamNo].GetResultData(iModelNo);
+            CResultData pSResult; 
 
+            // 모델 생성 여부 확인
+            if (pSData.m_bIsModel == false) goto ERR_VISION_ERROR;
+
+            // Mark Search 실행
             iResult = m_pSystem.SearchByNGC(iCamNo, pSData, out pSResult);
 
             if(iResult == SUCCESS)
@@ -677,7 +751,7 @@ namespace LWDicer.Control
                                                     pSResult.m_dScore,
                                                     pSResult.m_dTime  *1000);
             }
-
+            // Search 결과 대입
             pPatResult = pSResult;
 
             // Pattern Search Fail시 Image 저장
@@ -694,130 +768,184 @@ namespace LWDicer.Control
             }
            
             return SUCCESS;
+        // Vision Error 처리
+        ERR_VISION_ERROR:
+
+            pPatResult = new CResultData();
+            return ERR_VISION_ERROR;
         }
 
         public MIL_ID GetMarkImage(int iCamNo, int iModelNo)
         {
-
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
             CSearchData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
             
             return pSData.m_milModel;
         }
-        public void SearchMarkStop(int iCamNo)
-        {
-            m_pView[iCamNo].SearchMarkStop();
-        }
 
-          //Make a Mask Image & Apply the Mask Image to GMF Search Context
-	      //@return int type Error Code : 0 - SUCCESS, etc. - Error
-	      //@param iCamNo : Camera Number
-	      //@param iModelNo : Model Mark Number
-	      //@param MaskRect : Rectangle for masking
-	      //@param ModelRect : GMF Model Rectangle
-	      //@param bMakeEndFlag : TRUE - Stop making mask image & Apply the Mask Image to GMF Search Context
-	      //                      FALSE - Continue making mask image
-	     
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Mark Number></param>
+        /// <param name="MaskRect": Rectangle for masking></param>
+        /// <param name="ModelRect": GMF Model Rectangle></param>
+        /// <param name="bMakeEndFlag": TRUE - Stop making mask image & 
+        ///                                    Apply the Mask Image to GMF Search Context
+        ///                             FALSE - Continue making mask image></param>
+        /// <returns></returns>
         public int MaskImage(int iCamNo, int iModelNo, ref Rectangle MaskRect, ref Rectangle ModelRect, bool bMakeEndFlag)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             return SUCCESS;
         }
 
-          // Return Pattern Matching Result : Reference Point X value
-	      // @return double type : X coordinate
-	      // @param iCamNo : Camera Number
-	      // @param iModelNo : Model Mark Number
-	     
+        /// <summary>
+        /// Return Pattern Matching Result : Reference Point X value
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Mark Number></param>
+        /// <returns>
+        /// Position X value (double)
+        /// </returns>
         public double GetSearchResultX(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
             return 0.0;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
 
             return m_pCamera[iCamNo].GetResultData(iModelNo).m_dPixelX;
         }
 
-      //    Return Pattern Matching Result : Reference Point Y value
-      //    @return double type : Y coordinate
-      //    @param iCamNo : Camera Number
-      //    @param iModelNo : Model Mark Number
- 
+
+
+        /// <summary>
+        /// Return Pattern Matching Result : Reference Point Y value
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Mark Number></param>
+        /// <returns>
+        /// Position Y value (double)
+        /// </returns>
         public double GetSearchResultY(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
             return 0.0;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
 
             return m_pCamera[iCamNo].GetResultData(iModelNo).m_dPixelY;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
         public double GetSearchScore(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
             return 0.0;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
 
             return m_pCamera[iCamNo].GetResultData(iModelNo).m_dScore;
-        }
+        }                
 
-
-         // Return Pattern Matching Result Model Rectangle
-         // @return CRect type : Finded Model
-         // @param iCamNo : Camera Number
-         // @param iModelNo : Model Mark Number
-         
+        /// <summary>
+        /// Return Pattern Matching Result Model Rectangle
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Mark Number></param>
+        /// <returns></returns>
         public Rectangle GetFindedModelRect(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
             return new Rectangle(0,0,0,0);
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return new Rectangle();
+
             if (!isValidPatternMarkNo(iModelNo))
                 return new Rectangle(0, 0, 0, 0);
 
             return m_pCamera[iCamNo].GetResultData(iModelNo).m_rectFindedModel;
         }
 
-         // Return Pattern Matching Search Area Rectangle
-         // @return CRect type : Search Area
-         // @param iCamNo : Camera Number
-         // @param iModelNo : Model Mark Number
-         
+        /// <summary>
+        /// Return Pattern Matching Result Model Rectangle
+        /// </summary>
+        /// <param name="iCamNo": Camera Number></param>
+        /// <param name="iModelNo": Model Mark Number></param>
+        /// <returns></returns>
         public Rectangle GetSearchAreaRect(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
             return new Rectangle(0,0,0,0);
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return new Rectangle();
+
             if (!isValidPatternMarkNo(iModelNo))
                 return new Rectangle(0, 0, 0, 0);
 
             return m_pCamera[iCamNo].GetSearchData(iModelNo).m_rectSearch;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
         public double GetSearchAcceptanceThreshold(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
             return 0.0;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
 
             return m_pCamera[iCamNo].GetSearchData(iModelNo).m_dAcceptanceThreshold;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iModelNo"></param>
+        /// <param name="dValue"></param>
+        /// <returns></returns>
         public int SetSearchAcceptanceThreshold(int iCamNo, int iModelNo, double dValue)
         {
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
             if (!isValidPatternMarkNo(iModelNo))
                 return ERR_VISION_ERROR;
@@ -840,47 +968,98 @@ namespace LWDicer.Control
         }
 
 
-         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-         //     Related Edge Finder (Caliper Tool) Operations
-         //
-        public int FindEdge(int iCamNo, int iModelNo)
+        /// <summary>
+        /// Related Edge Finder (Caliper Tool) Operations
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="dPosX"></param>
+        /// <param name="dPosY"></param>
+        /// <returns></returns>
+        public int FindEdge(int iCamNo, ref CEdgeData pEdgeData)
         {
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
-            m_pSystem.FindEdge(iCamNo);
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
+
+            m_pSystem.FindEdge(iCamNo,ref pEdgeData);
 
             return SUCCESS;
         }
-
-        public int SetEdgeFinderArea(int iCamNo, Point mPos, Size mSize, double dAng)
+        /// <summary>
+        /// Edge Find의 Search 면적을 설정한다.
+        /// 위치, 가로/세로 크기, 각도를 변경할 수 있다.
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="mPos"></param>
+        /// <param name="mSize"></param>
+        /// <param name="dAng"></param>
+        /// <returns></returns>
+        public int SetEdgeFinderArea(int iCamNo, Point mPos, double dWidth=400,double dHeight=3, double dAng=135.0)
         {
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
+            m_pSystem.SetEdgeFindParameter(mPos, dWidth, dHeight,dAng);
+
+            return SUCCESS;
+        }
+        public int SetEdgeFinderArea(int iCamNo, double dWidth = 400, double dHeight = 3, double dAng = 135.0)
+        {
+#if SIMULATION_VISION
+            return SUCCESS;
+#endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
+            Point mPos = new Point();
+            // 위치는 영상의 가운데를 기준으로 한다.
             mPos.X = m_pView[iCamNo].GetImageWidth() / 2;
             mPos.Y = m_pView[iCamNo].GetImageHeight() / 2;
-            mSize.Width = 400;
-            mSize.Height = 3;
-            dAng = 135;
 
-            m_pSystem.SetEdgeFindParameter(mPos,mSize,dAng);
+            m_pSystem.SetEdgeFindParameter(mPos, dWidth, dHeight, dAng);
 
             return SUCCESS;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iModelNo"></param>
+        /// <param name="dPolarity"></param>
+        /// <returns></returns>
         public int SetEdgeFinderPolarity(int iCamNo, int iModelNo, double dPolarity)
         {
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
             return SUCCESS;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iModelNo"></param>
+        /// <param name="dThreshold"></param>
+        /// <returns></returns>
         public int SetEdgeFinderThreshold(int iCamNo, int iModelNo, double dThreshold)
         {
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             return SUCCESS;
         }
         public int SetEdgeFinderNumOfResults(int iCamNo, int iModelNo, double dNumOfResults)
@@ -888,6 +1067,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             return SUCCESS;
         }
         public int SetEdgeFinderDirection(int iCamNo, int iModelNo, double dSearchDirection)
@@ -895,6 +1077,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             return SUCCESS;
         }
 
@@ -903,6 +1088,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             return 0.0;
         }
         public double GetEdgeFinderThreshold(int iCamNo, int iModelNo)
@@ -910,6 +1098,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return 0.0;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             return 0.0;
         }
         public double GetEdgeFinderNumOfResults(int iCamNo, int iModelNo)
@@ -917,66 +1108,117 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return 0.0;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             return 0.0;
         }
         public double GetEdgeFinderDirection(int iCamNo, int iModelNo)
         {
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+
             return 0.0;
         }
-                
-        //Stop Live & Grap Image
-	    //  @return 
-	    //  @param iCamNo : Camera Number	       
+
+        /// <summary>
+        /// Camera 영상 Live Stop 설정
+        /// </summary>
+        /// <param name="iCamNo"></param>      
         public void HaltVideo(int iCamNo)
         {
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
             m_pCamera[iCamNo].SetLive(false);            
         }
 
-         // Start Live : Grab Continuous
-	     // @return int type Error Code : 0 - SUCCESS
-	     // @param iCamNo : Camera Number
-	        
+
+	     /// <summary>
+         /// Camera 영상 Live 설정
+         /// </summary>
+         /// <param name="iCamNo"></param>
         public void LiveVideo(int iCamNo)
         {
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
             m_pCamera[iCamNo].SetLive(true);
             
         }
 
-        // Clear Overlay Display
-	    // @return
-	    // @param iCamNo :
-	    // @param bCenterLineFlag : TRUE - Draw Center Cross Mark when clear overlay display
-	    //                          FALSE - Not Draw Center Cross Mark 
-	        
+        
+        /// <summary>
+        /// Clear Overlay Display
+        /// </summary>
+        /// <param name="iCamNo" : Camera number></param>
         public void ClearOverlay(int iCamNo)
         {
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
             m_pView[iCamNo].ClearOverlay();
-            //return 0;
+            
         }
+        public void ClearOverlay()
+        {
+#if SIMULATION_VISION
+            return;
+#endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
 
-        // Draw Rectangle on the Overlay Display	        
+            if (m_iCurrentViewNum > DEF_MAX_CAMERA_NO) return;
+
+            m_pView[m_iCurrentViewNum].ClearOverlay();
+            
+        }
+        /// <summary>
+        /// Rectangle on the Overlay Display	
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="rect"></param>
+
         public void DrawOverlayAreaRect(int iCamNo, Rectangle rect)
         {
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
+
             m_pView[iCamNo].DrawBox(rect);
+            //return 0;
+        }
+
+        public void DrawOverlayAreaRect(Rectangle rect)
+        {
+#if SIMULATION_VISION
+            return;
+#endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
+            if (m_iCurrentViewNum > DEF_MAX_CAMERA_NO) return;
+
+            m_pView[m_iCurrentViewNum].DrawBox(rect);
             //return 0;
         }
 
@@ -986,6 +1228,9 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             //return 0;
         }
 
@@ -995,21 +1240,47 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
             //return 0;
         }
-
-        // Draw Cross Mark on the Overlay Display
+        /// <summary>
+        /// Cross Mark on the Overlay Display
+        /// </summary>
+        /// <param name="iCamNo"></param> 해당 Camera 번호
+        /// <param name="iWidth"></param> Cross의 width설정
+        /// <param name="iHeight"></param> Cross의 Height 설정
+        /// <param name="center"></param>  Cross의 위치 설정
+        // 
         public void DrawOverlayCrossMark(int iCamNo, int iWidth, int iHeight,Point center)    //, int color = 1) ;
         {
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
-           m_pView[iCamNo].DrawCrossMark(center,iWidth,iHeight);           
+            m_pView[iCamNo].DrawCrossMark(center,iWidth,iHeight);   
+                    
+        }
+
+        public void DrawOverlayCrossMark(int iWidth, int iHeight, Point center)    //, int color = 1) ;
+        {
+#if SIMULATION_VISION
+            return;
+#endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
+            if (m_iCurrentViewNum > DEF_MAX_CAMERA_NO) return;
+
+            m_pView[m_iCurrentViewNum].DrawCrossMark(center, iWidth, iHeight);
+
         }
 
         // Draw Text on the View Image Display
@@ -1018,25 +1289,62 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
             //return 0;
         }
+
+        /// <summary>
+        /// Wafer Cutting의 기준이 되는 HairLine을 Draw한다.
+        /// 가운데 Line과 폭 (Width)의 2개 Line 총 3개의 Line을 Draw한다.
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="Width"></param>
         public void DrawOverLayHairLine(int iCamNo, int Width)
         {
 #if SIMULATION_VISION
             return;
 #endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
 
             // Hair Line의 제한값 설정
             if (Width < DEF_HAIRLINE_MIN && Width > DEF_HAIRLINE_MAX) return;
 
             m_iHairLineWidth = Width;
 
-            m_pView[iCamNo].ClearOverlay();
-            m_pView[iCamNo].DrawHairLine(Width);
+            // Display할 객체가 연결되어 있는지 확인
+            if (m_pView[iCamNo].IsLocalView())
+            {
+                m_pView[iCamNo].ClearOverlay();
+                m_pView[iCamNo].DrawHairLine(Width);
+            }
+            
         }
-        
+
+        public void DrawOverLayHairLine(int Width)
+        {
+#if SIMULATION_VISION
+            return;
+#endif
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return;
+
+            // Hair Line의 제한값 설정
+            if (Width < DEF_HAIRLINE_MIN && Width > DEF_HAIRLINE_MAX) return;
+
+            m_iHairLineWidth = Width;
+
+            // Display할 객체가 연결되어 있는지 확인
+            if (m_pView[m_iCurrentViewNum].IsLocalView())
+            {
+                m_pView[m_iCurrentViewNum].ClearOverlay();
+                m_pView[m_iCurrentViewNum].DrawHairLine(Width);
+            }
+        }
+
     }
 }

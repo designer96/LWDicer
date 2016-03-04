@@ -10,16 +10,11 @@ using static LWDicer.Control.DEF_Error;
 using BGAPI;
 using Matrox.MatroxImagingLibrary;
 
-// Test Git 124
-// Comment Insert
-// Comment Insert
-
 
 namespace LWDicer.Control
 {
     class MVisionSystem
-    {
-        
+    {        
         private int m_iSystemNo;
         private int m_iSystemIndex;
         private int m_iCheckCamNo;
@@ -158,6 +153,14 @@ namespace LWDicer.Control
             MIL.MpatAllocModel(m_MilSystem, m_MilImage, pRec.X, pRec.Y,
                                pRec.Width, pRec.Height, MIL.M_NORMALIZED, ref pSData.m_milModel);
 
+            // Model Image Save (Image View Save용)
+            MIL.MbufAlloc2d(m_MilSystem, pRec.Width, pRec.Height, MIL.M_UNSIGNED + 8, MIL.M_IMAGE + MIL.M_PROC + MIL.M_DISP,
+                                ref pSData.m_ModelImage);
+            //MIL.MbufCopyColor2d(m_MilImage, pRec.X, pRec.Y,
+            //                   pRec.Width, pRec.Height, ref pSData.m_ModelImage);
+            MIL.MbufChild2d(m_MilImage, pRec.X, pRec.Y,
+                               pRec.Width, pRec.Height, ref pSData.m_ModelImage);
+
             if (pSData.m_milModel == MIL.M_NULL) return false;
 
             MIL.MpatAllocResult(m_MilSystem, MIL.M_DEFAULT, ref m_SearchResult);
@@ -197,15 +200,24 @@ namespace LWDicer.Control
 
         }
 
-        public int SetEdgeFindParameter(Point mPos, Size mSize,double dAng)
+        /// <summary>
+        /// SetEdgeFindParameter
+        /// Edge검출 영역 설정
+        /// </summary>
+        /// <param name="mPos"></param>
+        /// <param name="dWidth"></param>
+        /// <param name="dHeight"></param>
+        /// <param name="dAng"></param>
+        /// <returns></returns>
+        public int SetEdgeFindParameter(Point mPos, double dWidth,double dHeight,double dAng)
         {
             MIL_INT MARKER_TYPE = MIL.M_EDGE;
             double FIRST_EDGE_POLARITY =    (double)MIL.M_POSITIVE;
             double SECOND_EDGE_POLARITY =   (double)MIL.M_DEFAULT;
             double BOX_CENTER_POS_X =       (double) mPos.X;
             double BOX_CENTER_POS_Y =       (double) mPos.Y;
-            double BOX_SIZE_X =             (double)mSize.Width;
-            double BOX_SIZE_Y =             (double)mSize.Height;
+            double BOX_SIZE_X =             dWidth;
+            double BOX_SIZE_Y =             dHeight;
             double BOX_ANGLE =              dAng;
             double SUB_REGIONS_NUMBER =     (double)MIL.M_DEFAULT;
             double NB_MARKERS =             (double)MIL.M_ALL;
@@ -225,45 +237,70 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int FindEdge(int iCam)
+        /// <summary>
+        /// Edge를 찾음
+        /// dPosX,dPosY에 검출된 값을 보내줌
+        /// </summary>
+        /// <param name="iCam"></param>
+        /// <param name="dPosX"></param>
+        /// <param name="dPosY"></param>
+        /// <returns></returns>
+        public int FindEdge(int iCam, ref CEdgeData pEdgeData)
         {
+            // Edge 검출 설정이 되어 있는지를 확인함.
             if (m_EdgeMaker == MIL.M_NULL) return ERR_VISION_ERROR;
 
+            // 검출할 영상 Image를 가져온다.
             MIL_ID m_MilImage = m_pDisplay[iCam].GetImage();
+            // 결과를 Display할 Overlay를 가져온다.
             MIL_ID m_DisplayGraph = m_pDisplay[iCam].GetViewGraph();
 
             // Find the marker and compute all applicable measurements.
+            // Edge검출 명령 실행
             MIL.MmeasFindMarker(MIL.M_DEFAULT, m_MilImage, m_EdgeMaker, MIL.M_DEFAULT);
 
-           // m_pDisplay[iCam].ClearOverlay();
+            // Overlay Clear
             MIL.MgraClear(MIL.M_DEFAULT, m_DisplayGraph);
-            //MIL.MdispControl(m_MilImage, MIL.M_OVERLAY_CLEAR, MIL.M_DEFAULT);
 
+            // Edge 검출 영역을  Overlay에 표시함
             MIL.MgraColor(MIL.M_DEFAULT, MIL.M_COLOR_GREEN);
             MIL.MmeasDraw(MIL.M_DEFAULT, m_EdgeMaker, m_DisplayGraph, MIL.M_DRAW_SEARCH_REGION, MIL.M_DEFAULT, MIL.M_RESULT);
-            //MIL.MgraColor(MIL.M_DEFAULT, MIL.M_COLOR_BLUE);
-            //MIL.MmeasDraw(MIL.M_DEFAULT, m_EdgeMaker, m_DisplayGraph, MIL.M_DRAW_SEARCH_DIRECTION, MIL.M_DEFAULT, MIL.M_RESULT);
             
-
             // Edge 개수 확인
             MIL_INT FindEdgeNum = 0;
             MIL.MmeasGetResult(m_EdgeMaker, MIL.M_NUMBER + MIL.M_TYPE_MIL_INT, ref FindEdgeNum, MIL.M_NULL);
+            // Edge 검출 되었을 경우
             if (FindEdgeNum >= 1)
-            {
-                //MIL.MgraColor(MIL.M_DEFAULT, MIL.M_COLOR_MAGENTA);
-                //MIL.MmeasDraw(MIL.M_DEFAULT, m_EdgeMaker, m_DisplayGraph, MIL.M_DRAW_EDGES, MIL.M_DEFAULT, MIL.M_RESULT);
+            {                
+                pEdgeData.m_bSuccess = true;
+                pEdgeData.m_iEdgeNum = FindEdgeNum;
+                pEdgeData.m_dPosX = new double[FindEdgeNum];
+                pEdgeData.m_dPosY = new double[FindEdgeNum];
+
+                // 검출된 Edge를 Overlay에 표시함.
                 MIL.MgraColor(MIL.M_DEFAULT, MIL.M_COLOR_RED);
                 MIL.MmeasDraw(MIL.M_DEFAULT, m_EdgeMaker, m_DisplayGraph, MIL.M_DRAW_POSITION, MIL.M_DEFAULT, MIL.M_RESULT);
-
-                double dPosX = 0.0;
-                double dPosY = 0.0;
-                MIL.MmeasGetResult(m_EdgeMaker, MIL.M_POSITION + MIL.M_EDGE_FIRST, ref dPosX, ref dPosY);
+                MIL.MmeasGetResult(m_EdgeMaker, MIL.M_POSITION + MIL.M_EDGE_FIRST, ref pEdgeData.m_dPosX[0], ref pEdgeData.m_dPosY[0]);
 
                 return SUCCESS;
             }
             else
+            {
+                pEdgeData.m_bSuccess = false;
+                //pEdgeData.m_dPosX = 0.0;
+                //pEdgeData.m_dPosY = 0.0;
+                pEdgeData.m_iEdgeNum = 0;
                 return ERR_VISION_ERROR;
+            }
+                
         }
+        /// <summary>
+        /// Pattern Maching으로 Mark의 위치를 검색함
+        /// </summary>
+        /// <param name="iCam"></param>
+        /// <param name="pSdata"></param>
+        /// <param name="pRData"></param>
+        /// <returns></returns>
         public int SearchByNGC(int iCam, CSearchData pSdata, out CResultData pRData)
         {
             
@@ -283,9 +320,9 @@ namespace LWDicer.Control
             if (MIL.MpatGetNumber(m_SearchResult) == 1L)
             {
                 // Display Mark Area
-                MIL.MgraClear(MIL.M_DEFAULT, m_DisplayGraph);
+                //MIL.MgraClear(MIL.M_DEFAULT, m_DisplayGraph);
+                m_pDisplay[iCam].ClearOverlay();
                 MIL.MpatDraw(MIL.M_DEFAULT, m_SearchResult, m_DisplayGraph, MIL.M_DRAW_BOX, MIL.M_DEFAULT, MIL.M_DEFAULT);
-
                 //DisplaySearchResult();
 
                 MIL.MpatGetResult(m_SearchResult, MIL.M_POSITION_X, ref pResult.m_dPixelX);

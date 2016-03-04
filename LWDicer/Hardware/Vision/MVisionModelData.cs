@@ -193,8 +193,7 @@ namespace LWDicer.Control
             MIL.MpatPreprocModel(MIL.M_NULL, pSData.m_milModel, MIL.M_DEFAULT);
            
             pSData.m_bIsModel = true;
-
-            
+                        
             return SUCCESS;
 
             // ************************************************************************* //

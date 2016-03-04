@@ -12,7 +12,6 @@ using System.Diagnostics;
 
 using static LWDicer.Control.DEF_Vision;
 using static LWDicer.Control.DEF_Error;
-//using System.Runtime.Serialization.Formatters.Binary;
 using BGAPI;
 using Matrox.MatroxImagingLibrary;
 
@@ -24,7 +23,6 @@ namespace LWDicer.Control
         private int m_iViewID;
         private int m_iResult;
         private bool m_bLocal;
-        private bool m_bMarkSearch = false;
         private double dGrabInterval = 0.0;
         
         private Byte[] m_ImgBits;
@@ -154,29 +152,6 @@ namespace LWDicer.Control
             MIL.MbufPut(m_MilImage, m_ImgBits);
             MIL.MbufControl(m_MilImage, MIL.M_MODIFIED, MIL.M_DEFAULT);
 
-            //if (m_bMarkSearch)
-            //{
-            //    ClearOverlay();
-
-            //    MIL.MpatFindModel(m_MilImage, m_MarkModel, m_SearchResult);
-
-            //    //m_bMarkSearch = false;
-
-            //    if (MIL.MpatGetNumber(m_SearchResult) == 1L)
-            //    {
-            //        // Clear annotations.
-            //        MIL.MgraClear(MIL.M_DEFAULT, GraphicList);
-
-            //        MIL.MpatDraw(MIL.M_DEFAULT, m_SearchResult, GraphicList, MIL.M_DRAW_BOX + MIL.M_DRAW_POSITION, MIL.M_DEFAULT, MIL.M_DEFAULT);
-
-            //        DisplaySearchResult();
-            //    }
-            //    else
-            //    {
-            //        DrawString("Search Fail", new PointF(100, 800));
-            //    }
-
-            //}
             // Timer 확인
             MIL.MappTimer(MIL.M_DEFAULT, MIL.M_TIMER_READ, ref dGrabInterval);
             
@@ -189,14 +164,6 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public void SearchMark()
-        {
-            m_bMarkSearch = true;
-        }
-        public void SearchMarkStop()
-        {
-            m_bMarkSearch = false;
-        }
         private void DisplaySearchResult()
         {
             double XOrg = 0.0;              // Original model position.
@@ -272,28 +239,65 @@ namespace LWDicer.Control
         }
         public bool SaveModelImage(string strPath,int iModelNo)
         {
-            MIL_ID pSaveImage = MIL.M_NULL;
             CSearchData pSData = m_pCamera.GetSearchData(iModelNo);
 
-            //MIL_INT iWidth = MIL.MbufInquire(pSData.m_milModel, MIL.M_SIZE_X, MIL.M_NULL);
-            //MIL_INT iHeight = MIL.MbufInquire(pSData.m_milModel, MIL.M_SIZE_Y, MIL.M_NULL);
-
-            MIL_INT iWidth = pSData.m_rectModel.Width;
-            MIL_INT iHeight = pSData.m_rectModel.Height;
-
-            MIL.MbufAlloc2d(m_pMilSystemID, iWidth, iHeight,
-                                MIL.M_UNSIGNED + 8, MIL.M_IMAGE + MIL.M_PROC + MIL.M_DISP,
-                                ref pSaveImage);
-
-            MIL.MbufCopy(pSData.m_milModel, pSaveImage);
-
-            MIL.MbufExport(strPath, MIL.M_BMP, pSaveImage);
-
-            MIL.MbufFree(pSaveImage);
-
+            MIL.MbufExport(strPath, MIL.M_BMP, pSData.m_ModelImage);
+            
             return true;
         }
-       
+
+        /// <summary>
+        /// MIL Buffer를 Panel에 영상을 Display함
+        /// </summary>
+        /// <param name="pImage" :  MIL Buffer 이미지></param>
+        /// <param name="pHandle" : Panel의 Handle값 ></param>
+        public void DisplayImage(MIL_ID pImage, IntPtr pHandle)
+        {
+            // Image Size Read           
+            int iWidth = MIL.MbufInquire(pImage, MIL.M_SIZE_X, MIL.M_NULL);
+            int iHeight = MIL.MbufInquire(pImage, MIL.M_SIZE_Y, MIL.M_NULL);
+            // Image Size Check
+            if (iWidth == 0 || iHeight == 0) return;
+
+            Rectangle RecImage = new Rectangle(0, 0, iWidth, iHeight);
+
+            // Byte 생성
+            Byte[] ImgBits;
+            ImgBits = new Byte[iWidth * iHeight];
+
+            // Bitmap 생성
+            Bitmap Bitmap = new Bitmap(iWidth, iHeight,
+                                        PixelFormat.Format8bppIndexed);
+            // Pallette 생성
+            ColorPalette Palette;
+            Palette = Bitmap.Palette;
+            for (int i = 0; i < 256; i++)
+            {
+                Palette.Entries[i] = Color.FromArgb(255, i, i, i);
+            }
+
+            Bitmap.Palette = Palette;
+            // BitmapData 생성
+            BitmapData BmpData = Bitmap.LockBits(RecImage,
+                                            ImageLockMode.WriteOnly,
+                                            PixelFormat.Format8bppIndexed);
+            // MIL이미지를  Byte 변환
+            MIL.MbufGet(pImage, ImgBits);
+
+            // Byte to Bitmap
+            Marshal.Copy(ImgBits, 0, BmpData.Scan0, iWidth * iHeight);
+            Bitmap.UnlockBits(BmpData);
+
+            Panel RecDisplay = (Panel)System.Windows.Forms.Control.FromHandle(pHandle);
+
+            Rectangle RecPic = new Rectangle(0, 0, RecDisplay.Width, RecDisplay.Height);
+
+            // Graph로 Bmp를 Display함
+            System.Drawing.Graphics graph;
+            graph = System.Drawing.Graphics.FromHwnd(pHandle);
+            graph.DrawImage(Bitmap, RecPic, RecImage, GraphicsUnit.Pixel);
+
+        }
         public MIL_ID GetImage()
         {
             return m_MilImage;
@@ -440,40 +444,33 @@ namespace LWDicer.Control
             if (Width < DEF_HAIRLINE_MIN) return;
             if (Width > DEF_HAIRLINE_MAX) return;
 
-
             // Overlay DC를 가져 온다
             if (GetOverlayDC() == false) return;
 
             //==================================================
             // Pen Type 설정
-            MIL.MgraColor(m_MilOverLayID, MIL.M_COLOR_GREEN);
+            //MIL.MgraColor(m_MilOverLayID, MIL.M_COLOR_GREEN);
             m_DrawPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-            m_DrawPen.Color = Color.LightGreen;
-            m_DrawPen.Width = 2;
+            //m_DrawPen.DashCap = System.Drawing.Drawing2D.DashCap.Round;
+            m_DrawPen.Color = Color.Red;
+            m_DrawPen.Width = 3;
 
             //==================================================
-            // 중심 라인 Draw
-
-            // 첫째 라인 Draw
+            // 중심 라인 Draw            
             m_ptDrawStart.X = 0;
             m_ptDrawStart.Y = ((int)m_ImageHeight / 2);
             m_ptDrawEnd.X = (int)m_ImageWidth;
             m_ptDrawEnd.Y = ((int)m_ImageHeight / 2);
             GraphDrawLine(m_ptDrawStart, m_ptDrawEnd, m_DrawPen);
-
-            // 둘째 라인 Draw
-            m_ptDrawStart.X = ((int)m_ImageWidth / 2);
-            m_ptDrawStart.Y = ((int)m_ImageHeight / 2 -30);
-            m_ptDrawEnd.X = (int)m_ImageWidth / 2;
-            m_ptDrawEnd.Y = ((int)m_ImageHeight/2+30);
-            GraphDrawLine(m_ptDrawStart, m_ptDrawEnd, m_DrawPen);
+            
 
             //==================================================
             // Pen Type 설정
             m_DrawPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-            m_DrawPen.DashCap = System.Drawing.Drawing2D.DashCap.Round;
+            //m_DrawPen.DashCap = System.Drawing.Drawing2D.DashCap.Round;
+            m_DrawPen.DashPattern = new float[] { 5.0F, 2.0F, 1.0F, 2.0F };
             m_DrawPen.Color = Color.LightGreen;
-            m_DrawPen.Width = 3;
+            m_DrawPen.Width = 4;
 
             //==================================================
             // 점선 라인 Draw
@@ -577,6 +574,7 @@ namespace LWDicer.Control
         public void ClearOverlay()
         {
             // Clear the overlay to transparent.
+            MIL.MgraClear(MIL.M_DEFAULT, GraphicList);
             MIL.MdispControl(m_MilDisplay, MIL.M_OVERLAY_CLEAR, MIL.M_DEFAULT);
         }
         public bool GetOverlayDC()

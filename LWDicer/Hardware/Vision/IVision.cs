@@ -59,7 +59,7 @@ namespace LWDicer.Control
 	     
 	    int SaveImage(int iCamNo, int iModelNo, double dScore);
 
-        int SaveModelImage(int iCamNo, int iModelNo, double dScore);
+        int SaveModelImage(int iCamNo, int iModelNo);
 
         // Delete Old Error Image Files
 
@@ -159,7 +159,7 @@ namespace LWDicer.Control
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           //Related Edge Finder (Caliper Tool) Operations
          
-	     int FindEdge(int iCameraNo, int iModelNo);
+	     int FindEdge(int iCameraNo, ref CEdgeData pEdgeData);
 
 	     int SetEdgeFinderPolarity(int iCameraNo, int iModelNo, double dPolarity);
 	     int SetEdgeFinderThreshold(int iCameraNo, int iModelNo, double dThreshold);
@@ -182,7 +182,7 @@ namespace LWDicer.Control
          //   		OCR Reading Area
          //    @return Error Code : 0[SUCCESS] - Success, etc. - Error
             
-         int DisplayPatternImage(int iCamNo, int iModelNo) ;
+         int DisplayPatternImage(int iCamNo, int iModelNo, IntPtr pHandle ) ;
 
 	     //Stop Live & Grap Image
 	     //    @return 

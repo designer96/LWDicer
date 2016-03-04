@@ -153,6 +153,8 @@ namespace LWDicer.Control
             /** MIL 에서 사용하는 Model ID (NGC) */
             public MIL_ID m_milModel;
 
+            public MIL_ID m_ModelImage;
+
             /** MIL 에서 사용하는 Model ID (GMF) */
             public MIL_ID m_milGmfModel;
 
@@ -207,6 +209,17 @@ namespace LWDicer.Control
 
             // MIL 에서 사용하는 Search Result ID (GMF)
             public MIL_ID m_milGMFResult;
+
+        };
+
+        public class CEdgeData
+        {
+            /** Search 작업 성공 여부 */
+            public bool m_bSuccess;
+
+            public int m_iEdgeNum;
+            public double[] m_dPosX;
+            public double[] m_dPosY;           
 
         };
 
