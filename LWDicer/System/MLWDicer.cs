@@ -21,6 +21,7 @@ using static LWDicer.Control.DEF_DataManager;
 
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
+using static LWDicer.Control.DEF_Vision;
 
 using static LWDicer.Control.DEF_SerialPort;
 using static LWDicer.Control.DEF_PolygonScanner;
@@ -53,6 +54,7 @@ namespace LWDicer.Control
 
         // Mechanical Layer
 
+        public MVision m_Vision { get; set; }
 
         // Control Layer
         public MCtrlLoader m_ctrlLoader { get; private set; }
@@ -116,7 +118,7 @@ namespace LWDicer.Control
 
             CObjectInfo objInfo;
             m_SystemInfo = new MSystemInfo();
-            
+
             // self set MLWDicer
             m_SystemInfo.GetObjectInfo(0, out objInfo);
             this.ObjInfo = objInfo;
@@ -197,7 +199,15 @@ namespace LWDicer.Control
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
 
+            m_SystemInfo.GetObjectInfo(20, out objInfo);
+            CreateVision(objInfo);
 
+            CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
+           
+
+            CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
+            CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
+            
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
             ////////////////////////////////////////////////////////////////////////
@@ -316,6 +326,12 @@ namespace LWDicer.Control
             return iResult;
         }
 
+        void CreateVision(CObjectInfo objInfo)
+        {
+            CVisionData data = new CVisionData();
+
+            m_Vision = new MVision(objInfo, data);
+        }
 
         void CreateCtrlStage1(CObjectInfo objInfo)
         {
