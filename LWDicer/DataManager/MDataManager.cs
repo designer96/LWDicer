@@ -110,6 +110,8 @@ namespace LWDicer.Control
             public CCylinderTime[] CylinderTimer = new CCylinderTime[(int)EObjectCylinder.MAX_OBJ];
             public CVacuumTime[] VacuumTimer = new CVacuumTime[(int)EObjectVacuum.MAX_OBJ];
 
+            // YMC
+            
 
             // 아래는 아직 미정리 내역들
 
@@ -397,11 +399,11 @@ namespace LWDicer.Control
 
             for(int i = 0; i < DEF_IO.MAX_IO_INPUT; i++)
             {
-                m_InputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.INDEX_INPUT, DEF_IO.EIOType.DI);
+                m_InputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.INPUT_ORIGIN, DEF_IO.EIOType.DI);
             }
             for (int i = 0; i < DEF_IO.MAX_IO_OUTPUT; i++)
             {
-                m_OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.INDEX_OUTPUT, DEF_IO.EIOType.DO);
+                m_OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.OUTPUT_ORIGIN, DEF_IO.EIOType.DO);
             }
 
             //TestFunction();
@@ -465,7 +467,7 @@ namespace LWDicer.Control
             {
                 if (DBManager.BackupDB(source, time) == false)
                 {
-                    WriteLog("fail : backup db.", ELogType.Debug, ELogWriteType.Error);
+                    WriteLog("fail : backup db.", ELogType.Debug, ELogWType.Error);
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_BACKUP_DB);
                 }
             }
@@ -483,7 +485,7 @@ namespace LWDicer.Control
             {
                 if (DBManager.DeleteDB(source) == false)
                 {
-                    WriteLog("fail : delete db.", ELogType.Debug, ELogWriteType.Error);
+                    WriteLog("fail : delete db.", ELogType.Debug, ELogWType.Error);
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_DELETE_DB);
                 }
             }
@@ -511,7 +513,7 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
             }
 
-            WriteLog("success : save system data.", ELogType.SYSTEM, ELogWriteType.SAVE);
+            WriteLog("success : save system data.", ELogType.SYSTEM, ELogWType.SAVE);
             return SUCCESS;
         }
 
@@ -541,7 +543,7 @@ namespace LWDicer.Control
             if(systemData != null)
             {
                 m_SystemData = systemData;
-                WriteLog("success : load system data.", ELogType.SYSTEM, ELogWriteType.LOAD);
+                WriteLog("success : load system data.", ELogType.SYSTEM, ELogWType.LOAD);
             }
             return SUCCESS;
         }
@@ -664,7 +666,7 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_MODEL_DATA);
             }
 
-            WriteLog($"success : save model [{name}].", ELogType.SYSTEM, ELogWriteType.SAVE);
+            WriteLog($"success : save model [{name}].", ELogType.SYSTEM, ELogWType.SAVE);
             return SUCCESS;
         }
 
@@ -715,7 +717,7 @@ namespace LWDicer.Control
             if(modelData != null)
             {
                 m_ModelData = modelData;
-                WriteLog($"success : change model [{m_ModelData.Name}].", ELogType.SYSTEM, ELogWriteType.LOAD);
+                WriteLog($"success : change model [{m_ModelData.Name}].", ELogType.SYSTEM, ELogWType.LOAD);
             }
             return SUCCESS;
         }
@@ -778,7 +780,7 @@ namespace LWDicer.Control
 
             m_Login = login;
             DBManager.SetOperator(m_Login.Number, m_Login.Type.ToString());
-            WriteLog($"login : {login}", ELogType.LOGIN, ELogWriteType.LOGIN);
+            WriteLog($"login : {login}", ELogType.LOGIN, ELogWType.LOGIN);
 
             return SUCCESS;
         }
@@ -822,12 +824,12 @@ namespace LWDicer.Control
                         string output = row["data"].ToString();
                         DEF_IO.CIOInfo ioInfo = JsonConvert.DeserializeObject<DEF_IO.CIOInfo>(output);
                         
-                        if(index >= DEF_IO.INDEX_INPUT && index < DEF_IO.INDEX_INPUT)
+                        if(index >= DEF_IO.INPUT_ORIGIN && index < DEF_IO.INPUT_ORIGIN)
                         {
-                            m_InputArray[index - DEF_IO.INDEX_INPUT] = ioInfo;
-                        } else if (index >= DEF_IO.INDEX_OUTPUT && index < DEF_IO.INDEX_END)
+                            m_InputArray[index - DEF_IO.INPUT_ORIGIN] = ioInfo;
+                        } else if (index >= DEF_IO.OUTPUT_ORIGIN && index < DEF_IO.OUTPUT_END)
                         {
-                            m_OutputArray[index - DEF_IO.INDEX_OUTPUT] = ioInfo;
+                            m_OutputArray[index - DEF_IO.OUTPUT_ORIGIN] = ioInfo;
                         }
                     }
                 }
@@ -945,13 +947,13 @@ namespace LWDicer.Control
                 for (int i = 0; i < DEF_IO.MAX_IO_INPUT; i++)
                 {
                     output = JsonConvert.SerializeObject(m_InputArray[i]);
-                    query = $"INSERT INTO {m_DBInfo.TableIO} VALUES ('{i+DEF_IO.INDEX_INPUT}', '{output}')";
+                    query = $"INSERT INTO {m_DBInfo.TableIO} VALUES ('{i+DEF_IO.INPUT_ORIGIN}', '{output}')";
                     querys.Add(query);
                 }
                 for (int i = 0; i < DEF_IO.MAX_IO_OUTPUT; i++)
                 {
                     output = JsonConvert.SerializeObject(m_OutputArray[i]);
-                    query = $"INSERT INTO {m_DBInfo.TableIO} VALUES ('{i + DEF_IO.INDEX_OUTPUT}', '{output}')";
+                    query = $"INSERT INTO {m_DBInfo.TableIO} VALUES ('{i + DEF_IO.OUTPUT_ORIGIN}', '{output}')";
                     querys.Add(query);
                 }
 

@@ -291,17 +291,17 @@ namespace LWDicer.Control
                                     SetStep((int)TRS_PUSHPULL_REQUEST_LOADER_LOADING);
                                     break;
 
-                                    // 1.2 unload to cleaner
-                                    SetStep((int)TRS_PUSHPULL_REQUEST_CLEANER_LOADING);
-                                    break;
+                                    //// 1.2 unload to cleaner
+                                    //SetStep((int)TRS_PUSHPULL_REQUEST_CLEANER_LOADING);
+                                    //break;
 
-                                    // 1.3 unload to coater
-                                    SetStep((int)TRS_PUSHPULL_REQUEST_COATER_LOADING);
-                                    break;
+                                    //// 1.3 unload to coater
+                                    //SetStep((int)TRS_PUSHPULL_REQUEST_COATER_LOADING);
+                                    //break;
 
-                                    // 1.4 unload to handler
-                                    SetStep((int)TRS_PUSHPULL_REQUEST_HANDLER_LOADING);
-                                    break;
+                                    //// 1.4 unload to handler
+                                    //SetStep((int)TRS_PUSHPULL_REQUEST_HANDLER_LOADING);
+                                    //break;
                                 }
                                 // 2. if not detected wafer
                                 else
@@ -310,17 +310,17 @@ namespace LWDicer.Control
                                     SetStep((int)TRS_PUSHPULL_REQUEST_LOADER_UNLOADING);
                                     break;
 
-                                    // 2.2 load from cleaner
-                                    SetStep((int)TRS_PUSHPULL_REQUEST_CLEANER_UNLOADING);
-                                    break;
+                                    //// 2.2 load from cleaner
+                                    //SetStep((int)TRS_PUSHPULL_REQUEST_CLEANER_UNLOADING);
+                                    //break;
 
-                                    // 2.3 load from coater
-                                    SetStep((int)TRS_PUSHPULL_REQUEST_COATER_UNLOADING);
-                                    break;
+                                    //// 2.3 load from coater
+                                    //SetStep((int)TRS_PUSHPULL_REQUEST_COATER_UNLOADING);
+                                    //break;
 
-                                    // 2.4 load from handler
-                                    SetStep((int)TRS_PUSHPULL_REQUEST_HANDLER_UNLOADING);
-                                    break;
+                                    //// 2.4 load from handler
+                                    //SetStep((int)TRS_PUSHPULL_REQUEST_HANDLER_UNLOADING);
+                                    //break;
                                 }
 
                                 break;

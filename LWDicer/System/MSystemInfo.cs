@@ -19,7 +19,7 @@ namespace LWDicer.Control
             arrayObjectInfo = new CObjectInfo[]
             {
                 // 0-39 : Common & Hardware
-                new CObjectInfo( (int)OBJ_NONE, "System", 0, "None", 0, "NULL", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_SYSTEM, "System", 0, "MLWDicer", 0, "System", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_DATAMANAGER, "DataManger", 1, "DataManager", 500, "DataManager", LOG_ALL, LOG_DAY ),
 
 	            new CObjectInfo( (int)OBJ_HL_IO, "IO", 2, "Device Net", 1000, "IO", LOG_ALL, LOG_DAY ),	
@@ -143,19 +143,34 @@ namespace LWDicer.Control
 
         }
 
-        public int GetObjectInfo(int ID, out CObjectInfo rtn)
+        public bool GetObjectInfo(int ID, out CObjectInfo objInfo)
         {
-            rtn = new CObjectInfo();
+            objInfo = new CObjectInfo();
             foreach(CObjectInfo objectInfo in arrayObjectInfo)
             {
                 if(objectInfo.ID == ID)
                 {
-                    rtn = objectInfo;
-                    return SUCCESS;
+                    objInfo = objectInfo;
+                    return true;
                 }
             }
 
-            return ERR_SYSTEMINFO_NOT_REGISTED_OBJECTID;
+            //return ERR_SYSTEMINFO_NOT_REGISTED_OBJECTID;
+            return false;
+        }
+
+        public CObjectInfo GetObjectInfo(int ID)
+        {
+            CObjectInfo objInfo = new CObjectInfo();
+            foreach (CObjectInfo objectInfo in arrayObjectInfo)
+            {
+                if (objectInfo.ID == ID)
+                {
+                    objInfo = objectInfo;
+                    break;
+                }
+            }
+            return objInfo;
         }
     }
 }

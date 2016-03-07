@@ -26,7 +26,7 @@ namespace LWDicer.UI
             MaximizeBox = false;
             MinimizeBox = false;
 
-            CGeneralUtils.AnimateEffect.AnimateWindow(this.Handle, 300, CGeneralUtils.AnimateEffect.AW_ACTIVATE | CGeneralUtils.AnimateEffect.AW_BLEND);
+            CUtils.AnimateEffect.AnimateWindow(this.Handle, 300, CUtils.AnimateEffect.AW_ACTIVATE | CUtils.AnimateEffect.AW_BLEND);
         }
 
         public void SetValue(string strValue)

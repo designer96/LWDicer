@@ -398,8 +398,7 @@ namespace LWDicer.Control
         * @param	iUnitIndex : Jog로 움직일 Motion에 대한 정보 Table의 Index
         * @param	iKey : 이동할 Jog Key 종류 (0:X, 1:Y, 2:T, 3:Z)
         * @param	bDir : 이동할 방향 (true: +, false: -)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int MoveJogPitch(int iUnitIndex, int iUnitIndex2, int iKey, bool bDir)
         {
             int iResult = SUCCESS;
@@ -873,8 +872,7 @@ namespace LWDicer.Control
         * @param	iUnitIndex : Jog로 움직일 Motion에 대한 정보 Table의 Index
         * @param	iKey : 이동할 Jog Key 종류 (0:X, 1:Y, 2:T, 3:Z)
         * @param	bDir : 이동할 방향 (true: +, false: -)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int MoveJogVelocity(int iUnitIndex, int iUnitIndex2, int iKey, bool bDir)
         {
             int iResult = SUCCESS;
@@ -999,8 +997,7 @@ namespace LWDicer.Control
         *
         * @param	iUnitIndex : Jog로 움직일 Motion에 대한 정보 Table의 Index
         * @param	iKey : 정지할 Jog Key 종류 (0:X, 1:Y, 2:T, 3:Z)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int StopJog(int iUnitIndex, int iUnitIndex2, int iKey)
         {
             int iResult = SUCCESS;
@@ -1123,8 +1120,7 @@ namespace LWDicer.Control
         /**
         * 모든 축들에 대해 원점복귀 동작을 정지한다.
         *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int StopAllReturnOrigin()
         {
             int i = 0;
@@ -1148,8 +1144,7 @@ namespace LWDicer.Control
         /**
         * 모든 축들에 대해 Servo AMP를 Enable한다.
         *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int OnAllServo()
         {
             int i = 0;
@@ -1203,8 +1198,7 @@ namespace LWDicer.Control
         /**
         * 모든 축들에 대해 Servo AMP를 Disable한다.
         *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int OffAllServo()
         {
             int i = 0;
@@ -1251,8 +1245,7 @@ namespace LWDicer.Control
         /**
         * 모든 축들에 대해 동작을 ESTOP 정지한다.
         *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int EStopAllAxis()
         {
             int i = 0;
@@ -1292,8 +1285,7 @@ namespace LWDicer.Control
         /**
         * 모든 축들에 대해 동작을 정지한다.
         *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int StopAllAxis()
         {
             int i = 0;
@@ -1319,8 +1311,7 @@ namespace LWDicer.Control
         *
         * @param	int iUnitIndex : 초기화 Flag 설정할 Unit의 Index (DefSystem.h에 정의되어 있음)
         * @param	bool bSts :  (OPTION=false) 설정할 Flag 값
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int SetInitFlag(int iUnitIndex, bool bSts)
         {
             int iResult = SUCCESS;
@@ -1338,8 +1329,7 @@ namespace LWDicer.Control
         *
         * @param	int iUnitIndex : 초기화 Flag 설정할 Unit의 Index (DefSystem.h에 정의되어 있음)
         * @param	bool *pbSts :  초기화 Flag 값
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public int GetInitFlag(int iUnitIndex, out bool pbSts)
         {
             int iResult = SUCCESS;
@@ -1413,8 +1403,7 @@ namespace LWDicer.Control
         * 축의 원점복귀 전체 상태를 읽는다.
         *
         * @param	bool *pbSts :  원점복귀 전체 상태
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         public bool CheckAllOrigin(out bool[/*DEF_MAX_MOTION_AXIS_NO*/] bOriginSts)
         {
             bOriginSts = new bool[DEF_MAX_MOTION_AXIS_NO];
@@ -1577,8 +1566,7 @@ namespace LWDicer.Control
         * Teaching Pendant Stop Button의 상태를 읽는다.
         *
         * @param	*pbStatus : Teaching Pendant Stop Button 상태 (true : ON, false : OFF)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetTPStopButtonStatus(out bool pbStatus)
         {
             string str = "TP Stop Button";
@@ -1782,8 +1770,7 @@ namespace LWDicer.Control
         *
         * @param	*pbStatus : CP Trip의 상태 (true : ON, false : OFF)
         * @param	iIndex : (OPTION=-1) 몇번째 센서인지 번호 (-1이면 전체 센서를 확인하여 하나라도 ON이면 결과를 ON으로 알린다.)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetCPTripStatus(out bool pbStatus, int iIndex)
         {
             int i = 0;
@@ -1833,8 +1820,7 @@ namespace LWDicer.Control
         * Air Error의 상태를 읽는다.
         *
         * @param	*pbStatus : Air Error의 상태 (true : ON, false : OFF)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetAirErrorStatus(out bool pbStatus)
         {
             pbStatus = false;
@@ -1858,8 +1844,7 @@ namespace LWDicer.Control
         * DC POWER Error의 상태를 읽는다.
         *
         * @param	*pbStatus : DC PW Error의 상태 (true : ON, false : OFF)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetDcPWErrorStatus(out bool pbStatus)
         {
             pbStatus = false;
@@ -1884,8 +1869,7 @@ namespace LWDicer.Control
         * EFD READY Error의 상태를 읽는다.
         *
         * @param	*pbStatus : EFD Error의 상태 (true : ON, false : OFF)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetEFDErrorStatus(out bool pbStatus)
         {
             pbStatus = false;
@@ -1933,8 +1917,7 @@ namespace LWDicer.Control
         * Vacuum Error의 상태를 읽는다.
         *
         * @param	*pbStatus : Vacuum Error의 상태 (true : ON, false : OFF)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetVacuumErrorStatus(out bool pbStatus)
         {
             pbStatus = false;
@@ -1968,8 +1951,7 @@ namespace LWDicer.Control
         * N2 Error의 상태를 읽는다.
         *
         * @param	*pbStatus : N2 Error의 상태 (true : ON, false : OFF)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetN2ErrorStatus(out bool pbStatus)
         {
             bool bSts = false;
@@ -1991,8 +1973,7 @@ namespace LWDicer.Control
         * Cleaner Detect Error의 상태를 읽는다.
         *
         * @param	*pbStatus : Cleaner Detect Error의 상태 (true : ON, false : OFF)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetCleanerDetect1ErrorStatus(out bool pbStatus)
         {
             bool bSts = false;
@@ -2014,8 +1995,7 @@ namespace LWDicer.Control
         * Cleaner Detect Error의 상태를 읽는다.
         *
         * @param	*pbStatus : Cleaner Detect Error의 상태 (true : ON, false : OFF)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetCleanerDetect2ErrorStatus(out bool pbStatus)
         {
             bool bSts = false;
@@ -2037,8 +2017,7 @@ namespace LWDicer.Control
         * Motor AMP Fault 상태를 읽는다.
         *
         * @param	*pbStatus : Motor AMP Fault의 상태 (true : Fault, false : Normal)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int GetMotorAmpFaultStatus(out bool pbStatus)
         {
             int i = 0;
@@ -2091,8 +2070,7 @@ namespace LWDicer.Control
          * Motion Power Relay On/Off 상태를 읽는다.
          *
          * @param	*pbStatus : Motion Power Relay의 상태 (true : ON, false : OFF)
-         * @return	Error Code : 0 = SUCCESS, 그외 = Error
-         */
+        */
         public int GetMotionPowerRelayStatus(out bool pbStatus)
         {
             bool bSts1 = true, bSts2 = true;
@@ -2126,7 +2104,6 @@ namespace LWDicer.Control
          * Motion Power Relay On/Off 를 설정한다.
          *
          * @param	bStatus : Motion Power Relay의 동작 (true : ON, false : OFF)
-         * @return	Error Code : 0 = SUCCESS, 그외 = Error
          */
         public int SetMotionPowerRelayStatus(bool bStatus)
         {
@@ -2497,8 +2474,7 @@ namespace LWDicer.Control
         * @param	iFrontSWAddr : 앞 Panel의 Switch IO Address
         * @param	iBackSWAddr : 뒷 Panel의 Switch IO Address
         * @param	*pbStatus : 앞, 뒷 Panel의 Switch 눌려진 상태 (둘 중 하나라도 눌리면 true)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int getPanelSwitchStatus(string strLogName, int iFrontSWAddr, int iBackSWAddr, out bool pbStatus)
         {
             int iResult = SUCCESS;
@@ -2538,8 +2514,7 @@ namespace LWDicer.Control
         * @param	iFrontSWAddr : 앞 Panel의 LED IO Address
         * @param	iBackSWAddr : 뒷 Panel의 LED IO Address
         * @param	bStatus : 설정할 앞, 뒷 Panel의 LED 동작상태 (앞, 뒷면 둘다 동작)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int setPanelLedStatus(string strLogName, int iFrontLedAddr, int iBackLedAddr, bool bStatus)
         {
             int iResult = SUCCESS;
@@ -2607,8 +2582,7 @@ namespace LWDicer.Control
         * @param	strLogName : Log할 때 사용할 Tower Lamp 동작 요소 이름
         * @param	iTowerAddr : 앞 Panel의 LED IO Address
         * @param	bStatus : 설정할 Tower Lamp의 Lamp, Buzzer의 동작상태
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         public int setTowerLampStatus(string strLogName, int iTowerAddr, bool bStatus)
         {
             int iResult = SUCCESS;

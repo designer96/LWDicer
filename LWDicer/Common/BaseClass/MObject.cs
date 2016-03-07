@@ -13,14 +13,14 @@ namespace LWDicer.Control
 {
     public class MObject
     {
-        protected CObjectInfo objInfo;
+        protected CObjectInfo ObjInfo;
         protected MLog LogManager;
 
         public MObject(CObjectInfo objInfo)
         {
-            this.objInfo = objInfo;
-            LogManager = new MLog(objInfo.ID);
-            LogManager.SetLogAttribute(objInfo.DebugTableName, objInfo.LogLevel, objInfo.LogDays);
+            this.ObjInfo = objInfo;
+            LogManager = new MLog(ObjInfo.ID);
+            LogManager.SetLogAttribute(ObjInfo.DebugTableName, ObjInfo.LogLevel, ObjInfo.LogDays);
             LogManager.SetDBInfo(CObjectInfo.DBInfo);
 
             string str = $"{this} Created OK";
@@ -34,21 +34,21 @@ namespace LWDicer.Control
                 return SUCCESS;
             }
 
-            int errorCode = (objInfo.ID << 16) + (objInfo.ErrorBase + error);
+            int errorCode = (ObjInfo.ID << 16) + (ObjInfo.ErrorBase + error);
             return errorCode;
         }
 
         public override string ToString()
         {
-            return $"[Object] ID : {objInfo.ID}, Name : {objInfo.Name}";
+            return $"[Object] ID : {ObjInfo.ID}, Name : {ObjInfo.Name}";
         }
 
-        public int WriteLog(string strLog, ELogType logType = ELogType.Debug, ELogWriteType writeType = ELogWriteType.Normal, bool ShowOutputWindow = false, int skipFrames = 2)
+        public int WriteLog(string strLog, ELogType logType = ELogType.Debug, ELogWType writeType = ELogWType.Normal, bool ShowOutputWindow = false, int skipFrames = 2)
         {
             return LogManager.WriteLog(strLog, logType, writeType, ShowOutputWindow, skipFrames);
         }
 
-        public void WriteExLog(string strLog, ELogType logType = ELogType.Debug, ELogWriteType writeType = ELogWriteType.Error, bool ShowOutputWindow = true, int skipFrames = 3)
+        public void WriteExLog(string strLog, ELogType logType = ELogType.Debug, ELogWType writeType = ELogWType.Error, bool ShowOutputWindow = true, int skipFrames = 3)
         {
             LogManager.WriteLog(strLog, logType, writeType, ShowOutputWindow, skipFrames);
         }

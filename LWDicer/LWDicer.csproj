@@ -38,11 +38,12 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WRITE_LOG_ON_FILE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WIN32, SIMULATION_VISION</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>3</WarningLevel>
+    <WarningLevel>2</WarningLevel>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
+    <NoWarn>CS0162</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -126,10 +127,18 @@
     <Compile Include="Common\BaseClass\MEvent.cs" />
     <Compile Include="Common\BaseClass\MObject.cs" />
     <Compile Include="Common\BaseClass\MWorkerThread.cs" />
-    <Compile Include="Common\Util\CGeneralUtils.cs" />
+    <Compile Include="Common\Util\CUtils.cs" />
     <Compile Include="Common\Util\DBManager.cs" />
+    <Compile Include="Hardware\IO\MIO_YMC.cs" />
     <Compile Include="Hardware\IPolygonScanner.cs" />
+    <Compile Include="Hardware\Motion\IMotionLib.cs" />
+    <Compile Include="Hardware\Motion\MMotionBoard.cs" />
+    <Compile Include="Hardware\Motion\MMotion_YMC.cs" />
     <Compile Include="Hardware\MPolygonScanner.cs" />
+    <Compile Include="Hardware\YMC\ymcErrorCode.cs" />
+    <Compile Include="Hardware\YMC\ymcPCConst.cs" />
+    <Compile Include="Hardware\YMC\ymcPCFunction.cs" />
+    <Compile Include="Hardware\YMC\ymcPCStruct.cs" />
     <Compile Include="System\Define.cs" />
     <Compile Include="Common\ObjectExtensions.cs" />
     <Compile Include="Common\Position\MPosition.cs" />

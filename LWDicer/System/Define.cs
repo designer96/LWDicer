@@ -34,6 +34,8 @@ namespace LWDicer.Control
         // SYSTEM_VER 및 개인의 작업 내용에 대한 History 관리는 History.txt 에 기록합니다.
         public const string SYSTEM_VER = "Ver 0.0.3";
 
+        public const int DEF_MAX_YMC_BOARD = 2;
+
         public const int DEF_MAX_MOTION_AXIS_NO = 24;
         public const int DEF_REAL_MOTION_AXIS_NO = 21; // 실제 축의 갯수
 
@@ -90,12 +92,6 @@ namespace LWDicer.Control
         public const int DEF_SYSTEMINFO_CYLINDER_OFFSET = 20;
         public const int DEF_SYSTEMINFO_VACUUM_OFFSET = 40;
 
-        // Error Define 
-        public const int ERR_SYSTEMINFO_INVALID_POINTER = 1;
-        public const int ERR_SYSTEMINFO_INVALID_OBJECTID = 2;
-        public const int ERR_SYSTEMINFO_NOT_REGISTED_OBJECTID = 3;
-        public const int ERR_SYSTEMINFO_CANNOT_FIND_LOG_OBJECT = 4;
-
         // Value Define 
         public const int DEF_MAX_SYSTEM_CYLINDER_OBJ_NO = 22;
         public const int DEF_MAX_SYSTEM_VACUUM_OBJ_NO = 20;
@@ -125,7 +121,8 @@ namespace LWDicer.Control
         public enum EObjectLayer
         {
             // Common Class
-            OBJ_NONE = 0,
+            OBJ_NONE = -1,
+            OBJ_SYSTEM = 0,
             OBJ_DATAMANAGER,
 
             // Hardware Layer
@@ -205,11 +202,6 @@ namespace LWDicer.Control
         //
         public const int TRUE                  = 1;
         public const int FALSE                 = 0;
-
-        //
-        public const int INPUT_ORIGIN          = 1000;
-        public const int OUTPUT_ORIGIN         = 2000;
-        public const int OUTPUT_END            = 3000;
 
         //
         public const int BIT_ON                = 1;
@@ -317,7 +309,7 @@ namespace LWDicer.Control
             //DMW,
         }
 
-        public enum ELogWriteType
+        public enum ELogWType
         {
             // 기본 Debug에서 쓰이는 3ea type
             // 소문자 Error는 Debug.Error이고, 대문자 ERROR는 자동운전중의 ERROR로 일단 구분해놓음
@@ -908,6 +900,11 @@ namespace LWDicer.Control
 
     public class DEF_IO
     {
+        public const int ERR_YMC_NOT_SUPPORT_FUNCTION = 1;
+        public const int ERR_YMC_FAIL_GET_DATA_HANDLE = 2;
+        public const int ERR_YMC_FAIL_GET_DATA        = 3;
+        public const int ERR_YMC_FAIL_SET_DATA        = 4;
+
         public enum EIOType
         {
             DI,
@@ -940,9 +937,10 @@ namespace LWDicer.Control
         public const int MAX_IO_INPUT = 256;
         public const int MAX_IO_OUTPUT = 256;
 
-        public const int INDEX_INPUT                 = 1000;
-        public const int INDEX_OUTPUT                = 2000;
-        public const int INDEX_END                   = 3000;
+        //
+        public const int INPUT_ORIGIN = 1000;
+        public const int OUTPUT_ORIGIN = 2000;
+        public const int OUTPUT_END = 3000;
 
         // Input X000 
         public const int iStart_SWFront              = 1000;

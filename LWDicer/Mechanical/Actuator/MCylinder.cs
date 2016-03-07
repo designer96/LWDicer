@@ -5,6 +5,7 @@ using System.Text;
 
 using static LWDicer.Control.DEF_Common;
 using static LWDicer.Control.DEF_Error;
+using static LWDicer.Control.DEF_IO;
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Cylinder.ECylinderTime;
 using static LWDicer.Control.DEF_Cylinder.ESolenoidType;
@@ -54,13 +55,13 @@ namespace LWDicer.Control
                 bRet1 = bRet2 = true;
 
                 // UP Sensor가 On인지 확인
-                if (m_Data.UpSensor[i] > INPUT_ORIGIN)  // 센서가 Null이 아닐 경우만
+                if (m_Data.UpSensor[i] >= INPUT_ORIGIN)  // 센서가 Null이 아닐 경우만
                 {
                     iRet = m_IO.IsOn(m_Data.UpSensor[i], out bRet1);
                     if (iRet != SUCCESS) return iRet;
                 }
                 // Down Sensor가 Off인지 확인
-                if (m_Data.DownSensor[i] > INPUT_ORIGIN) // 센서가 Null이 아닐 경우만
+                if (m_Data.DownSensor[i] >= INPUT_ORIGIN) // 센서가 Null이 아닐 경우만
                 {
                     iRet = m_IO.IsOff(m_Data.DownSensor[i], out bRet2);
                     if (iRet != SUCCESS) return iRet;
@@ -91,13 +92,13 @@ namespace LWDicer.Control
                 bRet1 = bRet2 = true;
 
                 // UP Sensor가 Off인지 확인
-                if (m_Data.UpSensor[i] > INPUT_ORIGIN)  // 센서가 Null이 아닐 경우만
+                if (m_Data.UpSensor[i] >= INPUT_ORIGIN)  // 센서가 Null이 아닐 경우만
                 {
                     iRet = m_IO.IsOff(m_Data.UpSensor[i], out bRet1);
                     if (iRet != SUCCESS) return iRet;
                 }
                 // Down Sensor가 On인지 확인
-                if (m_Data.DownSensor[i] > INPUT_ORIGIN) // 센서가 Null이 아닐 경우만
+                if (m_Data.DownSensor[i] >= INPUT_ORIGIN) // 센서가 Null이 아닐 경우만
                 {
                     iRet = m_IO.IsOn(m_Data.DownSensor[i], out bRet2);
                     if (iRet != SUCCESS) return iRet;
@@ -130,7 +131,7 @@ namespace LWDicer.Control
                 bRet1 = true;
 
                 // Middle Sensor가 On 인지 확인
-                if (m_Data.MiddleSensor[i] > INPUT_ORIGIN)  // 센서가 Null이 아닐 경우만
+                if (m_Data.MiddleSensor[i] >= INPUT_ORIGIN)  // 센서가 Null이 아닐 경우만
                 {
                     iRet = m_IO.IsOn(m_Data.MiddleSensor[i], out bRet1);
                     if (iRet != SUCCESS) return iRet;
@@ -502,7 +503,7 @@ namespace LWDicer.Control
 
             m_waitTimer.StartTimer();
 
-            if (m_Data.UpSensor[0] > INPUT_ORIGIN)  // 센서가 지정되어 있음
+            if (m_Data.UpSensor[0] >= INPUT_ORIGIN)  // 센서가 지정되어 있음
             {
                 while (true)
                 {
@@ -582,7 +583,7 @@ namespace LWDicer.Control
 
             m_waitTimer.StartTimer();
 
-            if (m_Data.DownSensor[0] > INPUT_ORIGIN)
+            if (m_Data.DownSensor[0] >= INPUT_ORIGIN)
             {
 
                 while (true)
@@ -664,7 +665,7 @@ namespace LWDicer.Control
 
             m_waitTimer.StartTimer();
 
-            Assert(m_Data.MiddleSensor[0] != null);
+            Assert(m_Data.MiddleSensor[0] != 0);
 
             while (true)   // Middle Sensor
             {

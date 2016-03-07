@@ -27,7 +27,7 @@ namespace LWDicer.UI
 
         private void FormIntro_Load(object sender, EventArgs e)
         {
-            CGeneralUtils.AnimateEffect.AnimateWindow(this.Handle, 1500, CGeneralUtils.AnimateEffect.AW_ACTIVATE | CGeneralUtils.AnimateEffect.AW_BLEND);
+            CUtils.AnimateEffect.AnimateWindow(this.Handle, 1500, CUtils.AnimateEffect.AW_ACTIVATE | CUtils.AnimateEffect.AW_BLEND);
         }
     }
 }

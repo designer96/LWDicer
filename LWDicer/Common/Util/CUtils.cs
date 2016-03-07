@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace LWDicer.Control
 {
-    public static class CGeneralUtils
+    public static class CUtils
     {
         public static class AnimateEffect
         {
@@ -25,5 +25,11 @@ namespace LWDicer.Control
             public static extern int AnimateWindow(IntPtr hwand, int dwTime, int dwFlags);
         }
 
+        public static int IntTryParse(string str)
+        {
+            int n;
+            n = int.TryParse(str, out n) ? n : 0;
+            return n;
+        }
     }
 }

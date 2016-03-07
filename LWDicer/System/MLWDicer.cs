@@ -8,6 +8,7 @@ using System.IO.Ports;
 using System.Windows.Forms;
 
 using LWDicer.UI;
+using MotionYMC;
 
 using static LWDicer.Control.DEF_System;
 using static LWDicer.Control.DEF_Common;
@@ -26,13 +27,18 @@ using static LWDicer.Control.DEF_PolygonScanner;
 
 namespace LWDicer.Control
 {
-    public class MLWDicer
+    public class MLWDicer : MObject, IDisposable
     {
+        public const int ERR_SYSTEM_FAIL_OPEN_YMC = 1;
+        public const int ERR_SYSTEM_FAIL_SET_TIMEOUT = 2;
+
         // Common Class
         public MSystemInfo m_SystemInfo { get; private set; }
         public MDataManager m_DataManager { get; private set; }
 
         // Hardware Layer
+        public UInt32[] m_hYMC = new UInt32[DEF_MAX_YMC_BOARD];
+
         public IIO m_IO { get; private set; }
 
         public ICylinder m_UHandlerUDCyl;
@@ -57,9 +63,32 @@ namespace LWDicer.Control
         public MTrsPushPull m_trsPushPull { get; private set; }
         public MTrsStage1 m_trsStage1 { get; private set; }
 
-        public MLWDicer()
+        public MLWDicer(CObjectInfo objInfo)
+            : base(objInfo)
         {
+        }
 
+        ~MLWDicer()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            // close handle
+
+            // yaskawa
+            for (int i = 0; i < DEF_MAX_YMC_BOARD; i++)
+            {
+                if (m_hYMC[i] == 0) continue;
+                uint rc = CMotionAPI.ymcCloseController(m_hYMC[i]);
+                if (rc != CMotionAPI.MP_SUCCESS)
+                {
+                    string str = String.Format("Error ymcCloseController Board {0} \nErrorCode [ 0x{1} ]", i, rc.ToString("X"));
+                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
+                    MessageBox.Show(str);
+                }
+            }
         }
 
         public CLoginData GetLogin()
@@ -85,13 +114,28 @@ namespace LWDicer.Control
 
             CObjectInfo objInfo;
             m_SystemInfo = new MSystemInfo();
+            
+            // self set MLWDicer
+            m_SystemInfo.GetObjectInfo(0, out objInfo);
+            this.ObjInfo = objInfo;
 
+            // DataManager
             m_SystemInfo.GetObjectInfo(1, out objInfo);
             m_DataManager = new MDataManager(objInfo, dbInfo);
 
             ////////////////////////////////////////////////////////////////////////
             // 1. Hardware Layer
             ////////////////////////////////////////////////////////////////////////
+
+            // YMC
+            CreateYMCBoard();
+
+            // IO
+            m_SystemInfo.GetObjectInfo(2, out objInfo);
+            m_IO = new MIO_YMC(objInfo, m_hYMC[0]);
+            m_IO.OutputOn(oUHandler_Self_Vac_On);
+
+            // Motion
 
             // Cylinder
             // UHandlerUDCyl
@@ -199,6 +243,52 @@ namespace LWDicer.Control
         void InitDataFileNames(out CDBInfo dbInfo)
         {
             dbInfo = new CDBInfo();
+        }
+
+        int CreateYMCBoard()
+        {
+#if SIMULATION_MOTION
+            return SUCCESS;
+#endif
+            UInt32 rc;
+            CMotionAPI.COM_DEVICE ComDevice;
+
+            for(int i = 0; i < DEF_MAX_YMC_BOARD; i++)
+            {
+                //============================================================================ To Contents of Processing
+                // Sets the ymcOpenController parameters.		
+                //============================================================================
+                ComDevice.ComDeviceType = (UInt16)CMotionAPI.ApiDefs.COMDEVICETYPE_PCI_MODE;
+                ComDevice.PortNumber = Convert.ToUInt16(i+1);
+                ComDevice.CpuNumber = 1;    //cpuno;
+                ComDevice.NetworkNumber = 0;
+                ComDevice.StationNumber = 0;
+                ComDevice.UnitNumber = 0;
+                ComDevice.IPAddress = "";
+                ComDevice.Timeout = 10000;
+
+                rc = CMotionAPI.ymcOpenController(ref ComDevice, ref m_hYMC[i]);
+                if (rc != CMotionAPI.MP_SUCCESS)
+                {
+                    string str = String.Format("Error ymcOpenController Board {0} \nErrorCode [ 0x{1} ]", i, rc.ToString("X"));
+                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
+                    MessageBox.Show(str);
+                    return GenerateErrorCode(ERR_SYSTEM_FAIL_OPEN_YMC);
+                }
+
+                //============================================================================ To Contents of Processing
+                // Sets the motion API timeout. 		
+                //============================================================================
+                rc = CMotionAPI.ymcSetAPITimeoutValue(30000);
+                if (rc != CMotionAPI.MP_SUCCESS)
+                {
+                    string str = String.Format("Error ymcSetAPITimeoutValue \nErrorCode [ 0x{0} ]", rc.ToString("X"));
+                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
+                    MessageBox.Show(str);
+                    return GenerateErrorCode(ERR_SYSTEM_FAIL_SET_TIMEOUT);
+                }
+            }
+            return SUCCESS;
         }
 
         int CreateCylinder(CObjectInfo objInfo, CCylinderData data, int objIndex, out ICylinder pCylinder)

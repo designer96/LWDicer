@@ -56,6 +56,10 @@ namespace LWDicer.Control
 
         public void Dispose()
         {
+            if(m_hThread.IsAlive == true)
+            {
+                m_hThread.Abort();
+            }
         }
 
         ~MWorkerThread()

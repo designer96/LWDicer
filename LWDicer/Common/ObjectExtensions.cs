@@ -319,7 +319,7 @@ namespace System
                 case "string":
                     fieldInfo.SetValue(target, arr);
                     return;
-                    break;
+                    //break;
             }
 
             // 1. initialize

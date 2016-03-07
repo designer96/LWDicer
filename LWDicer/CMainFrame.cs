@@ -28,7 +28,7 @@ namespace LWDicer.UI
 {
     public partial class CMainFrame : Form
     {
-        public static MLWDicer LWDicer = new MLWDicer();
+        public static MLWDicer LWDicer = new MLWDicer(new CObjectInfo());
 
         public static CMainFrame MainFrame = null;
 

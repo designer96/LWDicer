@@ -82,7 +82,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int WriteLog(string strLog, ELogType logType, ELogWriteType writeType, bool bShowDebugLine = true, int skipFrames = 2 )
+        public int WriteLog(string strLog, ELogType logType, ELogWType writeType, bool bShowDebugLine = true, int skipFrames = 2 )
         {
 
             // 0. initialize
@@ -120,9 +120,9 @@ namespace LWDicer.Control
             // 1. write log
             if (logType == ELogType.Debug) // Debug
             {
-                if (writeType == ELogWriteType.Normal && IsWriteLog_Normal == false) return SUCCESS;
-                if (writeType == ELogWriteType.Warning && IsWriteLog_Warning == false) return SUCCESS;
-                if (writeType == ELogWriteType.Error && IsWriteLog_Error == false) return SUCCESS;
+                if (writeType == ELogWType.Normal && IsWriteLog_Normal == false) return SUCCESS;
+                if (writeType == ELogWType.Warning && IsWriteLog_Warning == false) return SUCCESS;
+                if (writeType == ELogWType.Error && IsWriteLog_Error == false) return SUCCESS;
 
                 string create_query = $"CREATE TABLE IF NOT EXISTS {DBInfo.TableDebugLog} (Time datetime, Name string, Type string, Comment string, File string, Line string)";
                 string query = $"INSERT INTO {DBInfo.TableDebugLog} VALUES ('{DBManager.DateTimeSQLite(now)}', '{DebugTableName}', '{writeType.ToString()}', '{strLog}', '{sfFileName}', '{sfErrLine.ToString()}')";

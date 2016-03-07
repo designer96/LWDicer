@@ -197,9 +197,7 @@ namespace LWDicer.Control
 
         /**
         * 자동운전 전의 운전 가능 상태를 읽는다.
-        *
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         int CheckBeforeAutoRun()
         {
 #if SIMULATION_MOTION
@@ -300,9 +298,7 @@ namespace LWDicer.Control
 
         /**
         * 자동운전 중의 운전 가능 상태를 읽는다.
-        *
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         int CheckAutoRun(out bool bEmptyPart)
         {
 #if SIMULATION_MOTION
@@ -391,8 +387,7 @@ namespace LWDicer.Control
         * Start Switch의 눌린 상태 읽어온다.
         *
         * @param	*pbStatus : Start Switch 눌린 상태 (0:OFF , 1:FRONT , 2:BACK)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int GetStartSWStatus(out bool pbStatus)
         {
             
@@ -410,8 +405,7 @@ namespace LWDicer.Control
         * Stop Switch의 눌린 상태 읽어온다.
         *
         * @param	*pbStatus : Stop Switch 눌린 상태 (0:OFF , 1:FRONT , 2:BACK)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int GetStopSWStatus(out bool pbStatus)
         {
             
@@ -434,8 +428,7 @@ namespace LWDicer.Control
         * E-Stop Switch의 눌린 상태 읽어온다.
         *
         * @param	*pbStatus : E-Stop Switch 눌린 상태 (true:ON, false:OFF)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int GetEStopSWStatus(out bool pbStatus)
         {
             
@@ -458,8 +451,7 @@ namespace LWDicer.Control
         * Reset Switch의 눌린 상태 읽어온다.
         *
         * @param	*pbStatus : Reset Switch 눌린 상태 (0:OFF , 1:FRONT , 2:BACK)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int GetResetSWStatus(out bool pbStatus)
         {
             
@@ -477,8 +469,7 @@ namespace LWDicer.Control
         * Door의 상태를 읽어온다.
         *
         * @param	*pbStatus : Door 상태 (true:CLOSE, false:OPEN)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int GetDoorSWStatus(out bool pbStatus)
         {
             
@@ -496,8 +487,7 @@ namespace LWDicer.Control
         * Area의 상태를 읽어온다.
         *
         * @param	*pbStatus : Area 상태 (true:CLOSE, false:OPEN)
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int GetAreaSWStatus(out bool pbStatus)
         {
             int iResult = SUCCESS;
@@ -514,8 +504,7 @@ namespace LWDicer.Control
         * Motor AMP Fault 상태를 읽는다.
         *
         * @param	*pbStatus : Motor AMP Fault의 상태 (true : Fault, false : Normal)
-        * @return	Error Code : 0 = SUCCESS, 그외 = Error
-*/
+        */
         int GetMotorAmpFaultStatus(out bool pbStatus)
         {
             return m_OpPanel.GetMotorAmpFaultStatus(out pbStatus);
@@ -525,7 +514,6 @@ namespace LWDicer.Control
          * Motion Power Relay On/Off 를 설정한다.
          *
          * @param	bStatus : Motion Power Relay의 동작 (true : ON, false : OFF)
-         * @return	Error Code : 0 = SUCCESS, 그외 = Error
          */
         int SetMotionPowerRelayStatus(bool bStatus)
         {
@@ -550,7 +538,6 @@ namespace LWDicer.Control
          *		9:Parts Empty 상태			  O		 X		   X	  B		  B		  B
          *		  (Buzzer No)
          *		10: 정체 상태				  0		 X		   O	  O		  O		  X
-         * @return	Error Code : 0=SUCCESS, 그외=Error
          */
         int SetOpPanel(ETowerLampMode towerLampMode)
         {
@@ -877,9 +864,7 @@ namespace LWDicer.Control
 
         /**
         * Jog Key 확인하여 해당 Jog 축을 이동/정지한다.
-        *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int MoveJog()
         {
             int iResult = SUCCESS;
@@ -1146,9 +1131,7 @@ namespace LWDicer.Control
 
         /**
         * 모든 축들에 대해 원점복귀 동작을 정지한다.
-        *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int StopAllReturnOrigin()
         {
             return m_OpPanel.StopAllReturnOrigin();
@@ -1156,9 +1139,7 @@ namespace LWDicer.Control
 
         /**
         * 모든 축들에 대해 Servo AMP를 Enable한다.
-        *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int OnAllServo()
         {
             return m_OpPanel.OnAllServo();
@@ -1166,9 +1147,7 @@ namespace LWDicer.Control
 
         /**
         * 모든 축들에 대해 Servo AMP를 Disable한다.
-        *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int OffAllServo()
         {
             return m_OpPanel.OffAllServo();
@@ -1176,9 +1155,7 @@ namespace LWDicer.Control
 
         /**
         * 모든 축들에 대해 동작을 정지한다.
-        *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int StopAllAxis()
         {
             return m_OpPanel.StopAllAxis();
@@ -1186,9 +1163,7 @@ namespace LWDicer.Control
 
         /**
         * 모든 축들에 대해 동작을 E-STOP 정지한다.
-        *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int EStopAllAxis()
         {
             return m_OpPanel.EStopAllAxis();
@@ -1258,9 +1233,7 @@ namespace LWDicer.Control
 
         /** 
         * 설정된 Jog에 사용할 Unit Index를 읽는다.
-        *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int GetJogUnit()
         {
             /** Jog로 이동할 Motion에 대한 정보 Index */
@@ -1269,9 +1242,7 @@ namespace LWDicer.Control
 
         /** 
         * 설정된 Jog에 사용할 Unit Index를 읽는다.
-        *
-        * @return	Error Code : 0=SUCCESS, 그외=Error
-*/
+        */
         int GetJogUnitExtra()
         {
             /** Jog로 이동할 Motion에 대한 정보 Index */
