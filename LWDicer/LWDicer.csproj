@@ -130,11 +130,11 @@
     <Compile Include="Common\Util\CUtils.cs" />
     <Compile Include="Common\Util\DBManager.cs" />
     <Compile Include="Hardware\IO\MIO_YMC.cs" />
-    <Compile Include="Hardware\Scanner\IPolygonScanner.cs" />
+    <Compile Include="Hardware\IPolygonScanner.cs" />
     <Compile Include="Hardware\Motion\IMotionLib.cs" />
     <Compile Include="Hardware\Motion\MMotionBoard.cs" />
     <Compile Include="Hardware\Motion\MMotion_YMC.cs" />
-    <Compile Include="Hardware\Scanner\MPolygonScanner.cs" />
+    <Compile Include="Hardware\MPolygonScanner.cs" />
     <Compile Include="Hardware\YMC\ymcErrorCode.cs" />
     <Compile Include="Hardware\YMC\ymcPCConst.cs" />
     <Compile Include="Hardware\YMC\ymcPCFunction.cs" />
