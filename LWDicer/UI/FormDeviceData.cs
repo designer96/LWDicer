@@ -68,6 +68,4 @@ namespace LWDicer.UI
             CMainFrame.MainFrame.MoveToPage(NextPage);
         }
     }
-
-    
 }

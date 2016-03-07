@@ -50,5 +50,14 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 // LJJ
 
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LHS
+// Version : 0.0.5
+// Grade : ★
+// Date : 2016-03-07
+// Context
+1. MDataManager -> CSystemData -> Scanner ini Data 관리를 위한 Class 배열 선언.
+2. MLWDicer -> CreatePolygonScanner() Scanner 갯수 만큼 Hardware Layer 생성하는 Function 추가. : Scanner Max 4 ea
+3. UI - FormMessageBox 추가
+4. UI - FormLaserMaint Scanner IP, Port 입력 추가

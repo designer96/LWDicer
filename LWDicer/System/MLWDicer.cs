@@ -43,8 +43,10 @@ namespace LWDicer.Control
 
         public ISerialPort m_PolygonComPort;
 
+        public IPolygonScanner[] m_Scanner = new IPolygonScanner[(int)EObjectScanner.MAX_OBJ];
+
         // Mechanical Layer
-        public MPolygonScanner m_Scanner { get; private set; }
+
 
         // Control Layer
         public MCtrlLoader m_ctrlLoader { get; private set; }
@@ -143,11 +145,14 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(10, out objInfo);
             CreatePolygonSerialPort(objInfo, out m_PolygonComPort);
 
+            CPolygonIni PolygonIni = new CPolygonIni();
+            m_SystemInfo.GetObjectInfo(200, out objInfo);
+            CreatePolygonScanner(objInfo, PolygonIni, (int)EObjectScanner.SCANNER1, m_PolygonComPort);
+
             ////////////////////////////////////////////////////////////////////////
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
-            m_SystemInfo.GetObjectInfo(200, out objInfo);
-            CreatePolygonScanner(objInfo, m_PolygonComPort);
+
 
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
@@ -289,16 +294,14 @@ namespace LWDicer.Control
             m_trsStage1 = new MTrsStage1(objInfo, TrsLoader, refComp, data);
         }
 
-        void CreatePolygonScanner(CObjectInfo objInfo, ISerialPort m_ComPort)
+        void CreatePolygonScanner(CObjectInfo objInfo, CPolygonIni PolygonIni, int objIndex, ISerialPort m_ComPort)
         {
-            string strIP = m_DataManager.m_SystemData.PolygonIP;
-            string strPort = m_DataManager.m_SystemData.PolygonPort;
+            m_DataManager.m_SystemData.Scanner[objIndex] = PolygonIni;
 
-            CPolygonParameter PolygonPara = new CPolygonParameter();
+            m_DataManager.m_SystemData.Scanner[objIndex].strIP = "192.168.22.60";
+            m_DataManager.m_SystemData.Scanner[objIndex].strPort = "21";
 
-            CPolygonScannerData ScannerData = new CPolygonScannerData(strIP, strPort);
-
-            m_Scanner = new MPolygonScanner(objInfo, PolygonPara, ScannerData, m_ComPort);
+            m_Scanner[objIndex] = new MPolygonScanner(objInfo, m_DataManager.m_SystemData.Scanner[objIndex], objIndex, m_ComPort);
         }
 
         void CreatePolygonSerialPort(CObjectInfo objInfo, out ISerialPort pComport)
@@ -406,6 +409,24 @@ namespace LWDicer.Control
             }
             Keyboard.Dispose();
             return true;
+        }
+
+        public bool DisplayMsg(string strMsg)
+        {
+            FormMessageBox Msg = new FormMessageBox();
+            Msg.SetText(strMsg);
+            Msg.ShowDialog();
+
+            if (Msg.DialogResult == DialogResult.OK)
+            {
+                Msg.Dispose();
+                return true;
+            }
+            else
+            {
+                Msg.Dispose();
+                return false;
+            }
         }
     }
 }

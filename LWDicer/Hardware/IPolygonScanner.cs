@@ -59,18 +59,17 @@ namespace LWDicer.Control
 
         public class CPolygonScannerData
         {
-            public string strIP;
-            public string strPort;
-
-            public CPolygonScannerData(string strIP, string strPort)
+            public CPolygonScannerData()
             {
-                this.strIP = strIP;
-                this.strPort = strPort;
+
             }
         }
 
-        public class CPolygonParameter
+        public class CPolygonIni
         {
+            public string strIP;
+            public string strPort;
+
             /* [Job Settings] */
             public double InScanResolution;     // USER ENABLE
             public double CrossScanResolution;  // USER ENABLE
@@ -160,41 +159,39 @@ namespace LWDicer.Control
         // LSE Controller Serial Interface  Function
         int GetSerialData(out string Message);
 
-
         // ini File 처리 Function
-        bool LoadPolygonPara(CPolygonParameter PolygonPara);
-        bool SavePolygonPara();
-
+        bool LoadPolygonPara(int objIndex, CPolygonIni PolygonPara);
+        bool SavePolygonPara(CPolygonIni m_PolygonData, string strFile);
 
         // LSE Controller FTP Interface Function
-        bool SendConfig(string strFile);
-        bool SendBitMap(string strFile);
-        void SetIPData(CPolygonScannerData ScannerData);
-
+        bool SendConfig(int objIndex, string strFile);
+        bool SendBitMap(int objIndex, string strFile);
+        void SetScannerIP(int objIndex, string strIP);
+        void SetScannerPort(int objIndex, string strPort);
+        string GetIPData(int objIndex);
 
         // LSE Controller Parameter Function
-        CPolygonParameter GetPolygonPara();
-        void SetPixelGridX(double pX);
-        void SetPixelGridY(double pY);
-        void SetBitMapColor(int nColor);
-        void SetSuperSync(double OffSet, int nNo);
-        void SetStartOffset(double OffSet);
-        void SetSeedClock(double Frequency);
-        void SetRepRate(double Frequency);
-        void SetPixelWidth(double SeedClock, double RepRate);
-        void SetLaserOP(int nOption);
-        void SetBufferTime(int nSec);
-        void SetDummyBlankLine(int nScanLine);
-        void SetMotorBetweenJob(int nOption);
-        void SetMotorStableTime(int nTime);
-        void SetLeaveRatio(int nRatio);
-        void SetEncoderResol(double dResol);
-        void SetMaxAccel(double dAcc);
-        void SetEnCarSig(int nSig);
-        void SetSwapCarSig(int nSig);
-        void SetStartFacet(int nFaceTNo);
-        void SetAutoIncStartFacet(int nSig);
-
+        CPolygonIni GetPolygonPara(int objIndex);
+        void SetPixelGridX(int objIndex, double pX);
+        void SetPixelGridY(int objIndex, double pY);
+        void SetBitMapColor(int objIndex, int nColor);
+        void SetSuperSync(int objIndex, double OffSet, int nNo);
+        void SetStartOffset(int objIndex, double OffSet);
+        void SetSeedClock(int objIndex, double Frequency);
+        void SetRepRate(int objIndex, double Frequency);
+        void SetPixelWidth(int objIndex, double SeedClock, double RepRate);
+        void SetLaserOP(int objIndex, int nOption);
+        void SetBufferTime(int objIndex, int nSec);
+        void SetDummyBlankLine(int objIndex, int nScanLine);
+        void SetMotorBetweenJob(int objIndex, int nOption);
+        void SetMotorStableTime(int objIndex, int nTime);
+        void SetLeaveRatio(int objIndex, int nRatio);
+        void SetEncoderResol(int objIndex, double dResol);
+        void SetMaxAccel(int objIndex, double dAcc);
+        void SetEnCarSig(int objIndex, int nSig);
+        void SetSwapCarSig(int objIndex, int nSig);
+        void SetStartFacet(int objIndex, int nFaceTNo);
+        void SetAutoIncStartFacet(int objIndex, int nSig);
 
         // Image 생성을 위한 Function
         void SetPicSize(int nX, int nY);

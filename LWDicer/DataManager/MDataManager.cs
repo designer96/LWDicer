@@ -21,6 +21,8 @@ using static LWDicer.Control.DEF_DataManager;
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 
+using static LWDicer.Control.DEF_PolygonScanner;
+
 namespace LWDicer.Control
 {
     public class DEF_DataManager
@@ -103,13 +105,13 @@ namespace LWDicer.Control
             //
             public string PassWord;     // Engineer Password
 
-            public string PolygonIP = "192.168.22.60";
-            public string PolygonPort = "21";
-
             // Timer
             public CCylinderTime[] CylinderTimer = new CCylinderTime[(int)EObjectCylinder.MAX_OBJ];
             public CVacuumTime[] VacuumTimer = new CVacuumTime[(int)EObjectVacuum.MAX_OBJ];
 
+
+            // Polygon Scanner Configure ini Data
+            public CPolygonIni[] Scanner = new CPolygonIni[(int)EObjectScanner.MAX_OBJ];
 
             // 아래는 아직 미정리 내역들
 
