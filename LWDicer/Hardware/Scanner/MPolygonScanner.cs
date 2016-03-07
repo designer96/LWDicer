@@ -37,26 +37,26 @@ namespace LWDicer.Control
         private Image Image;
         public PictureBox PicWafer;
 
-        public MPolygonScanner(CObjectInfo objInfo, CPolygonIni PolygonPara , int objIndex, ISerialPort SerialPort)
+        public MPolygonScanner(CObjectInfo objInfo, CPolygonIni PolygonPara , int scannerIndex, ISerialPort SerialPort)
             : base(objInfo)
         {
             m_DBInfo = new CDBInfo();
 
-            LoadPolygonPara(objIndex, PolygonPara);
+            LoadPolygonPara(scannerIndex, PolygonPara);
 
-            m_PolygonData[objIndex] = PolygonPara;
+            m_PolygonData[scannerIndex] = PolygonPara;
 
             m_COM = SerialPort;
 
-            SetScannerIP(objIndex,m_PolygonData[objIndex].strIP);
+            SetScannerIP(scannerIndex,m_PolygonData[scannerIndex].strIP);
 
-            SetScannerPort(objIndex, m_PolygonData[objIndex].strPort);
+            SetScannerPort(scannerIndex, m_PolygonData[scannerIndex].strPort);
 
             PicWafer = new PictureBox();
 
         }
 
-        public bool LoadPolygonPara(int objIndex, CPolygonIni PolygonPara)
+        public bool LoadPolygonPara(int scannerIndex, CPolygonIni PolygonPara)
         {
             string section = "";
             string key = "";
@@ -70,256 +70,256 @@ namespace LWDicer.Control
                 return false;
             }
 
-            m_PolygonData[objIndex] = PolygonPara;
+            m_PolygonData[scannerIndex] = PolygonPara;
                 
             section = "Job Settings";
 
             key = "InScanResolution";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].InScanResolution = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].InScanResolution = Convert.ToDouble(value);
 
             key = "CrossScanResolution";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].CrossScanResolution = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].CrossScanResolution = Convert.ToDouble(value);
 
             key = "InScanOffset";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].InScanOffset = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].InScanOffset = Convert.ToDouble(value);
 
             key = "StopMotorBetweenJobs";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].StopMotorBetweenJobs = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].StopMotorBetweenJobs = Convert.ToInt16(value);
 
             key = "PixInvert";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].PixInvert = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].PixInvert = Convert.ToInt16(value);
 
             key = "JobStartBufferTime";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].JobStartBufferTime = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].JobStartBufferTime = Convert.ToInt16(value);
 
             key = "PrecedingBlankLines";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].PrecedingBlankLines = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].PrecedingBlankLines = Convert.ToInt16(value);
 
             section = "Laser Configuration";
 
             key = "LaserOperationMode";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].LaserOperationMode = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].LaserOperationMode = Convert.ToInt16(value);
 
             key = "SeedClockFrequency";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].SeedClockFrequency = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].SeedClockFrequency = Convert.ToDouble(value);
 
             key = "RepetitionRate";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].RepetitionRate = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].RepetitionRate = Convert.ToDouble(value);
 
             key = "PulsePickWidth";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].PulsePickWidth = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].PulsePickWidth = Convert.ToInt16(value);
 
             key = "PixelWidth";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].PixelWidth = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].PixelWidth = Convert.ToInt16(value);
 
             key = "PulsePickAlgor";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].PulsePickAlgor = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].PulsePickAlgor = Convert.ToInt16(value);
 
             key = "UseCoaxIf";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].UseCoaxIf = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].UseCoaxIf = Convert.ToInt16(value);
 
             section = "CrossScan Configuration";
 
             key = "CrossScanEncoderResol";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].CrossScanEncoderResol = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].CrossScanEncoderResol = Convert.ToDouble(value);
 
             key = "CrossScanMaxAccel";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].CrossScanMaxAccel = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].CrossScanMaxAccel = Convert.ToDouble(value);
 
             key = "EnCarSig";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].EnCarSig = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].EnCarSig = Convert.ToInt16(value);
 
             key = "SwapCarSig";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].SwapCarSig = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].SwapCarSig = Convert.ToInt16(value);
 
             section = "Head Configuration";
 
             key = "SerialNumber";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].SerialNumber = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].SerialNumber = Convert.ToDouble(value);
 
             key = "FThetaConstant";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FThetaConstant = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FThetaConstant = Convert.ToDouble(value);
 
             key = "ExposeLineLength";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].ExposeLineLength = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].ExposeLineLength = Convert.ToDouble(value);
 
             key = "EncoderIndexDelay";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].EncoderIndexDelay = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].EncoderIndexDelay = Convert.ToInt16(value);
 
             key = "FacetFineDelay0";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelay0 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelay0 = Convert.ToDouble(value);
 
             key = "FacetFineDelay1";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelay1 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelay1 = Convert.ToDouble(value);
 
             key = "FacetFineDelay2";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelay2 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelay2 = Convert.ToDouble(value);
 
             key = "FacetFineDelay3";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelay3 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelay3 = Convert.ToDouble(value);
 
 
             key = "FacetFineDelay4";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelay4 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelay4 = Convert.ToDouble(value);
 
             key = "FacetFineDelay5";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelay5 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelay5 = Convert.ToDouble(value);
 
             key = "FacetFineDelay6";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelay6 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelay6 = Convert.ToDouble(value);
 
             key = "FacetFineDelay7";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelay7 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelay7 = Convert.ToDouble(value);
 
             key = "InterleaveRatio";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].InterleaveRatio = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].InterleaveRatio = Convert.ToInt16(value);
 
             key = "FacetFineDelayOffset0";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelayOffset0 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelayOffset0 = Convert.ToDouble(value);
 
             key = "FacetFineDelayOffset1";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelayOffset1 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelayOffset1 = Convert.ToDouble(value);
 
             key = "FacetFineDelayOffset2";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelayOffset2 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelayOffset2 = Convert.ToDouble(value);
 
             key = "FacetFineDelayOffset3";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelayOffset3 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelayOffset3 = Convert.ToDouble(value);
 
             key = "FacetFineDelayOffset4";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelayOffset4 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelayOffset4 = Convert.ToDouble(value);
 
             key = "FacetFineDelayOffset5";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelayOffset5 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelayOffset5 = Convert.ToDouble(value);
 
             key = "FacetFineDelayOffset6";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelayOffset6 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelayOffset6 = Convert.ToDouble(value);
 
             key = "FacetFineDelayOffset7";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetFineDelayOffset7 = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].FacetFineDelayOffset7 = Convert.ToDouble(value);
 
             key = "StartFacet";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].StartFacet = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].StartFacet = Convert.ToInt16(value);
 
             key = "AutoIncrementStartFacet";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].AutoIncrementStartFacet = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].AutoIncrementStartFacet = Convert.ToInt16(value);
 
             section = "Polygon motor Configuration";
 
             key = "InternalMotorDriverClk";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].InternalMotorDriverClk = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].InternalMotorDriverClk = Convert.ToInt16(value);
 
             key = "MotorDriverType";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].MotorDriverType = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].MotorDriverType = Convert.ToInt16(value);
 
             key = "MotorSpeed";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].MotorSpeed = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].MotorSpeed = Convert.ToInt16(value);
 
             key = "SimEncSel";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].SimEncSel = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].SimEncSel = Convert.ToInt16(value);
 
             key = "MinMotorSpeed";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].MinMotorSpeed = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].MinMotorSpeed = Convert.ToDouble(value);
 
             key = "MaxMotorSpeed";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].MaxMotorSpeed = Convert.ToDouble(value);
+            m_PolygonData[scannerIndex].MaxMotorSpeed = Convert.ToDouble(value);
 
             key = "MotorEffectivePoles";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].MotorEffectivePoles = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].MotorEffectivePoles = Convert.ToInt16(value);
 
             key = "SyncWaitTime";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].SyncWaitTime = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].SyncWaitTime = Convert.ToInt16(value);
 
             key = "MotorStableTime";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].MotorStableTime = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].MotorStableTime = Convert.ToInt16(value);
 
             section = "Other Settings";
 
             key = "InterruptFreq";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].InterruptFreq = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].InterruptFreq = Convert.ToInt16(value);
 
             key = "HWDebugSelection";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].HWDebugSelection = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].HWDebugSelection = Convert.ToInt16(value);
 
             key = "AutoRepeat";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].AutoRepeat = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].AutoRepeat = Convert.ToInt16(value);
 
             key = "PixAlwaysOn";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].PixAlwaysOn = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].PixAlwaysOn = Convert.ToInt16(value);
 
             key = "ExtCamTrig";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].ExtCamTrig = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].ExtCamTrig = Convert.ToInt16(value);
 
             key = "EncoderExpo";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].EncoderExpo = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].EncoderExpo = Convert.ToInt16(value);
 
             key = "FacetTest";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].FacetTest = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].FacetTest = Convert.ToInt16(value);
 
             key = "SWTest";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].SWTest = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].SWTest = Convert.ToInt16(value);
 
             key = "JobstartAutorepeat";
             value = GetValue(section, key, filepath);
-            m_PolygonData[objIndex].JobstartAutorepeat = Convert.ToInt16(value);
+            m_PolygonData[scannerIndex].JobstartAutorepeat = Convert.ToInt16(value);
 
             return true;
         }
@@ -458,98 +458,98 @@ namespace LWDicer.Control
             return true;
         }
 
-        public CPolygonIni GetPolygonPara(int objIndex)
+        public CPolygonIni GetPolygonPara(int scannerIndex)
         {
-            return m_PolygonData[objIndex];
+            return m_PolygonData[scannerIndex];
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetPixelGridX(int objIndex, double pX)
+         * Function : SetPixelGridX(int scannerIndex, double pX)
          * Description : Polygon Scanner의 X Pixel Grid Size를 설정한다.
          *               사용자 입력 단위 - um    
          *               Scanner 단위 - m
-         * Parameter : int objIndex - Scanner No.
+         * Parameter : int scannerIndex - Scanner No.
          *             double pX - Scanline 에서 이웃한 두 pixel 사이 X축 거리
          ------------------------------------------------------------------------------------*/
-        public void SetPixelGridX(int objIndex, double pX)
+        public void SetPixelGridX(int scannerIndex, double pX)
         {
-            m_PolygonData[objIndex].InScanResolution = 0.000001 * pX;
+            m_PolygonData[scannerIndex].InScanResolution = 0.000001 * pX;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetPixelGridY(int objIndex, double pY)
+         * Function : SetPixelGridY(int scannerIndex, double pY)
          * Description : Polygon Scanner의 Y Pixel Grid Size를 설정한다.
          *               사용자 입력 단위 - um    
          *               Scanner 단위 - m
-         * Parameter :  int objIndex - Scanner No.
+         * Parameter :  int scannerIndex - Scanner No.
          *              double pY - 이웃한 두 Scanline 사이 Y축 거리
          ------------------------------------------------------------------------------------*/
-        public void SetPixelGridY(int objIndex, double pY)
+        public void SetPixelGridY(int scannerIndex, double pY)
         {
-            m_PolygonData[objIndex].CrossScanResolution = 0.000001 * pY;
+            m_PolygonData[scannerIndex].CrossScanResolution = 0.000001 * pY;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetBitMapColor(int objIndex, int  nColor)
+         * Function : SetBitMapColor(int scannerIndex, int  nColor)
          * Description : Polygon Scanner에서 처리하는 LaserPulse Exposure Bitmap의 색상 선택
-         * Parameter : int objIndex - Scanner No.
+         * Parameter : int scannerIndex - Scanner No.
          *             int  nColor - Scanline에서이웃한두pixel 사이X축거리
          *             BLACK = 0;  //0 = Black에서Laser On
          *             WHITE = 1;  //1 = White 에서Laser On
          ------------------------------------------------------------------------------------*/
-        public void SetBitMapColor(int objIndex, int nColor)
+        public void SetBitMapColor(int scannerIndex, int nColor)
         {
-            m_PolygonData[objIndex].PixInvert = nColor;
+            m_PolygonData[scannerIndex].PixInvert = nColor;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetSuperSync(int objIndex, double OffSet, int nNo)
+         * Function : SetSuperSync(int scannerIndex, double OffSet, int nNo)
          * Description : Scanner 내부 8개의 각 Mirror scanline의 시작위치 값의 미세 조정
          *               사용자 입력 단위 - um    
          *               Scanner 단위 - m
-         * Parameter : int objIndex - Scanner No.
+         * Parameter : int scannerIndex - Scanner No.
          *             double OffSet - 미세조정 OffSet Data
          *             int nNo -  Mirror No
          ------------------------------------------------------------------------------------*/
-        public void SetSuperSync(int objIndex, double OffSet, int nNo)
+        public void SetSuperSync(int scannerIndex, double OffSet, int nNo)
         {
             switch(nNo)
             {
                 case 0:
-                    m_PolygonData[objIndex].FacetFineDelayOffset0 = 0.000001 * OffSet;
+                    m_PolygonData[scannerIndex].FacetFineDelayOffset0 = 0.000001 * OffSet;
                     break;
                 case 1:
-                    m_PolygonData[objIndex].FacetFineDelayOffset1 = 0.000001 * OffSet;
+                    m_PolygonData[scannerIndex].FacetFineDelayOffset1 = 0.000001 * OffSet;
                     break;
                 case 2:
-                    m_PolygonData[objIndex].FacetFineDelayOffset2 = 0.000001 * OffSet;
+                    m_PolygonData[scannerIndex].FacetFineDelayOffset2 = 0.000001 * OffSet;
                     break;
                 case 3:
-                    m_PolygonData[objIndex].FacetFineDelayOffset3 = 0.000001 * OffSet;
+                    m_PolygonData[scannerIndex].FacetFineDelayOffset3 = 0.000001 * OffSet;
                     break;
                 case 4:
-                    m_PolygonData[objIndex].FacetFineDelayOffset4 = 0.000001 * OffSet;
+                    m_PolygonData[scannerIndex].FacetFineDelayOffset4 = 0.000001 * OffSet;
                     break;
                 case 5:
-                    m_PolygonData[objIndex].FacetFineDelayOffset5 = 0.000001 * OffSet;
+                    m_PolygonData[scannerIndex].FacetFineDelayOffset5 = 0.000001 * OffSet;
                     break;
                 case 6:
-                    m_PolygonData[objIndex].FacetFineDelayOffset6 = 0.000001 * OffSet;
+                    m_PolygonData[scannerIndex].FacetFineDelayOffset6 = 0.000001 * OffSet;
                     break;
                 case 7:
-                    m_PolygonData[objIndex].FacetFineDelayOffset7 = 0.000001 * OffSet;
+                    m_PolygonData[scannerIndex].FacetFineDelayOffset7 = 0.000001 * OffSet;
                     break;
             }
         }
@@ -557,72 +557,72 @@ namespace LWDicer.Control
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetStartOffset(int objIndex, double OffSet)
+         * Function : SetStartOffset(int scannerIndex, double OffSet)
          * Description : 모든 Scanline의 X축 시작 위치를 조정
          *               사용자 입력 단위 - um    
          *               Scanner 단위 - m
-         * Parameter :   int objIndex - Scanner No.
+         * Parameter :   int scannerIndex - Scanner No.
          *               double OffSet
          ------------------------------------------------------------------------------------*/
-        public void SetStartOffset(int objIndex, double OffSet)
+        public void SetStartOffset(int scannerIndex, double OffSet)
         {
-            m_PolygonData[objIndex].InScanOffset = 0.000001 * OffSet;
+            m_PolygonData[scannerIndex].InScanOffset = 0.000001 * OffSet;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetSeedClock(int objIndex, double Frequency)
+         * Function : SetSeedClock(int scannerIndex, double Frequency)
          * Description : Laser의 Seed Clock 주파수 설정
          *               사용자 입력 단위 - kHz    
          *               Scanner 단위 - Hz
-         * Parameter :  int objIndex - Scanner No.
+         * Parameter :  int scannerIndex - Scanner No.
          *              double Frequency - kHz 단위
          ------------------------------------------------------------------------------------*/
-        public void SetSeedClock(int objIndex, double Frequency)
+        public void SetSeedClock(int scannerIndex, double Frequency)
         {
-            m_PolygonData[objIndex].SeedClockFrequency = 1000 * Frequency;
+            m_PolygonData[scannerIndex].SeedClockFrequency = 1000 * Frequency;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetRepRate(int objIndex, double Frequency)
+         * Function : SetRepRate(int scannerIndex, double Frequency)
          * Description : 가공에적용할펄스반복률(REP_RATE)설정
          *               사용자 입력 단위 - kHz    
          *               Scanner 단위 - Hz
-         * Parameter :  int objIndex - Scanner No.
+         * Parameter :  int scannerIndex - Scanner No.
          *              double Frequency - kHz 단위
          ------------------------------------------------------------------------------------*/
-        public void SetRepRate(int objIndex, double Frequency)
+        public void SetRepRate(int scannerIndex, double Frequency)
         {
-            m_PolygonData[objIndex].RepetitionRate = 1000 * Frequency;
+            m_PolygonData[scannerIndex].RepetitionRate = 1000 * Frequency;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetPixelWidth(int objIndex, double SeedClock, double RefRate)
+         * Function : SetPixelWidth(int scannerIndex, double SeedClock, double RefRate)
          * Description : Laser SeedClock, Rep Rate 변경에 따른 Laser Pulse Width 변경
          *               사용자 입력 단위 - kHz    
          *               Scanner 단위 - Hz
-         * Parameter : int objIndex - Scanner No.
+         * Parameter : int scannerIndex - Scanner No.
          *             double SeedClock - 적용될 SeedClockFrequency
          *             double RepRate -  적용될 RepetitionRate
          ------------------------------------------------------------------------------------*/
-        public void SetPixelWidth(int objIndex, double SeedClock, double RepRate)
+        public void SetPixelWidth(int scannerIndex, double SeedClock, double RepRate)
         {
-            m_PolygonData[objIndex].PixelWidth = (int)((SeedClock / RepRate) / 2);
-            m_PolygonData[objIndex].PulsePickWidth = (int)(m_PolygonData[objIndex].PixelWidth / 2);
+            m_PolygonData[scannerIndex].PixelWidth = (int)((SeedClock / RepRate) / 2);
+            m_PolygonData[scannerIndex].PulsePickWidth = (int)(m_PolygonData[scannerIndex].PixelWidth / 2);
         }
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetLaserOP(int objIndex, int nOption)
+         * Function : SetLaserOP(int scannerIndex, int nOption)
          * Description : Laser 제어 방식 선택
          * Parameter : int nOption
          *             SuperSync=0,        // SuperSync 동작
@@ -631,216 +631,216 @@ namespace LWDicer.Control
          *             NoneSeedClock,      // Trumph TruMicro Laser 전용(SEED CLOCK 미사용)
          *             InternalSeedClock   // AVIA 등나노초레이저용(내부SEED CLOCK 사용)
          ------------------------------------------------------------------------------------*/
-        public void SetLaserOP(int objIndex, int nOption)
+        public void SetLaserOP(int scannerIndex, int nOption)
         {
-            m_PolygonData[objIndex].LaserOperationMode = nOption;
+            m_PolygonData[scannerIndex].LaserOperationMode = nOption;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetBufferTime(int objIndex, int nSec)
+         * Function : SetBufferTime(int scannerIndex, int nSec)
          * Description : Bitmap Uploading 시, exposure 하기전 대기 시간
          * Parameter : int nSec - 사용자 설정 시간 (sec)
          ------------------------------------------------------------------------------------*/
-        public void SetBufferTime(int objIndex, int nSec)
+        public void SetBufferTime(int scannerIndex, int nSec)
         {
-            m_PolygonData[objIndex].JobStartBufferTime = nSec;
+            m_PolygonData[scannerIndex].JobStartBufferTime = nSec;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetDummyBlankLine(int objIndex, int nScanLine)
+         * Function : SetDummyBlankLine(int scannerIndex, int nScanLine)
          * Description : Stage 가속시의 충분한 Settle-time 을 위해 Dummy로 추가하는 scanline 수
          * Parameter : int nScanLine - 사용자 설정 Dummy Scan Line
          ------------------------------------------------------------------------------------*/
-        public void SetDummyBlankLine(int objIndex, int nScanLine)
+        public void SetDummyBlankLine(int scannerIndex, int nScanLine)
         {
-            m_PolygonData[objIndex].PrecedingBlankLines = nScanLine;
+            m_PolygonData[scannerIndex].PrecedingBlankLines = nScanLine;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetMotorBetweenJob(int objIndex, int nOption)
+         * Function : SetMotorBetweenJob(int scannerIndex, int nOption)
          * Description : Exposure 이후 polygon mirror 정지 여부 결정
          * Parameter : int nOption - SPIN or STOP
          ------------------------------------------------------------------------------------*/
-        public void SetMotorBetweenJob(int objIndex, int nOption)
+        public void SetMotorBetweenJob(int scannerIndex, int nOption)
         {
-            m_PolygonData[objIndex].StopMotorBetweenJobs = nOption;
+            m_PolygonData[scannerIndex].StopMotorBetweenJobs = nOption;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetMotorStableTime(int objIndex, int nTime)
+         * Function : SetMotorStableTime(int scannerIndex, int nTime)
          * Description : speed-up 이후 exposure 시작 이전에 spinning 안정화를 위한 대기 시간
          * Parameter : int nTime - 미리초(ms) 단위로 입력 
          ------------------------------------------------------------------------------------*/
-        public void SetMotorStableTime(int objIndex, int nTime)
+        public void SetMotorStableTime(int scannerIndex, int nTime)
         {
-            m_PolygonData[objIndex].MotorStableTime = nTime;
+            m_PolygonData[scannerIndex].MotorStableTime = nTime;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SetLeaveRatio(int objIndex, int nRatio)
+         * Function : SetLeaveRatio(int scannerIndex, int nRatio)
          * Description : FacetFineDelayOffset 자동 설정 기능
          * Parameter : int nRatio
          ------------------------------------------------------------------------------------*/
-        public void SetLeaveRatio(int objIndex, int nRatio)
+        public void SetLeaveRatio(int scannerIndex, int nRatio)
         {
-            m_PolygonData[objIndex].InterleaveRatio = nRatio;
+            m_PolygonData[scannerIndex].InterleaveRatio = nRatio;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.25
          * Author : HSLEE
-         * Function : SetEncoderResol(int objIndex, double dResol)
+         * Function : SetEncoderResol(int scannerIndex, double dResol)
          * Description : Stage Encoder 분해능 값 설정 / A상 edge 에서 B상 edge 까지 거리
          *               사용자 입력 단위 - um    
          *               Scanner 단위 - m
          * Parameter : double dResol
          ------------------------------------------------------------------------------------*/
-        public void SetEncoderResol(int objIndex, double dResol)
+        public void SetEncoderResol(int scannerIndex, double dResol)
         {
-            m_PolygonData[objIndex].CrossScanEncoderResol = 0.000001 * dResol;
+            m_PolygonData[scannerIndex].CrossScanEncoderResol = 0.000001 * dResol;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.25
          * Author : HSLEE
-         * Function : SetMaxAccel(int objIndex, double dAcc)
+         * Function : SetMaxAccel(int scannerIndex, double dAcc)
          * Description : Stage start-up 과정의 최대 가속도 / Stage 관성 모멘트에 따라 설정
          *               사용자 입력 단위 - um    
          *               Scanner 단위 - m
          * Parameter : double dAcc
          ------------------------------------------------------------------------------------*/
-        public void SetMaxAccel(int objIndex, double dAcc)
+        public void SetMaxAccel(int scannerIndex, double dAcc)
         {
-            m_PolygonData[objIndex].CrossScanMaxAccel = dAcc;
+            m_PolygonData[scannerIndex].CrossScanMaxAccel = dAcc;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.25
          * Author : HSLEE
-         * Function : SetEnCarSig(int objIndex, double dAcc)
+         * Function : SetEnCarSig(int scannerIndex, double dAcc)
          * Description : Stage Control Encoder signal 출력여부
          * Parameter : int nSig
          *             0 = JOBSTART_N 미수신시작, Stageencoder 출력없음
          *             1 = JOBSTART_N 수신후시작, Stageencoder 출력있음
          ------------------------------------------------------------------------------------*/
-        public void SetEnCarSig(int objIndex, int nSig)
+        public void SetEnCarSig(int scannerIndex, int nSig)
         {
-            m_PolygonData[objIndex].EnCarSig = nSig;
+            m_PolygonData[scannerIndex].EnCarSig = nSig;
         }
 
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.25
          * Author : HSLEE
-         * Function : SetSwapCarSig(int objIndex, double dAcc)
+         * Function : SetSwapCarSig(int scannerIndex, double dAcc)
          * Description : Stage movement direction 선택
          * Parameter : int nSig
          *             0 = Bitmap이미지X축역상
          *             1 = Bitmap이미지X축역상없음
          ------------------------------------------------------------------------------------*/
-        public void SetSwapCarSig(int objIndex, int nSig)
+        public void SetSwapCarSig(int scannerIndex, int nSig)
         {
-            m_PolygonData[objIndex].SwapCarSig = nSig;
+            m_PolygonData[scannerIndex].SwapCarSig = nSig;
         }
 
 
         /*------------------------------------------------------------------------------------
         * Date : 2016.02.25
         * Author : HSLEE
-        * Function : SetSwapCarSig(int objIndex, double dAcc)
+        * Function : SetSwapCarSig(int scannerIndex, double dAcc)
         * Description : exposure의 첫 scanline에 해당하는 facet 지정
         * Parameter : int nFaceTNo [ 0 ~ 7 ]
         ------------------------------------------------------------------------------------*/
-        public void SetStartFacet(int objIndex, int nFaceTNo)
+        public void SetStartFacet(int scannerIndex, int nFaceTNo)
         {
-            m_PolygonData[objIndex].StartFacet = nFaceTNo;
+            m_PolygonData[scannerIndex].StartFacet = nFaceTNo;
         }
 
 
         /*------------------------------------------------------------------------------------
         * Date : 2016.02.25
         * Author : HSLEE
-        * Function : SetAutoIncStartFacet(int objIndex, int nSig)
+        * Function : SetAutoIncStartFacet(int scannerIndex, int nSig)
         * Description : exposure의 첫 scanline에 해당하는 facet를 새로운 가공시작시 Facet 자동증가 옵션
         * Parameter : int nFaceTNo 
         *             0 = Disable
         *             1 = Start Facet 자동증가
         ------------------------------------------------------------------------------------*/
-        public void SetAutoIncStartFacet(int objIndex, int nSig)
+        public void SetAutoIncStartFacet(int scannerIndex, int nSig)
         {
-            m_PolygonData[objIndex].AutoIncrementStartFacet = nSig;
+            m_PolygonData[scannerIndex].AutoIncrementStartFacet = nSig;
         }
 
 
         /*------------------------------------------------------------------------------------
         * Date : 2016.03.03
         * Author : HSLEE
-        * Function : SetScannerIP(int objIndex, string strIP)
+        * Function : SetScannerIP(int scannerIndex, string strIP)
         * Description : 
-        * Parameter : int objIndex - Scanner No.
+        * Parameter : int scannerIndex - Scanner No.
         *             string strIP - Scanner IP Address
         ------------------------------------------------------------------------------------*/
-        public void SetScannerIP(int objIndex, string strIP)
+        public void SetScannerIP(int scannerIndex, string strIP)
         {
-            m_IP[objIndex] = strIP;
+            m_IP[scannerIndex] = strIP;
         }
 
         /*------------------------------------------------------------------------------------
         * Date : 2016.03.03
         * Author : HSLEE
-        * Function : SetScannerPort(int objIndex, string strPort)
+        * Function : SetScannerPort(int scannerIndex, string strPort)
         * Description : 
-        * Parameter : int objIndex - Scanner No.
+        * Parameter : int scannerIndex - Scanner No.
         *             string strPort - Scanner Port No.
         ------------------------------------------------------------------------------------*/
-        public void SetScannerPort(int objIndex, string strPort)
+        public void SetScannerPort(int scannerIndex, string strPort)
         {
-            m_Port[objIndex] = strPort;
+            m_Port[scannerIndex] = strPort;
         }
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : GetIPData(int objIndex)
+         * Function : GetIPData(int scannerIndex)
          * Description :  
-         * Parameter : int objIndex - Scanner No.
+         * Parameter : int scannerIndex - Scanner No.
          * return : ex) IPAddress "ftp://192.168.22.60:21/"
          ------------------------------------------------------------------------------------*/
-        public string GetIPData(int objIndex)
+        public string GetIPData(int scannerIndex)
         {
-            return IPAddress[objIndex] = string.Format("ftp://{0:s}:{1:s}/", m_IP[objIndex], m_Port[objIndex]);
+            return IPAddress[scannerIndex] = string.Format("ftp://{0:s}:{1:s}/", m_IP[scannerIndex], m_Port[scannerIndex]);
         }
 
         /*------------------------------------------------------------------------------------
          * Date : 2016.02.24
          * Author : HSLEE
-         * Function : SendConfig(int objIndex, string strFile)
+         * Function : SendConfig(int scannerIndex, string strFile)
          * Description : Scanner에 Configure ini 파일전송 
          *               File Path = SFA\LWDicer\ScannerLog
-         * Parameter :   int objIndex - Scanner No.
+         * Parameter :   int scannerIndex - Scanner No.
          *               string strFile - 전송하고 자하는 ini File Name
          ------------------------------------------------------------------------------------*/
-        public bool SendConfig(int objIndex, string strFile)
+        public bool SendConfig(int scannerIndex, string strFile)
         {
-            string strFTP = string.Format("{0:s}{1:s}.ini",GetIPData(objIndex),strFile); // ex) "ftp://192.168.22.60:21/configure.ini"
+            string strFTP = string.Format("{0:s}{1:s}.ini",GetIPData(scannerIndex),strFile); // ex) "ftp://192.168.22.60:21/configure.ini"
 
             string strPath = string.Format("{0:s}{1:s}.ini", m_DBInfo.ScannerLogDir,strFile);  // ex) "SFA\LWDicer\ScannerLog\configure.ini"
 
@@ -860,12 +860,12 @@ namespace LWDicer.Control
          * Function : SendBitMap(string strFile)
          * Description : Scanner에 Configure BitMap 파일전송 
          *               File Path = SFA\LWDicer\ScannerLog
-         * Parameter :   int objIndex - Scanner No.
+         * Parameter :   int scannerIndex - Scanner No.
          *               string strFile - 전송하고 자하는 BitMap File Name
          ------------------------------------------------------------------------------------*/
-        public bool SendBitMap(int objIndex, string strFile)
+        public bool SendBitMap(int scannerIndex, string strFile)
         {
-            string strFTP = string.Format("{0:s}{1:s}.bmp", GetIPData(objIndex), strFile); // ex) "ftp://192.168.22.60:21/BitMap.bmp"
+            string strFTP = string.Format("{0:s}{1:s}.bmp", GetIPData(scannerIndex), strFile); // ex) "ftp://192.168.22.60:21/BitMap.bmp"
 
             string strPath = string.Format("{0:s}{1:s}.bmp", m_DBInfo.ScannerLogDir, strFile); // ex) "SFA\LWDicer\ScannerLog\BitMap.bmp"
 
