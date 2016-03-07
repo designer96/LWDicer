@@ -118,6 +118,15 @@ namespace LWDicer.Control
             MAX_OBJ,
         }
 
+        public enum EObjectScanner
+        {
+            SCANNER1,
+            SCANNER2,
+            SCANNER3,
+            SCANNER4,
+            MAX_OBJ,
+        }
+
         public enum EObjectLayer
         {
             // Common Class
