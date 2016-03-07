@@ -18,9 +18,7 @@ namespace LWDicer.Control
         public static readonly String PATH_PROGRAM = PATH_APPLICATION + "Program/";
         public static readonly String PATH_LOG = PATH_APPLICATION + "Log/";
         public static readonly String PATH_CONFIG = PATH_APPLICATION + "Configure/";
-
         public static readonly String PATH_CONFIG_INI = PATH_CONFIG + "config.ini";
-
 
         [DllImport("kernel32.dll")]
         public static extern int GetPrivateProfileString(

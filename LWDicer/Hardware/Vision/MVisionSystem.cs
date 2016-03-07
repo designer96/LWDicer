@@ -156,10 +156,13 @@ namespace LWDicer.Control
             // Model Image Save (Image View Save용)
             MIL.MbufAlloc2d(m_MilSystem, pRec.Width, pRec.Height, MIL.M_UNSIGNED + 8, MIL.M_IMAGE + MIL.M_PROC + MIL.M_DISP,
                                 ref pSData.m_ModelImage);
-            //MIL.MbufCopyColor2d(m_MilImage, pRec.X, pRec.Y,
+            MIL.MbufCopyColor2d(m_MilImage, pSData.m_ModelImage, MIL.M_ALL_BANDS, pRec.X, pRec.Y,
+                               MIL.M_ALL_BANDS,0,0, pRec.Width, pRec.Height);
+
+            // Buffer Child 생성 (실시간으로 Grab한 Source Image를 Child Buffer로 복사를 한다.
+            //MIL.MbufChild2d(m_MilImage, pRec.X, pRec.Y,
             //                   pRec.Width, pRec.Height, ref pSData.m_ModelImage);
-            MIL.MbufChild2d(m_MilImage, pRec.X, pRec.Y,
-                               pRec.Width, pRec.Height, ref pSData.m_ModelImage);
+
 
             if (pSData.m_milModel == MIL.M_NULL) return false;
 
