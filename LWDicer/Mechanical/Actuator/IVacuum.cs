@@ -35,7 +35,7 @@ namespace LWDicer.Control
         };
 
         /** Vacuum Component가 가지는 Mechanical Component List */
-        public class CVacuumRefCompList
+        public class CVacuumRefComp
         {
         }
 

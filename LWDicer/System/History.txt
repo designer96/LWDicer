@@ -54,6 +54,13 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 1. MIO_YMC : Yaskawa IO class 기본 작업, SIMULATION_MOTION, SIMULATION_IO
 2. MMotion_YMC : 기본 class 틀만 작업해놓고 있음
 
+// Version : 0.0.6
+// Grade : ★
+// Date : 2016-03-03
+// Context
+1. MYaskawa : IO & Motion을 통합 제어하는 class. 1단계로 1cpu & 1port 기준으로 프로그램 작성
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LJJ
 // Version : 0.0.1

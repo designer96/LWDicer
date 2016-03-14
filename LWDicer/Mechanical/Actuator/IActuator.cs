@@ -42,7 +42,7 @@ namespace LWDicer.Control
             ACTUATOR_CYLIDNER
         };
 
-        public struct SActuatorRefCompList
+        public struct SActuatorRefComp
         {
         }
 

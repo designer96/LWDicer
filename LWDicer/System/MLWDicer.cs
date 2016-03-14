@@ -38,7 +38,7 @@ namespace LWDicer.Control
         public MDataManager m_DataManager { get; private set; }
 
         // Hardware Layer
-        public UInt32[] m_hYMC = new UInt32[DEF_MAX_YMC_BOARD];
+        public UInt32[] m_hYMC = new UInt32[(int)EYMC_Board.MAX];
 
         public IIO m_IO { get; private set; }
 
@@ -81,18 +81,6 @@ namespace LWDicer.Control
         {
             // close handle
 
-            // yaskawa
-            for (int i = 0; i < DEF_MAX_YMC_BOARD; i++)
-            {
-                if (m_hYMC[i] == 0) continue;
-                uint rc = CMotionAPI.ymcCloseController(m_hYMC[i]);
-                if (rc != CMotionAPI.MP_SUCCESS)
-                {
-                    string str = String.Format("Error ymcCloseController Board {0} \nErrorCode [ 0x{1} ]", i, rc.ToString("X"));
-                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
-                    MessageBox.Show(str);
-                }
-            }
         }
 
         public CLoginData GetLogin()
@@ -268,7 +256,7 @@ namespace LWDicer.Control
             UInt32 rc;
             CMotionAPI.COM_DEVICE ComDevice;
 
-            for(int i = 0; i < DEF_MAX_YMC_BOARD; i++)
+            for(int i = 0; i < (int)EYMC_Board.MAX; i++)
             {
                 //============================================================================ To Contents of Processing
                 // Sets the ymcOpenController parameters.		

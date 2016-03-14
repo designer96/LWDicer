@@ -37,10 +37,43 @@ namespace LWDicer.Control
         // SYSTEM_VER 및 개인의 작업 내용에 대한 History 관리는 History.txt 에 기록합니다.
         public const string SYSTEM_VER = "Ver 0.0.3";
 
-        public const int DEF_MAX_YMC_BOARD = 2;
+        // Motion
+        public enum EYMC_Board
+        {
+            BOARD1,
+            //BOARD2,
+            //BOARD3,
+            //BOARD4,
+            MAX,
+        }
+        public enum EYMC_Axis
+        {
+            STAGE1_X = 0,
+            STAGE1_Y,
+            STAGE1_T,
+            NULL_3,
+            NULL_4,
+            LOADER_Z,
+            MAX,
+        }
 
-        public const int DEF_MAX_MOTION_AXIS_NO = 24;
-        public const int DEF_REAL_MOTION_AXIS_NO = 21; // 실제 축의 갯수
+        public enum EYMC_Device
+        {
+            // 개별 축 제어를 위한 device, Device[index] = Axis[index]를 위해서 NULL 축까지도 선언함 
+            STAGE1_X = 0,
+            STAGE1_Y,
+            STAGE1_T,
+            NULL_3,
+            NULL_4,
+            LOADER_Z,
+
+            // 그룹으로 축 제어를 위해 선언
+            STAGE1,
+            LOADER,
+            PUSHPULL,
+            HANDLER,
+            MAX,
+        }
 
         // Head 정의
         public const int DEF_SHEAD1 = 0;
@@ -218,6 +251,20 @@ namespace LWDicer.Control
         //
         public const int BIT_ON                = 1;
         public const int BIT_OFF               = 0;
+
+        // Jog
+        public const bool JOG_DIR_POS = true;
+        public const bool JOG_DIR_NEG = false;
+
+        public const int JOG_KEY_X = 0;
+        public const int JOG_KEY_Y = 1;
+        public const int JOG_KEY_T = 2;
+        public const int JOG_KEY_Z = 3;
+
+        public const int JOG_KEY_NON = 0;
+        public const int JOG_KEY_POS = 1;
+        public const int JOG_KEY_NEG = 2;
+        public const int JOG_KEY_ALL = 3;
 
         // Language
         public enum ELanguage
