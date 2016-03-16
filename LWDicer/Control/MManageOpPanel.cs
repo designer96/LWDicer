@@ -302,6 +302,7 @@ namespace LWDicer.Control
         int CheckAutoRun(out bool bEmptyPart)
         {
 #if SIMULATION_MOTION
+            bEmptyPart = false;
             return SUCCESS;
 #endif
             bool bStatus;

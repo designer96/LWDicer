@@ -72,26 +72,33 @@ namespace LWDicer.UI
 
         private void btnEdgeFind_Click(object sender, EventArgs e)
         {
+            int iCamNo = CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum;
+
             CEdgeData mEdgeData = new CEdgeData();
 
-            CMainFrame.LWDicer.m_Vision.SetEdgeFinderArea(FINE_CAM);
-            CMainFrame.LWDicer.m_Vision.FindEdge(FINE_CAM, ref mEdgeData);
+            CMainFrame.LWDicer.m_Vision.SetEdgeFinderArea(iCamNo);
+            CMainFrame.LWDicer.m_Vision.FindEdge(iCamNo, ref mEdgeData);
+
+            lblResult.Text = mEdgeData.m_strResult;
         }
 
         private void btnSaveModelImage_Click(object sender, EventArgs e)
         {
-            //CMainFrame.LWDicer.m_Vision.SaveImage(PRE__CAM, 1, 1);
-            CMainFrame.LWDicer.m_Vision.SaveModelImage(FINE_CAM, 1);
+            int iCamNo = CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum;
+            //CMainFrame.LWDicer.m_Vision.SaveModelImage(iCamNo, 1);
         }
 
         private void btnMacroView_Click(object sender, EventArgs e)
         {
             CMainFrame.LWDicer.m_Vision.DestroyLocalView(FINE_CAM);
+            CMainFrame.LWDicer.m_Vision.DestroyLocalView(PRE__CAM);
             CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
+            
         }
 
         private void btnMicroView_Click(object sender, EventArgs e)
         {
+            CMainFrame.LWDicer.m_Vision.DestroyLocalView(FINE_CAM);
             CMainFrame.LWDicer.m_Vision.DestroyLocalView(PRE__CAM);
             CMainFrame.LWDicer.m_Vision.InitialLocalView(FINE_CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
         }
@@ -111,34 +118,124 @@ namespace LWDicer.UI
             CMainFrame.LWDicer.m_Vision.DrawOverlayAreaRect( ptRec);
         }
 
-        private void btnMarkRegister_Click(object sender, EventArgs e)
+        private void btnMarkRegisterA_Click(object sender, EventArgs e)
         {
-            Rectangle ptRecSearch = new Rectangle(0, 0, DEF_IMAGE_SIZE_X, DEF_IMAGE_SIZE_Y);
+            int iCamNo = CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum;
+            int iCamWidth = CMainFrame.LWDicer.m_Vision.GetCameraPixelSize(iCamNo).Width;
+            int iCamHeight = CMainFrame.LWDicer.m_Vision.GetCameraPixelSize(iCamNo).Height;
+
+            Rectangle ptRecSearch = new Rectangle(0, 0, iCamWidth, iCamHeight);
             Rectangle ptRecModel = new Rectangle(0, 0, 300,300);
             Point ptPointTemp = new Point(0, 0);
 
-            CMainFrame.LWDicer.m_Vision.RegisterPatternMark(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum, 
-                                                            1, ref ptRecSearch, ref ptRecModel, ref ptPointTemp);
+            string strModel = CMainFrame.LWDicer.m_DataManager.m_ModelData.Name;
+            CMainFrame.LWDicer.m_Vision.RegisterPatternMark(iCamNo,strModel, PATTERN_A, ref ptRecSearch, ref ptRecModel, ref ptPointTemp);
+            
+            if (iCamNo == PRE__CAM)
+                CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternA = CMainFrame.LWDicer.m_Vision.GetSearchData(iCamNo, PATTERN_A);
+            if (iCamNo == FINE_CAM)
+                CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternA = CMainFrame.LWDicer.m_Vision.GetSearchData(iCamNo, PATTERN_A);
+
+
+            //CMainFrame.LWDicer.m_DataManager.SaveModelList();
+            CMainFrame.LWDicer.m_DataManager.ChangeModel();
 
         }
 
-        private void btnMarkSearch_Click(object sender, EventArgs e)
+        private void btnMarkRegisterB_Click(object sender, EventArgs e)
+        {
+            int iCamNo = CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum;
+            int iCamWidth = CMainFrame.LWDicer.m_Vision.GetCameraPixelSize(iCamNo).Width;
+            int iCamHeight = CMainFrame.LWDicer.m_Vision.GetCameraPixelSize(iCamNo).Height;
+
+            Rectangle ptRecSearch = new Rectangle(0, 0, iCamWidth, iCamHeight);
+            Rectangle ptRecModel = new Rectangle(0, 0, 300, 300);
+            Point ptPointTemp = new Point(0, 0);
+
+            string strModel = CMainFrame.LWDicer.m_DataManager.m_ModelData.Name;
+            CMainFrame.LWDicer.m_Vision.RegisterPatternMark(iCamNo, strModel, PATTERN_B, ref ptRecSearch, ref ptRecModel, ref ptPointTemp);
+            
+            if (iCamNo == PRE__CAM)
+                CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternB = CMainFrame.LWDicer.m_Vision.GetSearchData(iCamNo, PATTERN_B);
+            if (iCamNo == FINE_CAM)
+                CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternB = CMainFrame.LWDicer.m_Vision.GetSearchData(iCamNo, PATTERN_B);
+
+
+            //CMainFrame.LWDicer.m_DataManager.SaveModelList();
+            CMainFrame.LWDicer.m_DataManager.ChangeModel();
+        }
+
+        private void btnMarkSearchA_Click(object sender, EventArgs e)
         {
             CResultData pResult = new CResultData();
 
-            CMainFrame.LWDicer.m_Vision.RecognitionPatternMark(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum, 1, out pResult);
+            CMainFrame.LWDicer.m_Vision.RecognitionPatternMark(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum, PATTERN_A, out pResult);
 
             lblResult.Text = pResult.m_strResult;
         }
 
-        private void btnShowModel_Click(object sender, EventArgs e)
+        private void btnMarkSearchB_Click(object sender, EventArgs e)
         {
-            CMainFrame.LWDicer.m_Vision.DisplayPatternImage(FINE_CAM, 1, VisionView2.Handle);
+            CResultData pResult = new CResultData();
+
+            CMainFrame.LWDicer.m_Vision.RecognitionPatternMark(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum, PATTERN_B, out pResult);
+
+            lblResult.Text = pResult.m_strResult;
+        }
+  
+        private void btnShowModelA_Click(object sender, EventArgs e)
+        {
+            CMainFrame.LWDicer.m_Vision.DisplayPatternImage(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum, PATTERN_A, VisionView2.Handle);
+        }
+
+        private void btnShowModelB_Click(object sender, EventArgs e)
+        {
+            CMainFrame.LWDicer.m_Vision.DisplayPatternImage(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum, PATTERN_B, VisionView2.Handle);
         }
 
         private void btnSaveImage_Click(object sender, EventArgs e)
         {
             CMainFrame.LWDicer.m_Vision.SaveImage();
         }
+
+        private void btnShowImage_Click(object sender, EventArgs e)
+        {
+            if (btnShowImage.Tag.Equals("1"))
+            {
+                btnShowImage.Tag = "2";
+                CMainFrame.LWDicer.m_Vision.DisplayViewImage(CMainFrame.LWDicer.m_Vision.GetGrabImage(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum), View1.Handle);
+                return;
+            }
+            if (btnShowImage.Tag.Equals("2"))
+            {
+                btnShowImage.Tag = "3";
+                CMainFrame.LWDicer.m_Vision.DisplayViewImage(CMainFrame.LWDicer.m_Vision.GetGrabImage(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum), View2.Handle);
+                return;
+            }
+            if (btnShowImage.Tag.Equals("3"))
+            {
+                btnShowImage.Tag = "4";
+                CMainFrame.LWDicer.m_Vision.DisplayViewImage(CMainFrame.LWDicer.m_Vision.GetGrabImage(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum), View3.Handle);
+                return;
+            }
+            if (btnShowImage.Tag.Equals("4"))
+            {
+                btnShowImage.Tag = "5";
+                CMainFrame.LWDicer.m_Vision.DisplayViewImage(CMainFrame.LWDicer.m_Vision.GetGrabImage(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum), View4.Handle);
+                return;
+            }
+            if (btnShowImage.Tag.Equals("5"))
+            {
+                btnShowImage.Tag = "1";
+                CMainFrame.LWDicer.m_Vision.DisplayViewImage(CMainFrame.LWDicer.m_Vision.GetGrabImage(CMainFrame.LWDicer.m_Vision.m_iCurrentViewNum), View5.Handle);
+                return;
+            }
+        }
+
+        private void FormManualOP_Load(object sender, EventArgs e)
+        {
+
+        }
+
     }
 }

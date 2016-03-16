@@ -35,26 +35,36 @@ namespace LWDicer.Control
 
         public Size m_CamPixelSize;
         private CCameraData m_cCameraData;
-        private CSearchData[] m_rgsCSearchData;
+        private CVisionPatternData[] m_rgsCSearchData;
         private CResultData[] m_rgsCResultData;
         private bool m_bLive;
 
+
+
+        ///// Search Model Data
+        //// MIL 에서 사용하는 Model ID (NGC)
+        //public MIL_ID m_milModel = new MIL_ID();
+        //// MIL 에서 영상 Display용
+        //public MIL_ID m_ModelImage = new MIL_ID();
+        //// MIL 에서 사용하는 Model ID (GMF)
+        //public MIL_ID m_milGmfModel = new MIL_ID();
+
         public MVisionCamera()
-        {            
+        {
+            int iMarkNum = (int)EPatternMarkType.ALIGN_MARK_COUNT;
+
             m_iCamID            = 0;
             m_iResult           = 0;
             m_bLive             = false;
             m_cCameraData       = new CCameraData();
-            m_rgsCSearchData    = new CSearchData[DEF_USE_SEARCH_MARK_NO];
-            m_rgsCResultData    = new CResultData[DEF_USE_SEARCH_MARK_NO];
+            m_rgsCSearchData    = new CVisionPatternData[iMarkNum];
+            m_rgsCResultData    = new CResultData[iMarkNum];
 
-            for (int i = 0; i < DEF_USE_SEARCH_MARK_NO; i++)
+            for (int i = 0; i < iMarkNum; i++)
             {
                 // Search Data Init
-                m_rgsCSearchData[i] = new CSearchData();
+                m_rgsCSearchData[i] = new CVisionPatternData();
                 m_rgsCSearchData[i].m_bIsModel = false;
-                m_rgsCSearchData[i].m_milModel = MIL.M_NULL;
-                m_rgsCSearchData[i].m_milGmfModel = MIL.M_NULL;
                 m_rgsCSearchData[i].m_dAcceptanceThreshold = DEF_DEFAULT_ACCEP_THRESHOLD;
                 m_rgsCSearchData[i].m_dCertaintyThreshold  = DEF_DEFAULT_CERTAIN_THRESHOLD;
 
@@ -228,10 +238,23 @@ namespace LWDicer.Control
         public void MirrorImage()
         {
             //return 0;
-        }       
+        }
 
-        public CSearchData GetSearchData(int iModelNo)
+        public bool SetSearchData(int iModelNo, CSearchData pSearchData)
         {
+            //m_rgsCSearchData[iModelNo] = pSearchData;
+            m_rgsCSearchData[iModelNo].m_bIsModel = pSearchData.m_bIsModel;
+            m_rgsCSearchData[iModelNo].m_dAcceptanceThreshold = pSearchData.m_dAcceptanceThreshold;
+            m_rgsCSearchData[iModelNo].m_pointReference = pSearchData.m_pointReference;
+            m_rgsCSearchData[iModelNo].m_rectModel = pSearchData.m_rectModel;
+            m_rgsCSearchData[iModelNo].m_rectSearch = pSearchData.m_rectSearch;
+            m_rgsCSearchData[iModelNo].m_strFileName = pSearchData.m_strFileName;
+            m_rgsCSearchData[iModelNo].m_strFilePath = pSearchData.m_strFilePath;
+            
+            return true;
+        }
+        public CVisionPatternData GetSearchData(int iModelNo)
+        { 
             return m_rgsCSearchData[iModelNo];
         }
         // Pattern Maching Result Data
@@ -266,10 +289,10 @@ namespace LWDicer.Control
             MVisionModelData modelData = new MVisionModelData(m_pMilSystemID, strFileName, strModelFilePath);
 
            // CResultData pRData;
-            for (int i = 0; i < DEF_USE_SEARCH_MARK_NO; i++)
-            {
-                modelData.ReadSearchData(m_iCamID, i, ref m_rgsCSearchData[i]);
-            }
+            //for (int i = 0; i < DEF_USE_SEARCH_MARK_NO; i++)
+            //{
+            //    modelData.ReadSearchData(m_iCamID, i, ref m_rgsCSearchData[i]);
+            //}
 
             return SUCCESS;
         }
@@ -279,13 +302,13 @@ namespace LWDicer.Control
             string strFileName;
             CSearchData pSData = m_rgsCSearchData[iModelNo];
 
-            strFileName= string.Format(DEF_NGC_MARK_NAME_TEMPLATE, pSData.m_strFilePath, m_iCamID, iModelNo);
-            MIL.MpatSave(strFileName, pSData.m_milModel);
+            //strFileName= string.Format(DEF_NGC_MARK_NAME_TEMPLATE, pSData.m_strFilePath, m_iCamID, iModelNo);
+            //MIL.MpatSave(strFileName, pSData.m_milModel);
 
-            MVisionModelData modelData = new MVisionModelData(m_pMilSystemID,
-                                                              pSData.m_strFileName,
-                                                              pSData.m_strFilePath);
-            modelData.WriteSearchData(iModelNo, ref pSData);
+            //MVisionModelData modelData = new MVisionModelData(m_pMilSystemID,
+            //                                                  pSData.m_strFileName,
+            //                                                  pSData.m_strFilePath);
+            //modelData.WriteSearchData(iModelNo, ref pSData);
 
             return SUCCESS;
         }
@@ -293,7 +316,7 @@ namespace LWDicer.Control
 
         public void DeleteSearchModel(int iModelNo)
         {
-            CSearchData pSData = m_rgsCSearchData[iModelNo];
+            CVisionPatternData pSData = m_rgsCSearchData[iModelNo];
 
             if (pSData.m_milModel != MIL.M_NULL && pSData.m_bIsModel)
             {
@@ -309,18 +332,18 @@ namespace LWDicer.Control
             pSData.m_dCertaintyThreshold = 90.0;
 
 
-            MVisionModelData visionModelData = new MVisionModelData(m_pMilSystemID,
-                                                                    pSData.m_strFileName,
-                                                                    pSData.m_strFilePath);
+            //MVisionModelData visionModelData = new MVisionModelData(m_pMilSystemID,
+            //                                                        pSData.m_strFileName,
+            //                                                        pSData.m_strFilePath);
 
-            visionModelData.DeleteSearchData(iModelNo, ref pSData);
+            //visionModelData.DeleteSearchData(iModelNo, ref pSData);
 
 
-            string strFileName;
-            strFileName= string.Format(DEF_NGC_MARK_NAME_TEMPLATE, pSData.m_strFilePath, m_iCamID, iModelNo);
+            //string strFileName;
+            //strFileName= string.Format(DEF_NGC_MARK_NAME_TEMPLATE, pSData.m_strFilePath, m_iCamID, iModelNo);
 
-            // File 이 존재하지 않으면 Fail ⇒ FALSE Return.            
-            File.Delete(strFileName);
+            //// File 이 존재하지 않으면 Fail ⇒ FALSE Return.            
+            //File.Delete(strFileName);
 
         }
 

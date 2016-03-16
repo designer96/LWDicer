@@ -22,6 +22,7 @@ using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 
 using static LWDicer.Control.DEF_PolygonScanner;
+using static LWDicer.Control.DEF_Vision;
 
 namespace LWDicer.Control
 {
@@ -232,9 +233,6 @@ namespace LWDicer.Control
 
             public bool UseVIPMode;
 
-            // 2014.10.20 CF Align
-            public bool UseUseCFAlign;       // CF Align 사용 여부
-            public double CFAlignLimit;
 
             public CSystemData()
             {
@@ -357,9 +355,7 @@ namespace LWDicer.Control
             // Header
             public string Name = "Default";   // unique primary key
 
-            ///////////////////////////////////////////////////////////
-            // Wafer Data
-            public CWaferData Wafer = new CWaferData();
+           
 
             ///////////////////////////////////////////////////////////
             // Function Parameter
@@ -374,6 +370,18 @@ namespace LWDicer.Control
 
 	        public bool UseUHandler_ExtraVccUseFlag; // 2014.02.21 by ranian. Extra Vcc 추가
             public bool UseUHandler_WaitPosUseFlag; // 2014.02.21 by ranian. LP->UP 로 갈 때, WP 사용 여부
+
+
+            ///////////////////////////////////////////////////////////
+            // Wafer Data
+            public CWaferData Wafer = new CWaferData();
+
+            ///////////////////////////////////////////////////////////
+            // Vision Data (Pattern)
+            public CSearchData MacroPatternA = new CSearchData();
+            public CSearchData MacroPatternB = new CSearchData();
+            public CSearchData MicroPatternA = new CSearchData();
+            public CSearchData MicroPatternB = new CSearchData();
         }
 
     }
@@ -408,12 +416,15 @@ namespace LWDicer.Control
                 m_OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.OUTPUT_ORIGIN, DEF_IO.EIOType.DO);
             }
 
-            //TestFunction();
+            
 
             LoadGeneralData();
             LoadSystemData();
             LoadModelList();
             ChangeModel();
+
+
+            TestFunction();
         }
 
         public void TestFunction()
@@ -607,7 +618,7 @@ namespace LWDicer.Control
                 }
 
                 // 2. delete list
-                m_ModelList.Clear();
+               m_ModelList.Clear();
 
                 // 3. get list
                 foreach (DataRow row in datatable.Rows)

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 
 using System.Windows.Forms;
 using System.Drawing;
+using LWDicer.UI;
 using static LWDicer.Control.DEF_Vision;
 using static LWDicer.Control.DEF_Error;
 using Matrox.MatroxImagingLibrary;
@@ -37,8 +38,8 @@ namespace LWDicer.Control
             string strSection;
             strSection= string.Format("SEARCH_MODEL_DATA_%{0}", iModelNo);
 
-            String strModelDataFileName = pSdata.m_strFilePath + "\\" + pSdata.m_strFileName;
-            WritePrivateProfileSection(strSection, "", strModelDataFileName);
+            //String strModelDataFileName = pSdata.m_strFilePath + "\\" + pSdata.m_strFileName;
+            //WritePrivateProfileSection(strSection, "", strModelDataFileName);
 
             return SUCCESS;
         }
@@ -100,10 +101,13 @@ namespace LWDicer.Control
             int iTop;
             int iWidth;
             int iHeight;
+            
+            if (iModelNo == 1)
+                pSData = CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternA;
+            if (iModelNo == 2)
+                pSData = CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternB;
 
             pSData.m_bIsModel = false;
-            pSData.m_strFilePath = m_strPath;
-            pSData.m_strFileName = m_strFileName;
 
             // Section Name
             strSection = string.Format("SEARCH_MODEL_DATA_{0}", iModelNo);
@@ -144,55 +148,55 @@ namespace LWDicer.Control
                 goto READING_ERROR_OPERATION;
             }
 
-            // ************************************************************************* //
-            // 저장된 Pattern Model 읽어옴
-            strLoadFileName = string.Format(DEF_NGC_MARK_NAME_TEMPLATE,
-                                            pSData.m_strFilePath, iCamNo, iModelNo);
-            MIL.MpatRestore(m_MilSystemID,strLoadFileName,ref pSData.m_milModel);
-            // Null이 경우에 Err
-            if(pSData.m_milModel == MIL.M_NULL) return ERR_VISION_FILE_READ_FAILURE;
+            //// ************************************************************************* //
+            //// 저장된 Pattern Model 읽어옴
+            //strLoadFileName = string.Format(DEF_NGC_MARK_NAME_TEMPLATE,
+            //                               /* pSData.m_strFilePath,*/ iCamNo, iModelNo);
+            //MIL.MpatRestore(m_MilSystemID,strLoadFileName,ref pSData.m_milModel);
+            //// Null이 경우에 Err
+            //if(pSData.m_milModel == MIL.M_NULL) return ERR_VISION_FILE_READ_FAILURE;
 
-            // Restore Model Area
-            double dOffsetX = 0.0 , dOffsetY = 0.0;
-            double dWidth = 0.0 , dHeight = 0.0;
+            //// Restore Model Area
+            //double dOffsetX = 0.0 , dOffsetY = 0.0;
+            //double dWidth = 0.0 , dHeight = 0.0;
 
-            MIL.MpatInquire(pSData.m_milModel, MIL.M_ALLOC_OFFSET_X, ref dOffsetX);
-            MIL.MpatInquire(pSData.m_milModel, MIL.M_ALLOC_OFFSET_Y, ref dOffsetY);
-            if (dOffsetX < 0 || dOffsetX > DEF_IMAGE_SIZE_X) 
-                return ERR_VISION_INVALID_MODEL;
-            else if(dOffsetY < 0 || dOffsetY > DEF_IMAGE_SIZE_Y)
-                return ERR_VISION_INVALID_MODEL;
+            //MIL.MpatInquire(pSData.m_milModel, MIL.M_ALLOC_OFFSET_X, ref dOffsetX);
+            //MIL.MpatInquire(pSData.m_milModel, MIL.M_ALLOC_OFFSET_Y, ref dOffsetY);
+            //if (dOffsetX < 0 || dOffsetX > DEF_IMAGE_SIZE_X) 
+            //    return ERR_VISION_INVALID_MODEL;
+            //else if(dOffsetY < 0 || dOffsetY > DEF_IMAGE_SIZE_Y)
+            //    return ERR_VISION_INVALID_MODEL;
 
-            MIL.MpatInquire(pSData.m_milModel, MIL.M_ALLOC_SIZE_X, ref dWidth);
-            MIL.MpatInquire(pSData.m_milModel, MIL.M_ALLOC_SIZE_Y, ref dHeight);
-            if (dWidth < 0 || dHeight < 0)
-                return ERR_VISION_INVALID_MODEL;
-            else if (dWidth > DEF_IMAGE_SIZE_X || dHeight > DEF_IMAGE_SIZE_Y)
-                return ERR_VISION_INVALID_MODEL;
-            // Model Rectangle Size 설정
-            pSData.m_rectModel = new Rectangle((int)dOffsetX, (int)dOffsetY, (int)dWidth, (int)dHeight);
+            //MIL.MpatInquire(pSData.m_milModel, MIL.M_ALLOC_SIZE_X, ref dWidth);
+            //MIL.MpatInquire(pSData.m_milModel, MIL.M_ALLOC_SIZE_Y, ref dHeight);
+            //if (dWidth < 0 || dHeight < 0)
+            //    return ERR_VISION_INVALID_MODEL;
+            //else if (dWidth > DEF_IMAGE_SIZE_X || dHeight > DEF_IMAGE_SIZE_Y)
+            //    return ERR_VISION_INVALID_MODEL;
+            //// Model Rectangle Size 설정
+            //pSData.m_rectModel = new Rectangle((int)dOffsetX, (int)dOffsetY, (int)dWidth, (int)dHeight);
 
-            // Reference Point 설정
-            double dCenterX=0.0 , dCenterY=0.0;
-            MIL.MpatInquire(pSData.m_milModel, MIL.M_CENTER_X, ref dCenterX);
-            MIL.MpatInquire(pSData.m_milModel, MIL.M_CENTER_Y, ref dCenterY);
+            //// Reference Point 설정
+            //double dCenterX=0.0 , dCenterY=0.0;
+            //MIL.MpatInquire(pSData.m_milModel, MIL.M_CENTER_X, ref dCenterX);
+            //MIL.MpatInquire(pSData.m_milModel, MIL.M_CENTER_Y, ref dCenterY);
 
-            if ((pSData.m_rectModel.Left + dCenterX) < 0
-                || (pSData.m_rectModel.Left + dCenterX) > DEF_IMAGE_SIZE_X
-                || (pSData.m_rectModel.Top + dCenterY) < 0
-                || (pSData.m_rectModel.Top + dCenterY) > DEF_IMAGE_SIZE_Y)
-                return ERR_VISION_INVALID_REFERENCE_POINT;
+            //if ((pSData.m_rectModel.Left + dCenterX) < 0
+            //    || (pSData.m_rectModel.Left + dCenterX) > DEF_IMAGE_SIZE_X
+            //    || (pSData.m_rectModel.Top + dCenterY) < 0
+            //    || (pSData.m_rectModel.Top + dCenterY) > DEF_IMAGE_SIZE_Y)
+            //    return ERR_VISION_INVALID_REFERENCE_POINT;
 
-            pSData.m_pointReference.X = (int)dCenterX;
-            pSData.m_pointReference.Y = (int)dCenterY;
+            //pSData.m_pointReference.X = (int)dCenterX;
+            //pSData.m_pointReference.Y = (int)dCenterY;
 
-            MIL.MpatInquire(pSData.m_milModel, MIL.M_ACCEPTANCE_THRESHOLD, ref pSData.m_dAcceptanceThreshold);
-            MIL.MpatInquire(pSData.m_milModel, MIL.M_CERTAINTY_THRESHOLD, ref pSData.m_dCertaintyThreshold);
+            //MIL.MpatInquire(pSData.m_milModel, MIL.M_ACCEPTANCE_THRESHOLD, ref pSData.m_dAcceptanceThreshold);
+            //MIL.MpatInquire(pSData.m_milModel, MIL.M_CERTAINTY_THRESHOLD, ref pSData.m_dCertaintyThreshold);
 
-            MIL.MpatSetPosition(pSData.m_milModel, pSData.m_rectSearch.Left, pSData.m_rectSearch.Top, pSData.m_rectSearch.Width, pSData.m_rectSearch.Height);
-            MIL.MpatPreprocModel(MIL.M_NULL, pSData.m_milModel, MIL.M_DEFAULT);
+            //MIL.MpatSetPosition(pSData.m_milModel, pSData.m_rectSearch.Left, pSData.m_rectSearch.Top, pSData.m_rectSearch.Width, pSData.m_rectSearch.Height);
+            //MIL.MpatPreprocModel(MIL.M_NULL, pSData.m_milModel, MIL.M_DEFAULT);
            
-            pSData.m_bIsModel = true;
+            //pSData.m_bIsModel = true;
                         
             return SUCCESS;
 
@@ -202,43 +206,7 @@ namespace LWDicer.Control
 
             return ERR_VISION_FILE_READ_FAILURE;
         }
-
-
-        public int WriteSearchData(int iModelNo, ref CSearchData pSData)
-        {
-            string strSection;
-
-            // Section Name
-            strSection = string.Format("SEARCH_MODEL_DATA_{0}", iModelNo);
-
-            if (!SetIniValue(strSection, "SearchAreaLeft", pSData.m_rectSearch.Left))
-            {
-                goto ERROR_OPERATION;
-            }
-
-            if (!SetIniValue(strSection, "SearchAreaTop", pSData.m_rectSearch.Top))
-            {
-                goto ERROR_OPERATION;
-            }
-
-            if (!SetIniValue(strSection, "SearchAreaWidth", pSData.m_rectSearch.Width))
-            {
-                goto ERROR_OPERATION;
-            }
-
-            if (!SetIniValue(strSection, "SearchAreaHeight", pSData.m_rectSearch.Height))
-            {
-                goto ERROR_OPERATION;
-            }
-
-            return SUCCESS;
-
-            ERROR_OPERATION:
-
-            return ERR_VISION_FILE_WRITE_FAILURE;
-        }
-
-
+        
         private bool MakeBackUpFile()
         {
             string strSrcFile = m_strFileName;

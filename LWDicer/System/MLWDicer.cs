@@ -126,7 +126,7 @@ namespace LWDicer.Control
             // DataManager
             m_SystemInfo.GetObjectInfo(1, out objInfo);
             m_DataManager = new MDataManager(objInfo, dbInfo);
-
+            
             ////////////////////////////////////////////////////////////////////////
             // 1. Hardware Layer
             ////////////////////////////////////////////////////////////////////////
@@ -207,7 +207,16 @@ namespace LWDicer.Control
 
             CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
             CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
+
+            CModelData pModelData;
+            CMainFrame.LWDicer.m_DataManager.ViewModel("Default", out pModelData);
+            CMainFrame.LWDicer.m_DataManager.m_ModelData = pModelData;
             
+            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternA);
+            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternB);
+            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternA);
+            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternB);
+
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
             ////////////////////////////////////////////////////////////////////////
@@ -406,7 +415,7 @@ namespace LWDicer.Control
 
             m_DataManager.m_SystemData.Scanner[objIndex].strIP = "192.168.22.60";
             m_DataManager.m_SystemData.Scanner[objIndex].strPort = "21";
-
+            
             m_Scanner[objIndex] = new MPolygonScanner(objInfo, m_DataManager.m_SystemData.Scanner[objIndex], objIndex, m_ComPort);
         }
 

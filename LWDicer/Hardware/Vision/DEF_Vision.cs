@@ -53,7 +53,10 @@ namespace LWDicer.Control
 
         public const int PRE__CAM = 0;
         public const int FINE_CAM = 1;
- 
+
+        public const int PATTERN_A = 0;
+        public const int PATTERN_B = 1;
+
 
         /** Display Image Resolution */
         public const int DEF_IMAGE_SIZE_X = 1624;
@@ -87,7 +90,7 @@ namespace LWDicer.Control
         /*                         Data Structure Define                        */
         /************************************************************************/
 
-        public const int DEF_USE_SEARCH_MARK_NO = 3;
+        public const int DEF_USE_SEARCH_MARK_NO = 2;
         public const int DEF_DEFAULT_ACCEP_THRESHOLD = 70;
         public const int DEF_DEFAULT_CERTAIN_THRESHOLD = 90;
 
@@ -99,9 +102,9 @@ namespace LWDicer.Control
         /// </summary>
         public enum EPatternMarkType
         {
-            PRE_ALIGN_MARK,
-            FINE_ALIGN_MARK_A,
-            FINE_ALIGN_MARK_B,
+            ALIGN_MARK_A,
+            ALIGN_MARK_B,
+            ALIGN_MARK_COUNT
         }
         // This structure is defined Vision Component Data list of Vision.
         //
@@ -141,64 +144,56 @@ namespace LWDicer.Control
 
         public class CSearchData
         {
-            /** Pattern File Path */
+            //Pattern File Path
             public string m_strFilePath;
-
-            /** Pattern File Name */
-            public string m_strFileName;
-
-            /** Model 등록 여부 */
-            public bool m_bIsModel;
-
-            /** MIL 에서 사용하는 Model ID (NGC) */
-            public MIL_ID m_milModel;
-
-            public MIL_ID m_ModelImage;
-
-            /** MIL 에서 사용하는 Model ID (GMF) */
-            public MIL_ID m_milGmfModel;
-
-            /** Model Rectangle */
+            //Pattern File Name
+            public string m_strFileName;    
+            // Model 등록 여부 
+            public bool m_bIsModel;            
+            // Model Rectangle 
             public Rectangle m_rectModel;
-
-            /** Search Area Pos. & Size */
+            // Search Area Pos. & Size 
             public Rectangle m_rectSearch;
-
-            /** Reference Point */
+            // Reference Point 
             public Point m_pointReference;
-
-            /** Acceptance Threshold */
+            // Acceptance Threshold
             public double m_dAcceptanceThreshold;
-
-            /** Certainty Threshold */
+            // Certainty Threshold
             public double m_dCertaintyThreshold;
-
-            /** Search Angle : MIL 내부 bug 로 사용하면 Error 발생 */
-            //	double m_dSearchAngle;
-
+            
         };
+
+        public class CVisionPatternData : CSearchData
+        {
+            /// Search Model Data
+            // MIL 에서 사용하는 Model ID (NGC)
+            public MIL_ID m_milModel = new MIL_ID();
+            // MIL 에서 영상 Display용
+            public MIL_ID m_ModelImage = new MIL_ID();
+            // MIL 에서 사용하는 Model ID (GMF)
+            public MIL_ID m_milGmfModel = new MIL_ID();
+        }
 
         public class CResultData
         {
-            /** Search 작업 성공 여부 */
+            //  Search 작업 성공 여부
             public bool m_bSearchSuccess;
 
-            /** Vision 좌표계를 따르는 인식 좌표
-             *  Display View 좌측 상단 좌표 : (0.0, 0.0)
-             */
+            //  Vision 좌표계를 따르는 인식 좌표
+            //  Display View 좌측 상단 좌표 : (0.0, 0.0)          
             public double m_dPixelX;
             public double m_dPixelY;
 
-            // Score : 인식률 */
+            // Score : 인식률 
             public double m_dScore;
 
-            // Search 작업 성공 결과 Model Pos. & Size */
+            // Search 작업 성공 결과 Model Pos. & Size 
             public Rectangle m_rectFindedModel;
 
-            // Search Area Pos. & Size */
+            // Search Area Pos. & Size 
             public Rectangle m_rectSearch;
 
-            // Search Result 를 저장할 문자열 */
+            // Search Result 를 저장할 문자열 
             public string m_strResult;
 
             // Search 작업에 걸린 시간 
@@ -219,7 +214,10 @@ namespace LWDicer.Control
 
             public int m_iEdgeNum;
             public double[] m_dPosX;
-            public double[] m_dPosY;           
+            public double[] m_dPosY;
+
+            // Search Result 를 저장할 문자열 
+            public string m_strResult;
 
         };
 

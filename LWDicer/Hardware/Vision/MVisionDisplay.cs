@@ -86,9 +86,10 @@ namespace LWDicer.Control
             MIL.MdispAlloc(m_pMilSystemID, MIL.M_DEFAULT, "M_DEFAULT", MIL.M_WINDOWED, ref m_MilDisplay);
 
             // Camera Select
-            SelectCamera(pCamera);
+            if(SelectCamera(pCamera)==SUCCESS) return SUCCESS;
+            else return ERR_VISION_ERROR;
 
-            return SUCCESS;
+
         }
         
         public int GetIdNum()
@@ -112,6 +113,8 @@ namespace LWDicer.Control
             CameraPixelSize = m_pCamera.GetCameraPixelSize();
             m_im_ImageWidth = CameraPixelSize.Width;
             m_im_ImageHeight = CameraPixelSize.Height;
+
+            if (m_im_ImageWidth == 0 || m_im_ImageHeight == 0) return ERR_VISION_ERROR;
 
             // image byte 변수
             m_ImgBits = new Byte[m_im_ImageWidth * m_im_ImageHeight];
@@ -222,6 +225,12 @@ namespace LWDicer.Control
 
             return true;
         }
+
+        /// <summary>
+        ///  현재 Grab하는 Image를 저장함.
+        /// </summary>
+        /// <param name="strPath"></param>
+        /// <returns></returns>
         public bool SaveImage(string strPath)
         {
             MIL_ID pSaveImage = MIL.M_NULL;
@@ -237,10 +246,18 @@ namespace LWDicer.Control
             
             return true;
         }
+
+        /// <summary>
+        /// Model Image를 저장함.
+        /// </summary>
+        /// <param name="strPath"></param>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
         public bool SaveModelImage(string strPath,int iModelNo)
         {
-            CSearchData pSData = m_pCamera.GetSearchData(iModelNo);
-
+            CVisionPatternData pSData = m_pCamera.GetSearchData(iModelNo);
+           
+            if (pSData.m_ModelImage == MIL.M_NULL) return false;
             MIL.MbufExport(strPath, MIL.M_BMP, pSData.m_ModelImage);
             
             return true;
@@ -288,16 +305,19 @@ namespace LWDicer.Control
             Marshal.Copy(ImgBits, 0, BmpData.Scan0, iWidth * iHeight);
             Bitmap.UnlockBits(BmpData);
 
-            Panel RecDisplay = (Panel)System.Windows.Forms.Control.FromHandle(pHandle);
+            // Display할 객체의 Size를 읽기
+            int Width = System.Windows.Forms.Control.FromHandle(pHandle).Width;
+            int Height = System.Windows.Forms.Control.FromHandle(pHandle).Height;
 
-            Rectangle RecPic = new Rectangle(0, 0, RecDisplay.Width, RecDisplay.Height);
+            Rectangle RecHandle = new Rectangle(0, 0, Width, Height);
 
             // Graph로 Bmp를 Display함
             System.Drawing.Graphics graph;
             graph = System.Drawing.Graphics.FromHwnd(pHandle);
-            graph.DrawImage(Bitmap, RecPic, RecImage, GraphicsUnit.Pixel);
+            graph.DrawImage(Bitmap, RecHandle, RecImage, GraphicsUnit.Pixel);
 
         }
+        
         public MIL_ID GetImage()
         {
             return m_MilImage;

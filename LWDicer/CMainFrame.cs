@@ -31,7 +31,7 @@ namespace LWDicer.UI
         public static MLWDicer LWDicer = new MLWDicer(new CObjectInfo());
 
         public static CMainFrame MainFrame = null;
-
+        
         private FormTop m_FormTop;
 
         private FormSubBottom m_FormSubBottom;

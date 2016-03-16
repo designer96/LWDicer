@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 using static LWDicer.Control.DEF_Vision;
 using static LWDicer.Control.DEF_Error;
@@ -24,6 +26,7 @@ namespace LWDicer.Control
         // System
         private MIL_ID m_MilApp;            // Application identifier.
         private MIL_ID m_MilSystem;          // System identifier.
+        private MVisionCamera[] m_pCamera;
         private MVisionDisplay[] m_pDisplay;
 
         private BGAPI.System m_System;
@@ -32,7 +35,6 @@ namespace LWDicer.Control
         //=========================================================
         // Image 
         private MIL_ID m_MilView = MIL.M_NULL;
-        private MIL_ID m_MilViewImage = MIL.M_NULL;
 
         //=========================================================
         // Pattern Maching 
@@ -52,6 +54,7 @@ namespace LWDicer.Control
             m_iSystemIndex  =   0;
             m_iCheckCamNo   =   0;
             m_iResult       =   0;
+            m_pCamera = new MVisionCamera[DEF_MAX_CAMERA_NO];
             m_pDisplay = new MVisionDisplay[DEF_MAX_CAMERA_NO];
             m_MilApp = MIL.M_NULL;
             m_MilSystem = MIL.M_NULL;            
@@ -121,6 +124,11 @@ namespace LWDicer.Control
             m_pDisplay[m_Display.GetIdNum()] = m_Display;
         }
 
+        public void SelectCamera(MVisionCamera m_Camera)
+        {
+            m_pCamera[m_Camera.GetCamID()] = m_Camera;
+        }
+
         // System에서 Read한 Cam의 개수를 리턴한다.
         public int GetCamNum()
         {
@@ -135,14 +143,15 @@ namespace LWDicer.Control
             MIL.MappFree(m_MilApp);
         }
 
-        public bool RegisterMarkModel(int iCam, ref CSearchData pSData)
-        {
-            // 0 위치를 화면의 중앙으로 설정함.
-            pSData.m_rectModel.X = m_pDisplay[iCam].GetImageWidth() / 2;
-            pSData.m_rectModel.Y = m_pDisplay[iCam].GetImageHeight() / 2;
 
-            MIL_ID m_MilImage = m_pDisplay[iCam].GetImage();
-            MIL_ID m_DisplayGraph = m_pDisplay[iCam].GetViewGraph();
+        public int ReloadModel(int iCamNo, ref CVisionPatternData pSData)
+        {
+            if (pSData.m_bIsModel == false) return ERR_VISION_ERROR;
+
+            MIL_ID m_MilImage = MIL.M_NULL;
+            // Image Load...
+            string strLoadFileName = pSData.m_strFilePath + pSData.m_strFileName;  
+            MIL.MbufRestore(strLoadFileName, m_MilSystem, ref m_MilImage);
 
             //Draw할 Rec을 생성한다.
             Rectangle pRec = new Rectangle(pSData.m_rectModel.X - pSData.m_rectModel.Width / 2,
@@ -157,12 +166,54 @@ namespace LWDicer.Control
             MIL.MbufAlloc2d(m_MilSystem, pRec.Width, pRec.Height, MIL.M_UNSIGNED + 8, MIL.M_IMAGE + MIL.M_PROC + MIL.M_DISP,
                                 ref pSData.m_ModelImage);
             MIL.MbufCopyColor2d(m_MilImage, pSData.m_ModelImage, MIL.M_ALL_BANDS, pRec.X, pRec.Y,
-                               MIL.M_ALL_BANDS,0,0, pRec.Width, pRec.Height);
+                               MIL.M_ALL_BANDS, 0, 0, pRec.Width, pRec.Height);
 
-            // Buffer Child 생성 (실시간으로 Grab한 Source Image를 Child Buffer로 복사를 한다.
-            //MIL.MbufChild2d(m_MilImage, pRec.X, pRec.Y,
-            //                   pRec.Width, pRec.Height, ref pSData.m_ModelImage);
+            if (pSData.m_milModel == MIL.M_NULL) return ERR_VISION_ERROR;
 
+            MIL.MpatAllocResult(m_MilSystem, MIL.M_DEFAULT, ref m_SearchResult);
+
+            // Set the search accuracy to high.
+            MIL.MpatSetAccuracy(pSData.m_milModel, MIL.M_HIGH);
+
+            MIL.MpatSetAcceptance(pSData.m_milModel, pSData.m_dAcceptanceThreshold);  // Acceptance Threshold Setting
+            MIL.MpatSetCertainty(pSData.m_milModel, pSData.m_dAcceptanceThreshold);   // Set Certainty Threshold
+            MIL.MpatSetCenter(pSData.m_milModel,                                      // Pattern Mark에서 Offset 설정함.
+                              (double)pSData.m_pointReference.X,
+                              (double)pSData.m_pointReference.Y);
+
+            // Set the search model speed to high.
+            MIL.MpatSetSpeed(pSData.m_milModel, MIL.M_HIGH);
+
+            // Preprocess the model.
+            MIL.MpatPreprocModel(m_MilImage, pSData.m_milModel, MIL.M_DEFAULT);            
+
+            return SUCCESS;
+
+        }
+
+        public bool RegisterMarkModel(int iCamNo, ref CVisionPatternData pSData)
+        {
+            // 0 위치를 화면의 중앙으로 설정함.
+            pSData.m_rectModel.X = m_pDisplay[iCamNo].GetImageWidth() / 2;
+            pSData.m_rectModel.Y = m_pDisplay[iCamNo].GetImageHeight() / 2;
+
+            MIL_ID m_MilImage = m_pDisplay[iCamNo].GetImage();
+            MIL_ID m_DisplayGraph = m_pDisplay[iCamNo].GetViewGraph();
+
+            //Draw할 Rec을 생성한다.
+            Rectangle pRec = new Rectangle(pSData.m_rectModel.X - pSData.m_rectModel.Width / 2,
+                                           pSData.m_rectModel.Y - pSData.m_rectModel.Height / 2,
+                                           pSData.m_rectModel.Width, pSData.m_rectModel.Height);
+
+            // Allocate a normalized grayscale model.
+            MIL.MpatAllocModel(m_MilSystem, m_MilImage, pRec.X, pRec.Y,
+                               pRec.Width, pRec.Height, MIL.M_NORMALIZED, ref pSData.m_milModel);
+
+            // Model Image Save (Image View Save용)
+            MIL.MbufAlloc2d(m_MilSystem, pRec.Width, pRec.Height, MIL.M_UNSIGNED + 8, MIL.M_IMAGE + MIL.M_PROC + MIL.M_DISP,
+                                ref pSData.m_ModelImage);
+            MIL.MbufCopyColor2d(m_MilImage, pSData.m_ModelImage, MIL.M_ALL_BANDS, pRec.X, pRec.Y,
+                               MIL.M_ALL_BANDS,0,0, pRec.Width, pRec.Height);            
 
             if (pSData.m_milModel == MIL.M_NULL) return false;
 
@@ -196,8 +247,7 @@ namespace LWDicer.Control
             MIL.MpatDraw(MIL.M_DEFAULT, pSData.m_milModel, m_DisplayGraph,
                          MIL.M_DRAW_BOX , MIL.M_DEFAULT, MIL.M_ORIGINAL);
 
-            //MIL.MbufFree(m_MilImage);
-            //MIL.MbufFree(m_DisplayGraph); 
+            // Save Image Bitmap
 
             return true;
 
@@ -304,11 +354,11 @@ namespace LWDicer.Control
         /// <param name="pSdata"></param>
         /// <param name="pRData"></param>
         /// <returns></returns>
-        public int SearchByNGC(int iCam, CSearchData pSdata, out CResultData pRData)
+        public int SearchByNGC(int iCamNo, CVisionPatternData pSdata, out CResultData pRData)
         {
             
-            MIL_ID m_MilImage = m_pDisplay[iCam].GetImage();
-            MIL_ID m_DisplayGraph = m_pDisplay[iCam].GetViewGraph();
+            MIL_ID m_MilImage = m_pDisplay[iCamNo].GetImage();
+            MIL_ID m_DisplayGraph = m_pDisplay[iCamNo].GetViewGraph();
 
             CResultData pResult = new CResultData();
             Point RectOffset = new Point();            
@@ -324,7 +374,8 @@ namespace LWDicer.Control
             {
                 // Display Mark Area
                 //MIL.MgraClear(MIL.M_DEFAULT, m_DisplayGraph);
-                m_pDisplay[iCam].ClearOverlay();
+                m_pDisplay[iCamNo].ClearOverlay();
+                MIL.MgraColor(MIL.M_DEFAULT, MIL.M_COLOR_GREEN);
                 MIL.MpatDraw(MIL.M_DEFAULT, m_SearchResult, m_DisplayGraph, MIL.M_DRAW_BOX, MIL.M_DEFAULT, MIL.M_DEFAULT);
                 //DisplaySearchResult();
 
@@ -360,78 +411,6 @@ namespace LWDicer.Control
             pRData = pResult;
 
             return ERR_VISION_SEARCH_FAILURE;
-
-        }
-
-        public void SetViewWindow(Rectangle RectImage, IntPtr pDisplayObject)
-        {
-            double ZoomX;
-            double ZoomY;
-            IntPtr m_ImageHandle = IntPtr.Zero;
-
-            // Display하는 Panel의 사이즈를 읽어온다.
-            Size DisplaySize = ContainerControl.FromHandle(pDisplayObject).Size;
-
-            // Display Size에 맞게 Zoom를 설정한다.
-            ZoomX = (double)DisplaySize.Width / (double)RectImage.Width;
-            ZoomY = (double)DisplaySize.Height / (double)RectImage.Height;
-            MIL.MdispZoom(m_MilView, ZoomX, ZoomY);
-
-            // View Image 설정
-            MIL.MbufAlloc2d(m_MilSystem, RectImage.Width, RectImage.Height,
-                                MIL.M_UNSIGNED + 8, MIL.M_IMAGE + MIL.M_PROC + MIL.M_DISP,
-                                ref m_MilViewImage);
-
-            MIL.MbufClear(m_MilViewImage, 0);
-
-            // 핸들값을 받아온다.
-            m_ImageHandle = pDisplayObject;
-            // Display Window를 설정한다.
-            MIL.MdispSelectWindow(m_MilView, m_MilViewImage, m_ImageHandle);
-
-        }
-
-        public void ShowViewImage(MIL_ID pImage)
-        {
-            MIL.MbufCopy(pImage, m_MilViewImage);
-        }
-        public void DisplayViewImage(MIL_ID pImage, IntPtr pDisplayObject)
-        {
-            double ZoomX;
-            double ZoomY;
-            IntPtr m_ImageHandle = IntPtr.Zero;
-
-            return;
-
-            MIL_INT ImageWidth   = MIL.MbufInquire(pImage, MIL.M_SIZE_X, MIL.M_NULL);
-            MIL_INT ImageHeight  = MIL.MbufInquire(pImage, MIL.M_SIZE_Y, MIL.M_NULL);
-            
-            // Display하는 Panel의 사이즈를 읽어온다.
-            Size DisplaySize = ContainerControl.FromHandle(pDisplayObject).Size;
-
-            // Display Size에 맞게 Zoom를 설정한다.
-            ZoomX = (double)DisplaySize.Width / (double)ImageWidth;
-            ZoomY = (double)DisplaySize.Height / (double)ImageHeight;
-            MIL.MdispZoom(m_MilView, ZoomX, ZoomY);
-
-            // View Image 설정
-            MIL.MbufAlloc2d(m_MilSystem, ImageWidth,ImageHeight,
-                                MIL.M_UNSIGNED + 8, MIL.M_IMAGE + MIL.M_PROC + MIL.M_DISP,
-                                ref m_MilViewImage);
-
-            MIL.MbufClear(m_MilViewImage, 0);
-
-            // 핸들값을 받아온다.
-            m_ImageHandle = pDisplayObject;
-            // Display Window를 설정한다.
-            MIL.MdispSelectWindow(m_MilView, m_MilViewImage, m_ImageHandle);
-
-            MIL.MbufCopy(pImage, m_MilViewImage);
-
-        }
-        void Grab()
-        {
-
         }
 
     }
