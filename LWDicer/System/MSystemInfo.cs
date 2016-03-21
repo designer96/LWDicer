@@ -22,19 +22,20 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_SYSTEM, "System", 0, "MLWDicer", 0, "System", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_DATAMANAGER, "DataManger", 1, "DataManager", 500, "DataManager", LOG_ALL, LOG_DAY ),
 
-	            new CObjectInfo( (int)OBJ_HL_IO, "IO", 2, "Device Net", 1000, "IO", LOG_ALL, LOG_DAY ),	
+	            new CObjectInfo( (int)OBJ_HL_MOTION_LIB, "MotionLib", 2, "MMC Board", 1000, "MotionLib", LOG_ALL, LOG_DAY ),
+	            new CObjectInfo( (int)OBJ_HL_MOTION_LIB, "MotionLib", 3, "YMC Board", 1500, "YMCLib", LOG_ALL, LOG_DAY ),
+
+	            new CObjectInfo( (int)OBJ_HL_IO, "IO", 6, "Device Net", 2000, "IO", LOG_ALL, LOG_DAY ),	
+				
+	            new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 9, "Vision", 3000, "Vision", LOG_ALL, LOG_DAY ),
 		
-	            new CObjectInfo( (int)OBJ_HL_MOTION_LIB, "MotionLib", 3, "MMC Board", 2000, "MotionLib", LOG_ALL, LOG_DAY ),
-		
-	            new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 4, "Vision", 3000, "Vision", LOG_ALL, LOG_DAY ),
-		
-	            new CObjectInfo( (int)OBJ_HL_MELSEC, "Melsec", 5, "Melsec", 7000, "Melsec", LOG_ALL, LOG_DAY ),
+	            new CObjectInfo( (int)OBJ_HL_MELSEC, "Melsec", 11, "Melsec", 4000, "Melsec", LOG_ALL, LOG_DAY ),
 		
 	            // 30-39 : Serial ------------------------------------------------------------------------
-	            new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 10, "RS232 SHead1", 5000, "RS232_SHead1", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 11, "RS232 SHead2", 5000, "RS232_SHead2", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 12, "RS232 GHead1", 5000, "RS232_GHead1", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 13, "RS232 GHead2", 5000, "RS232_GHead2", LOG_ALL, LOG_DAY ),
+	            new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 30, "RS232 SHead1", 5000, "RS232_SHead1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 31, "RS232 SHead2", 5000, "RS232_SHead2", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 32, "RS232 GHead1", 5000, "RS232_GHead1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 33, "RS232 GHead2", 5000, "RS232_GHead2", LOG_ALL, LOG_DAY ),
 		
 	            // 40-49 : Dummy Reserved
 	            // 50-59 : Ethernet Reserved
@@ -78,7 +79,7 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_HL_VACUUM, "Vacuum", 157, "UHandler Extra Vacuum", 9000, "UHandlerExtraVac", LOG_ALL, LOG_DAY ),
 		
 	            // 200-209 : Scanner & Laser  -------------------------------------------------------------	
-                new CObjectInfo( (int)OBJ_ML_POLYGON,   "PolygonScanner",    200, "Polygon Scanner",  6000, "PolygonScanner",  LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_ML_POLYGON,   "PolygonScanner",    200, "Polygon Scanner",  9100, "PolygonScanner",  LOG_ALL, LOG_DAY ),
 	            // 210-249 : Multi Actuator, Induction Motor, etc Reserved -------------------------------------------------------------
 
 	            // 250-299 : Motion Multi Axes --------------------------------------------------------------------		

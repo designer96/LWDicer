@@ -18,6 +18,7 @@ using static LWDicer.Control.DEF_OpPanel;
 using static LWDicer.Control.DEF_Thread;
 using static LWDicer.Control.DEF_DataManager;
 
+using static LWDicer.Control.DEF_Yaskawa;
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 
@@ -110,7 +111,7 @@ namespace LWDicer.Control
             public CVacuumTime[] VacuumTimer = new CVacuumTime[(int)EObjectVacuum.MAX_OBJ];
 
             // YMC
-            
+            public CYaskawaData YaskawaData = new CYaskawaData();
 
             // Polygon Scanner Configure ini Data
             public CPolygonIni[] Scanner = new CPolygonIni[(int)EObjectScanner.MAX_OBJ];

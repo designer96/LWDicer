@@ -19,6 +19,7 @@ using static LWDicer.Control.DEF_OpPanel;
 using static LWDicer.Control.DEF_Thread;
 using static LWDicer.Control.DEF_DataManager;
 
+using static LWDicer.Control.DEF_Yaskawa;
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 using static LWDicer.Control.DEF_Vision;
@@ -38,7 +39,7 @@ namespace LWDicer.Control
         public MDataManager m_DataManager { get; private set; }
 
         // Hardware Layer
-        public UInt32[] m_hYMC = new UInt32[(int)EYMC_Board.MAX];
+        public MYaskawa m_YMC;
 
         public IIO m_IO { get; private set; }
 
@@ -120,11 +121,12 @@ namespace LWDicer.Control
             ////////////////////////////////////////////////////////////////////////
 
             // YMC
-            CreateYMCBoard();
+            m_SystemInfo.GetObjectInfo(2, out objInfo);
+            CreateYMCBoard(objInfo);
 
             // IO
-            m_SystemInfo.GetObjectInfo(2, out objInfo);
-            m_IO = new MIO_YMC(objInfo, m_hYMC[0]);
+            m_SystemInfo.GetObjectInfo(6, out objInfo);
+            m_IO = new MIO_YMC(objInfo);
             m_IO.OutputOn(oUHandler_Self_Vac_On);
 
             // Motion
@@ -176,7 +178,7 @@ namespace LWDicer.Control
             CreateVacuum(objInfo, vacData, (int)EObjectVacuum.STAGE2, out m_Stage2Vac);
 
             // Polygon Scanner Serial Com Port
-            m_SystemInfo.GetObjectInfo(10, out objInfo);
+            m_SystemInfo.GetObjectInfo(30, out objInfo);
             CreatePolygonSerialPort(objInfo, out m_PolygonComPort);
 
             CPolygonIni PolygonIni = new CPolygonIni();
@@ -187,7 +189,7 @@ namespace LWDicer.Control
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
 
-            m_SystemInfo.GetObjectInfo(20, out objInfo);
+            m_SystemInfo.GetObjectInfo(9, out objInfo);
             CreateVision(objInfo);
 
             CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
@@ -237,6 +239,8 @@ namespace LWDicer.Control
             ////////////////////////////////////////////////////////////////////////
             // 6. Start Thread & System
             ////////////////////////////////////////////////////////////////////////
+            m_YMC.ThreadStart();
+
             SetThreadChannel();
             StartThreads();
 
@@ -248,49 +252,17 @@ namespace LWDicer.Control
             dbInfo = new CDBInfo();
         }
 
-        int CreateYMCBoard()
+        int CreateYMCBoard(CObjectInfo objInfo)
         {
+            CYaskawaRefComp refComp = new CYaskawaRefComp();
+            CYaskawaData data = m_DataManager.m_SystemData.YaskawaData;
+
+            m_YMC = new MYaskawa(objInfo, refComp, data);
 #if SIMULATION_MOTION
-            return SUCCESS;
+            int iResult = m_YMC.OpenController();
+            if (iResult != SUCCESS) return iResult;
 #endif
-            UInt32 rc;
-            CMotionAPI.COM_DEVICE ComDevice;
 
-            for(int i = 0; i < (int)EYMC_Board.MAX; i++)
-            {
-                //============================================================================ To Contents of Processing
-                // Sets the ymcOpenController parameters.		
-                //============================================================================
-                ComDevice.ComDeviceType = (UInt16)CMotionAPI.ApiDefs.COMDEVICETYPE_PCI_MODE;
-                ComDevice.PortNumber = Convert.ToUInt16(i+1);
-                ComDevice.CpuNumber = 1;    //cpuno;
-                ComDevice.NetworkNumber = 0;
-                ComDevice.StationNumber = 0;
-                ComDevice.UnitNumber = 0;
-                ComDevice.IPAddress = "";
-                ComDevice.Timeout = 10000;
-
-                rc = CMotionAPI.ymcOpenController(ref ComDevice, ref m_hYMC[i]);
-                if (rc != CMotionAPI.MP_SUCCESS)
-                {
-                    string str = String.Format("Error ymcOpenController Board {0} \nErrorCode [ 0x{1} ]", i, rc.ToString("X"));
-                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
-                    MessageBox.Show(str);
-                    return GenerateErrorCode(ERR_SYSTEM_FAIL_OPEN_YMC);
-                }
-
-                //============================================================================ To Contents of Processing
-                // Sets the motion API timeout. 		
-                //============================================================================
-                rc = CMotionAPI.ymcSetAPITimeoutValue(30000);
-                if (rc != CMotionAPI.MP_SUCCESS)
-                {
-                    string str = String.Format("Error ymcSetAPITimeoutValue \nErrorCode [ 0x{0} ]", rc.ToString("X"));
-                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
-                    MessageBox.Show(str);
-                    return GenerateErrorCode(ERR_SYSTEM_FAIL_SET_TIMEOUT);
-                }
-            }
             return SUCCESS;
         }
 
@@ -443,10 +415,10 @@ namespace LWDicer.Control
 
         void StartThreads()
         {
-            m_trsLoader.Start();
-            m_trsPushPull.Start();
-            m_trsStage1.Start();
-            m_trsAutoManager.Start();
+            m_trsLoader.ThreadStart();
+            m_trsPushPull.ThreadStart();
+            m_trsStage1.ThreadStart();
+            m_trsAutoManager.ThreadStart();
         }
 
         void SetAllParameterToComponent()

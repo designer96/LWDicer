@@ -334,7 +334,7 @@ namespace LWDicer.Control
 
             if (skip_sensor)
             {
-                Sleep(1);
+                Sleep(WhileSleepTime);
                 return SUCCESS;
             }
 
@@ -381,7 +381,7 @@ namespace LWDicer.Control
 
             if (skip_sensor)
             {
-                Sleep(1);
+                Sleep(WhileSleepTime);
                 return SUCCESS;
             }
 
@@ -428,7 +428,7 @@ namespace LWDicer.Control
 
             if (skip_sensor)
             {
-                Sleep(1);
+                Sleep(WhileSleepTime);
                 return SUCCESS;
             }
 
@@ -503,7 +503,7 @@ namespace LWDicer.Control
                     }
                     return GenerateErrorCode(ERR_VACUUM_TIMEOUT);
                 }
-                Sleep(1);
+                Sleep(WhileSleepTime);
             }
 
             Sleep((m_Data.Time.OnSettlingTime * 1000));
@@ -563,7 +563,7 @@ namespace LWDicer.Control
                     }
                     return GenerateErrorCode(ERR_VACUUM_TIMEOUT);
                 }
-                Sleep(1);
+                Sleep(WhileSleepTime);
             }
 
             switch (m_Data.VacuumType)

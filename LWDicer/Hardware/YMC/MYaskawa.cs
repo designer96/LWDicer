@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MotionYMC;
 
@@ -20,22 +21,29 @@ namespace LWDicer.Control
         public const int ERR_YASKAWA_FAIL_OPEN_YMC                       = 2;
         public const int ERR_YASKAWA_FAIL_SET_TIMEOUT                    = 3;
         public const int ERR_YASKAWA_FAIL_CHANGE_CONTROLLER              = 4;
-        public const int ERR_YASKAWA_FAIL_CLEAR_ALL_AXIS                 = 5;
-        public const int ERR_YASKAWA_FAIL_DECLARE_AXIS                   = 6;
+        public const int ERR_YASKAWA_FAIL_DECLARE_AXIS                   = 5;
+        public const int ERR_YASKAWA_FAIL_CLEAR_AXIS                     = 6;
         public const int ERR_YASKAWA_FAIL_DECLARE_DEVICE                 = 7;
-        public const int ERR_YASKAWA_FAIL_SERVO_ON                       = 8;
-        public const int ERR_YASKAWA_FAIL_SERVO_OFF                      = 9;
-        public const int ERR_YASKAWA_FAIL_RESET_ALARM                    = 10;
-        public const int ERR_YASKAWA_FAIL_GET_MOTION_PARAM               = 11;
-        public const int ERR_YASKAWA_FAIL_SERVO_STOP                     = 12;
-        public const int ERR_YASKAWA_SERVO_DETECTED_PLUS_LIMIT           = 13;
-        public const int ERR_YASKAWA_SERVO_DETECTED_MINUS_LIMIT          = 14;
-        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_JOG                 = 15;
-        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_DRIVING_POSITIONING = 16;
-        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_HOME                = 17;
-        public const int ERR_YASKAWA_FAIL_SERVO_GET_POS                  = 18;
-        public const int ERR_YASKAWA_FAIL_GET_REGISTER_DATA_HANDLE       = 19;
-        public const int ERR_YASKAWA_FAIL_GET_REGISTER_DATA              = 20;
+        public const int ERR_YASKAWA_FAIL_CLEAR_DEVICE                   = 8;
+        public const int ERR_YASKAWA_FAIL_SERVO_ON                       = 9;
+        public const int ERR_YASKAWA_FAIL_SERVO_OFF                      = 10;
+        public const int ERR_YASKAWA_FAIL_RESET_ALARM                    = 11;
+        public const int ERR_YASKAWA_FAIL_GET_MOTION_PARAM               = 12;
+        public const int ERR_YASKAWA_FAIL_SERVO_STOP                     = 13;
+        public const int ERR_YASKAWA_SERVO_DETECTED_PLUS_LIMIT           = 14;
+        public const int ERR_YASKAWA_SERVO_DETECTED_MINUS_LIMIT          = 15;
+        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_JOG                 = 16;
+        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_DRIVING_POSITIONING = 17;
+        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_HOME                = 18;
+        public const int ERR_YASKAWA_FAIL_SERVO_GET_POS                  = 19;
+        public const int ERR_YASKAWA_FAIL_GET_REGISTER_DATA_HANDLE       = 20;
+        public const int ERR_YASKAWA_FAIL_GET_REGISTER_DATA              = 21;
+        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_IN_LIMIT_TIME       = 22;
+        public const int ERR_YASKAWA_FAIL_SERVO_HOME_IN_LIMIT_TIME       = 23;
+        public const int ERR_YASKAWA_TARGET_POS_EXCEED_PLUS_LIMIT        = 24;
+        public const int ERR_YASKAWA_TARGET_POS_EXCEED_MINUS_LIMIT       = 25;
+        public const int ERR_YASKAWA_DETECTED_DOOR_OPEN                  = 26;
+        public const int ERR_YASKAWA_DETECTED_ESTOP                      = 27;
 
         public const int MAX_MP_CPU = 4;    // pci board EA
         public const int MAX_MP_PORT = 2;   // ports per board
@@ -76,15 +84,61 @@ namespace LWDicer.Control
             MP2101TM,   // cpu 1, port 2
         }
 
-        public struct ServoStatusStruct
+        /// <summary>
+        /// Motor 이동 시에 사용할 속도 및 가감속 셋
+        /// </summary>
+        public class CMotorSpeedData
+        {
+            public double Velocity;             // Feeding speed [reference unit/s], Offset speed
+            public double MaxVelocity;          // Maximum feeding speed [reference unit/s]
+            public double Acceleration;         // Acceleration [reference unit/s2], acceleration time constant [ms]
+            public double Deceleration;         // Deceleration [reference unit/s2], deceleration time constant [ms]
+
+            public CMotorSpeedData(double Velocity = 0, double MaxVelocity = 0, double Acceleration = 0, double Deceleration = 0)
+            {
+                this.Velocity = Velocity;
+                this.MaxVelocity = MaxVelocity;
+                this.Acceleration = Acceleration;
+                this.Deceleration = Deceleration;
+            }
+        }
+
+        public class CMotorTimeLimitData
+        {
+            public double TimeMoveLimit;        // Time Limit for Moving           
+            public double TimeAfterMove;        // Sleep Time after Moving
+            public double TimeOriginLimit;      // Time Limit for Origin Return
+
+            public CMotorTimeLimitData(double TimeMoveLimit = 0, double TimeAfterMove = 0, double TimeOriginLimit = 0)
+            {
+                this.TimeMoveLimit = TimeMoveLimit;
+                this.TimeAfterMove = TimeAfterMove;
+                this.TimeOriginLimit = TimeOriginLimit;
+            }
+        }
+
+        public class CPosLimit
+        {
+            // PosLimit
+            public double Limit_P;              // software + Limit
+            public double Limit_N;              // software - Limit
+
+            public CPosLimit(double Limit_P = 100, double Limit_N = -100)
+            {
+                this.Limit_P = Limit_P;
+                this.Limit_N = Limit_N;
+            }
+        }
+
+        public class CServoStatus
         {
             public double EncoderValue;
             public double Velocity;     //Servo 현재 속도
             public bool Ready;
             public bool Alarm;
-            public bool Limit_N;
-            public bool Limit_P;
-            public bool Origin;
+            public bool DetectMinusSensor;
+            public bool DetectPlusSensor;
+            public bool DetectHomeSensor;
             public bool ServoOn;
             public int LoadFactor;
             public int AlarmCode;
@@ -95,58 +149,69 @@ namespace LWDicer.Control
             // General
             public string Name; // Name of Axis
             public bool Exist;    // Use of Axis. if false, Axis not exist.
+            public double Tolerance;            // Position Tolerance
+
+            // Software Limit
+            public CPosLimit PosLimit;
 
             // Speed
-            public double MaxVelocity;                // Maximum feeding speed [reference unit/s]
-            public double Acceleration;               // Acceleration [reference unit/s2], acceleration time constant [ms]
-            public double Deceleration;               // Deceleration [reference unit/s2], deceleration time constant [ms]
-            public double Velocity;                   // Feeding speed [reference unit/s], Offset speed
+            public CMotorSpeedData SpeedData;
+
+            // Time Limit
+            public CMotorTimeLimitData TimeLimit;
 
             // Home
             public UInt16 HomeMethod = (UInt16)CMotionAPI.ApiDefs.HMETHOD_INPUT_C;
             public UInt16 HomeDir = (UInt16)CMotionAPI.ApiDefs.DIRECTION_NEGATIVE; // Home Direction
-            public double ApproachVelocity;             // Approach speed [reference unit/s], 원점복귀 접근 속도
-            public double CreepVelocity;                // Creep speed [reference unit/s], C상 pulse rising -> falling 이동 속도
-            public double HomeOffset;                   // C상 pulse falling후의 원점 복귀 offset
+            public double ApproachVelocity;     // Approach speed [reference unit/s], 원점복귀 접근 속도
+            public double CreepVelocity;        // Creep speed [reference unit/s], C상 pulse rising -> falling 이동 속도
+            public double HomeOffset;           // C상 pulse falling후의 원점 복귀 offset
 
             // Jog Speed
-            public double Jog_Acceleration;               // Acceleration [reference unit/s2], acceleration time constant [ms]
-            public double Jog_Deceleration;               // Deceleration [reference unit/s2], deceleration time constant [ms]
+            public double Jog_Acceleration;     // Acceleration [reference unit/s2], acceleration time constant [ms]
+            public double Jog_Deceleration;     // Deceleration [reference unit/s2], deceleration time constant [ms]
             public double Jog_Fast_Velocity;
             public double Jog_Slow_Velocity;
 
             // below list is defined in MOTION_DATA of YMCMotion
-            public Int16 CoordinateSystem;           // Coordinate system specified
-            public Int16 MoveType;                   // Motion type
-            public Int16 VelocityType;               // Speed type
-            public Int16 AccDecType;                 // Acceleration type
-            public Int16 FilterType;                 // Filter type
-            public Int16 DataType;                   // Data type (0: immediate, 1: indirect designation)
-            public Int32 FilterTime;                 // Filter time [ms]
-            //public Int32 MaxVelocity;                // Maximum feeding speed [reference unit/s]
-            //public Int32 Acceleration;               // Acceleration [reference unit/s2], acceleration time constant [ms]
-            //public Int32 Deceleration;               // Deceleration [reference unit/s2], deceleration time constant [ms]
-            //public Int32 Velocity;                   // Feeding speed [reference unit/s], Offset speed
-            //public Int32 ApproachVelocity;           // Approach speed [reference unit/s]
-            //public Int32 CreepVelocity;              // Creep speed [reference unit/s]
+            public Int16 CoordinateSystem;      // Coordinate system specified
+            public Int16 MoveType;              // Motion type
+            public Int16 VelocityType;          // Speed type
+            public Int16 AccDecType;            // Acceleration type
+            public Int16 FilterType;            // Filter type
+            public Int16 DataType;              // Data type (0: immediate, 1: indirect designation)
+            public Int32 FilterTime;            // Filter time [ms]
+            //public Int32 MaxVelocity;           // Maximum feeding speed [reference unit/s]
+            //public Int32 Acceleration;          // Acceleration [reference unit/s2], acceleration time constant [ms]
+            //public Int32 Deceleration;          // Deceleration [reference unit/s2], deceleration time constant [ms]
+            //public Int32 Velocity;              // Feeding speed [reference unit/s], Offset speed
+            //public Int32 ApproachVelocity;      // Approach speed [reference unit/s]
+            //public Int32 CreepVelocity;         // Creep speed [reference unit/s]
 
             public CMPMotionData()
             {
                 // General
                 Name = "Non Use";
                 Exist = false;
+                Tolerance = 0.001;
+
+                // Software Limit
+                PosLimit = new CPosLimit();
 
                 // Speed
-                MaxVelocity = 100;
-                Acceleration = 100;  //Acceleration time constant [ms] 
-                Deceleration = 100;  // Deceleration time constant [ms]
-                Velocity = 10;		// Speed [reference unit/s]					
-                ApproachVelocity = 5;		// Speed [reference unit/s]					
-                CreepVelocity = 1;      // Speed [reference unit/s]	
+                SpeedData = new CMotorSpeedData(10, 100, 100, 100);
 
-                Jog_Acceleration = Acceleration;
-                Jog_Deceleration = Deceleration;
-                Jog_Fast_Velocity = Jog_Slow_Velocity = Velocity;				
+                // Time Limit
+                TimeLimit = new CMotorTimeLimitData(10, 0.01, 20);
+
+                // Home
+                ApproachVelocity = 5;
+                CreepVelocity = 1;
+                HomeOffset = 10;
+
+                Jog_Acceleration = SpeedData.Acceleration;
+                Jog_Deceleration = SpeedData.Deceleration;
+                Jog_Fast_Velocity = Jog_Slow_Velocity = SpeedData.Velocity;				
 
                 // MOTION_DATA
                 CoordinateSystem = (Int16)CMotionAPI.ApiDefs.WORK_SYSTEM;
@@ -159,7 +224,7 @@ namespace LWDicer.Control
                 DataType = 0;                                           // All parameters directly specified
             }
             
-            public void GetMotionData(ref CMotionAPI.MOTION_DATA s)
+            public void GetMotionData(ref CMotionAPI.MOTION_DATA s, CMotorSpeedData tempSpeed = null)
             {
                 // speed value를 UNIT_REF 적용해서 MOTION_DATA로 변환 
                 s.CoordinateSystem = CoordinateSystem;
@@ -169,14 +234,24 @@ namespace LWDicer.Control
                 s.FilterType       = FilterType;
                 s.DataType         = DataType;
                 s.FilterTime       = FilterTime;
-                s.MaxVelocity      = (int)MaxVelocity * UNIT_REF;
-                s.Acceleration     = (int)Acceleration * UNIT_REF;
-                s.Deceleration     = (int)Deceleration * UNIT_REF;
-                s.Velocity         = (int)Velocity * UNIT_REF;
+                s.MaxVelocity      = (int)SpeedData.MaxVelocity * UNIT_REF;
+                s.Velocity         = (int)SpeedData.Velocity * UNIT_REF;
+                s.Acceleration     = (int)SpeedData.Acceleration * UNIT_REF;
+                s.Deceleration     = (int)SpeedData.Deceleration * UNIT_REF;
                 s.ApproachVelocity = (int)ApproachVelocity * UNIT_REF;
                 s.CreepVelocity    = (int)CreepVelocity * UNIT_REF;
-            }
 
+                if(tempSpeed != null)
+                {
+                    if(tempSpeed.Velocity != 0)
+                        s.Velocity = (int)tempSpeed.Velocity * UNIT_REF;
+                    if(tempSpeed.Acceleration != 0)
+                        s.Acceleration = (int)tempSpeed.Acceleration * UNIT_REF;
+                    if(tempSpeed.Deceleration != 0)
+                        s.Deceleration = (int)tempSpeed.Deceleration * UNIT_REF;
+                }
+            }
+            
             public void GetMotionData_Jog(ref CMotionAPI.MOTION_DATA s, bool bJogFastMove = false)
             {
                 GetMotionData(ref s);
@@ -207,21 +282,41 @@ namespace LWDicer.Control
             public void SetMotionData(CMotionAPI.MOTION_DATA s)
             {
                 // speed value를 UNIT_REF 적용해서 data로 변환 
-                CoordinateSystem = s.CoordinateSystem;
-                MoveType         = s.MoveType;
-                VelocityType     = s.VelocityType;
-                AccDecType       = s.AccDecType;
-                FilterType       = s.FilterType;
-                DataType         = s.DataType;
-                FilterTime       = s.FilterTime;
-                MaxVelocity      = s.MaxVelocity / UNIT_REF;
-                Acceleration     = s.Acceleration / UNIT_REF;
-                Deceleration     = s.Deceleration / UNIT_REF;
-                Velocity         = s.Velocity / UNIT_REF;
-                ApproachVelocity = s.ApproachVelocity / UNIT_REF;
-                CreepVelocity    = s.CreepVelocity / UNIT_REF;
+                CoordinateSystem           = s.CoordinateSystem;
+                MoveType                   = s.MoveType;
+                VelocityType               = s.VelocityType;
+                AccDecType                 = s.AccDecType;
+                FilterType                 = s.FilterType;
+                DataType                   = s.DataType;
+                FilterTime                 = s.FilterTime;
+                SpeedData.MaxVelocity      = s.MaxVelocity / UNIT_REF;
+                SpeedData.Acceleration     = s.Acceleration / UNIT_REF;
+                SpeedData.Deceleration     = s.Deceleration / UNIT_REF;
+                SpeedData.Velocity         = s.Velocity / UNIT_REF;
+                ApproachVelocity           = s.ApproachVelocity / UNIT_REF;
+                CreepVelocity              = s.CreepVelocity / UNIT_REF;
             }
-    }
+
+            public void GetSpeedData(out CMotorSpeedData data)
+            {
+                data = ObjectExtensions.Copy(SpeedData);
+            }
+
+            public void GetTimeLimitData(out CMotorTimeLimitData data)
+            {
+                data = ObjectExtensions.Copy(TimeLimit);
+            }
+
+            public void CheckSWLimit(double targetPos, out bool bExceedPlusLimit, out bool bExceedMinusLimit)
+            {
+                if (targetPos >= PosLimit.Limit_P) bExceedPlusLimit = true;
+                else bExceedPlusLimit = false;
+
+                if (targetPos <= PosLimit.Limit_N) bExceedMinusLimit = true;
+                else bExceedMinusLimit = false;
+            }
+
+        }
 
         public class CMPRackTable
         {
@@ -238,17 +333,30 @@ namespace LWDicer.Control
 
         public class CMPBoard
         {
-            public int CPUIndex;
-            public EMPBoard Type;
+            public int CPUIndex = 1;
+            public EMPBoard Type = EMPBoard.MP2101TM;
             public int SlotLength;
 
             public CMPMotionData[] MotionData = new CMPMotionData[MP_AXIS_PER_CPU];
 
             // SVB, SVB-01, SVC, SVC-01
             public CMPRackTable[] SPort = new CMPRackTable[MAX_MP_PORT];
-            public CMPRackTable VPort;  // SVR, Virtual Port
+            public CMPRackTable VPort = new CMPRackTable();  // SVR, Virtual Port
 
-            public CMPBoard(int CPUIndex, EMPBoard Type, CMPMotionData[] motions)
+            public CMPBoard()
+            {
+                for(int i = 0; i < MP_AXIS_PER_CPU; i++)
+                {
+                    MotionData[i] = new CMPMotionData();
+                }
+                for (int i = 0; i < MAX_MP_PORT; i++)
+                {
+                    SPort[i] = new CMPRackTable();
+                }
+            }
+
+            public CMPBoard(int CPUIndex, EMPBoard Type, CMPMotionData[] motions = null)
+                : this()
             {
                 this.CPUIndex = CPUIndex;
                 this.Type = Type;
@@ -286,7 +394,7 @@ namespace LWDicer.Control
                         break;
                 }
 
-                for (int i = 0; i < motions.Length; i++)
+                for (int i = 0; i < motions?.Length; i++)
                 {
                     MotionData[i] = motions[i];
                 }
@@ -300,10 +408,10 @@ namespace LWDicer.Control
                 return regAddr;
             }
 
-            public void GetMotionData(int servoNo, ref CMotionAPI.MOTION_DATA s)
+            public void GetMotionData(int servoNo, ref CMotionAPI.MOTION_DATA s, CMotorSpeedData tempSpeed = null)
             {
                 servoNo = servoNo % MP_AXIS_PER_CPU;
-                MotionData[servoNo].GetMotionData(ref s);
+                MotionData[servoNo].GetMotionData(ref s, tempSpeed);
             }
 
             public void GetMotionData_Jog(int servoNo, ref CMotionAPI.MOTION_DATA s, bool bJogFastMove = false)
@@ -318,6 +426,24 @@ namespace LWDicer.Control
                 servoNo = servoNo % MP_AXIS_PER_CPU;
                 MotionData[servoNo].GetMotionData_Home(ref s, out Method, out Dir, out Position);
             }
+
+            public void GetSpeedData(int servoNo, out CMotorSpeedData data)
+            {
+                servoNo = servoNo % MP_AXIS_PER_CPU;
+                MotionData[servoNo].GetSpeedData(out data);
+            }
+
+            public void GetTimeLimitData(int servoNo, out CMotorTimeLimitData data)
+            {
+                servoNo = servoNo % MP_AXIS_PER_CPU;
+                MotionData[servoNo].GetTimeLimitData(out data);
+            }
+
+            public void CheckSWLimit(int servoNo, double targetPos, out bool bExceedPlusLimit, out bool bExceedMinusLimit)
+            {
+                servoNo = servoNo % MP_AXIS_PER_CPU;
+                MotionData[servoNo].CheckSWLimit(targetPos, out bExceedPlusLimit, out bExceedMinusLimit);
+            }
         }
 
         public class CYaskawaData
@@ -330,16 +456,19 @@ namespace LWDicer.Control
 
             public CYaskawaData()
             {
-
+                for (int i = 0; i < MAX_MP_CPU; i++)
+                {
+                    MPBoard[i] = new CMPBoard();
+                }
             }
 
-            public CYaskawaData(int CpuNo, int PortNo, params CMPBoard[] boards)
+            public CYaskawaData(int CpuNo, int PortNo, CMPBoard[] boards = null)
+                : this()
             {
                 this.CpuNo = CpuNo;
                 this.PortNo = PortNo;
 
-                MPBoard = new CMPBoard[boards.Length];
-                for(int i = 0; i < boards.Length; i++)
+                for(int i = 0; i < boards?.Length; i++)
                 {
                     MPBoard[i] = boards[i];
                 }
@@ -358,6 +487,7 @@ namespace LWDicer.Control
     /// </summary>
     public class MYaskawa : MObject, IDisposable
     {
+        //
         private CYaskawaRefComp m_RefComp;
         private CYaskawaData m_Data;
         public int InstalledAxisNo; // System에 Install된 max axis
@@ -366,11 +496,20 @@ namespace LWDicer.Control
 
         MTickTimer m_waitTimer = new MTickTimer();
         UInt16 APITimeOut = 5000;
+        UInt16 APIJogTime = 100;    // Jog Timeout ms
 
-        UInt32[] m_hController = new UInt32[MAX_MP_CPU]; // Yaskawa controller handle
-        UInt32[] m_hAxis = new UInt32[MAX_MP_AXIS];  // Axis handle
-        UInt32[] m_hDevice = new UInt32[MAX_MP_AXIS];    // Device handle
-        public ServoStatusStruct[] ServoStatus = new ServoStatusStruct[MAX_MP_AXIS];
+        //
+        UInt32[] m_hController = new UInt32[MAX_MP_CPU];    // Yaskawa controller handle
+        UInt32[] m_hAxis = new UInt32[MAX_MP_AXIS];         // Axis handle
+        UInt32[] m_hDevice = new UInt32[MAX_MP_AXIS];       // Device handle
+        bool[] m_bOriginFlag = new bool[MAX_MP_AXIS];       // origin return flag
+
+        //
+        Thread m_hThread;   // Thread Handle
+        public CServoStatus[] ServoStatus = new CServoStatus[MAX_MP_AXIS];
+
+        //
+        public bool NeedCheckSafety { get; set; } = false;
 
         public MYaskawa(CObjectInfo objInfo, CYaskawaRefComp refComp, CYaskawaData data)
             : base(objInfo)
@@ -386,8 +525,12 @@ namespace LWDicer.Control
 
         public void Dispose()
         {
+            ThreadStop();
+#if SIMULATION_MOTION 
+            ServoStop();
+            ServoOff();
             CloseController();
-
+#endif
         }
 
         public int SetData(CYaskawaData source)
@@ -405,10 +548,60 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        public int ThreadStart()
+        {
+            m_hThread = new Thread(ThreadProcess);
+            m_hThread.Start();
+
+            return DEF_Error.SUCCESS;
+        }
+
+        public int ThreadStop()
+        {
+            m_hThread.Abort();
+
+            return DEF_Error.SUCCESS;
+        }
+
+        public void ThreadProcess()
+        {
+            while (true)
+            {
+#if SIMULATION_MOTION
+                GetAllServoStatus();
+#endif
+
+                Sleep(DEF_Thread.ThreadSleepTime);
+            }
+        }
+
+        public int IsSafe4Move(bool bStopMotion = false)
+        {
+            int iResult = SUCCESS;
+
+            //// check estop pushed
+            //if()
+            //{
+            //    return GenerateErrorCode(ERR_YASKAWA_DETECTED_ESTOP);
+            //}
+
+            //// check door opened
+            //if ()
+            //{
+            //    if(bStopMotion)
+            //    {
+            //        AllServoStop();
+            //    }
+            //    return GenerateErrorCode(ERR_YASKAWA_DETECTED_DOOR_OPEN);
+            //}
+
+            return SUCCESS;
+        }
+
         private int GetDeviceLength(int deviceNo)
         {
             int length = 1;
-            if (deviceNo < (int)EYMC_Device.STAGE1)
+            if (deviceNo < (int)EYMC_Device.ALL)
             {
                 length = 1;
             }
@@ -416,6 +609,10 @@ namespace LWDicer.Control
             {
                 switch (deviceNo)
                 {
+                    case (int)EYMC_Device.ALL:
+                        length = (int)EYMC_Axis.MAX;
+                        break;
+
                     case (int)EYMC_Device.STAGE1:
                         length = 3;
                         break;
@@ -437,7 +634,47 @@ namespace LWDicer.Control
             return length;
         }
 
-        private int GetDeviceWait(int deviceNo, out UInt16[] waits, ushort mode = (ushort)CMotionAPI.ApiDefs.POSITIONING_COMPLETED)
+        public int GetDeviceAxisList(int deviceNo, out int[] axisList)
+        {
+            int length = GetDeviceLength(deviceNo);
+            axisList = new int[length];
+            if (deviceNo < (int)EYMC_Device.ALL)
+            {
+                axisList[0] = deviceNo;
+            }
+            else
+            {
+                switch (deviceNo)
+                {
+                    case (int)EYMC_Device.ALL:
+                        axisList[0] = (int)EYMC_Axis.STAGE1_X;
+                        axisList[1] = (int)EYMC_Axis.STAGE1_Y;
+                        axisList[2] = (int)EYMC_Axis.STAGE1_T;
+                        axisList[3] = (int)EYMC_Axis.LOADER_Z;
+                        break;
+
+                    case (int)EYMC_Device.STAGE1:
+                        axisList[0] = (int)EYMC_Axis.STAGE1_X;
+                        axisList[1] = (int)EYMC_Axis.STAGE1_Y;
+                        axisList[2] = (int)EYMC_Axis.STAGE1_T;
+                        break;
+
+                    case (int)EYMC_Device.LOADER:
+                        axisList[0] = (int)EYMC_Axis.LOADER_Z;
+                        break;
+
+                    case (int)EYMC_Device.PUSHPULL:
+                        break;
+
+                    case (int)EYMC_Device.HANDLER:
+                        break;
+                }
+            }
+
+            return SUCCESS;
+        }
+
+        private int GetDeviceWaitCompletion(int deviceNo, out UInt16[] waits, ushort mode = (ushort)CMotionAPI.ApiDefs.DISTRIBUTION_COMPLETED)
         {
             int length = GetDeviceLength(deviceNo);
             waits = new ushort[length];
@@ -448,71 +685,80 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        private int GetDeviceAxis(int deviceNo, out UInt32[] hAxis)
+        /// <summary>
+        /// Device에 속한 축의 handle을 반환
+        /// </summary>
+        /// <param name="deviceNo"></param>
+        /// <param name="hAxis"></param>
+        /// <returns></returns>
+        private int GetDeviceAxisHandle(int deviceNo, out UInt32[] hAxis)
         {
-            int length = GetDeviceLength(deviceNo);
-            hAxis = new UInt32[length];
-            if (deviceNo < (int)EYMC_Device.STAGE1)
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
+
+            return GetAxisHandleList(axisList, out hAxis);
+        }
+
+        /// <summary>
+        /// 축의 번호를 가지고 Axis Handle을 반환
+        /// </summary>
+        /// <param name="axisNo"></param>
+        /// <param name="hAxis"></param>
+        /// <returns></returns>
+        private int GetAxisHandleList(int[] axisList, out UInt32[] hAxis)
+        {
+            hAxis = new UInt32[axisList.Length];
+            for(int i = 0; i < axisList.Length; i++)
             {
-                hAxis[deviceNo] = m_hAxis[deviceNo];
-            }
-            else
-            {
-                switch (deviceNo)
-                {
-                    case (int)EYMC_Device.STAGE1:
-                        hAxis[0] = m_hAxis[(int)EYMC_Axis.STAGE1_X];
-                        hAxis[1] = m_hAxis[(int)EYMC_Axis.STAGE1_X];
-                        hAxis[2] = m_hAxis[(int)EYMC_Axis.STAGE1_X];
-                        break;
-
-                    case (int)EYMC_Device.LOADER:
-                        hAxis[0] = m_hAxis[(int)EYMC_Axis.LOADER_Z];
-                        break;
-
-                    case (int)EYMC_Device.PUSHPULL:
-                        break;
-
-                    case (int)EYMC_Device.HANDLER:
-                        break;
-                }
+                hAxis[i] = m_hAxis[axisList[i]];
             }
 
             return SUCCESS;
         }
 
-        private int GetDeviceMotionData(int deviceNo, out CMotionAPI.MOTION_DATA[] MotionData)
+        public int GetDeviceSpeedData(int deviceNo, out CMotorSpeedData[] speedData)
         {
             int length = GetDeviceLength(deviceNo);
-            MotionData = new CMotionAPI.MOTION_DATA[length];
-
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
+            speedData = new CMotorSpeedData[length];
             int boardNo = GetBoardIndex(deviceNo);
-            if (deviceNo < (int)EYMC_Device.STAGE1)
+
+            for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetMotionData(deviceNo, ref MotionData[0]);
+                m_Data.MPBoard[boardNo].GetSpeedData(axisList[i], out speedData[i]);
             }
-            else
+
+            return SUCCESS;
+        }
+
+        public int GetDeviceTimeLimitData(int deviceNo, out CMotorTimeLimitData[] timeLimit)
+        {
+            int length = GetDeviceLength(deviceNo);
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
+            timeLimit = new CMotorTimeLimitData[length];
+            int boardNo = GetBoardIndex(deviceNo);
+
+            for (int i = 0; i < length; i++)
             {
-                switch (deviceNo)
-                {
-                    case (int)EYMC_Device.STAGE1:
-                        boardNo = 0;
-                        m_Data.MPBoard[boardNo].GetMotionData((int)EYMC_Axis.STAGE1_X, ref MotionData[0]);
-                        m_Data.MPBoard[boardNo].GetMotionData((int)EYMC_Axis.STAGE1_Y, ref MotionData[1]);
-                        m_Data.MPBoard[boardNo].GetMotionData((int)EYMC_Axis.STAGE1_T, ref MotionData[2]);
-                        break;
+                m_Data.MPBoard[boardNo].GetTimeLimitData(axisList[i], out timeLimit[i]);
+            }
 
-                    case (int)EYMC_Device.LOADER:
-                        boardNo = 0;
-                        m_Data.MPBoard[boardNo].GetMotionData((int)EYMC_Axis.LOADER_Z, ref MotionData[0]);
-                        break;
+            return SUCCESS;
+        }
 
-                    case (int)EYMC_Device.PUSHPULL:
-                        break;
+        private int GetDeviceMotionData(int deviceNo, out CMotionAPI.MOTION_DATA[] MotionData, CMotorSpeedData[] tempSpeed = null)
+        {
+            int length = GetDeviceLength(deviceNo);
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
+            MotionData = new CMotionAPI.MOTION_DATA[length];
+            int boardNo = GetBoardIndex(deviceNo);
 
-                    case (int)EYMC_Device.HANDLER:
-                        break;
-                }
+            for (int i = 0; i < length; i++)
+            {
+                m_Data.MPBoard[boardNo].GetMotionData(axisList[i], ref MotionData[i], tempSpeed?[i]);
             }
 
             return SUCCESS;
@@ -521,35 +767,14 @@ namespace LWDicer.Control
         private int GetDeviceMotionData_Jog(int deviceNo, out CMotionAPI.MOTION_DATA[] MotionData, bool bJogFastMove = false)
         {
             int length = GetDeviceLength(deviceNo);
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
             MotionData = new CMotionAPI.MOTION_DATA[length];
-
             int boardNo = GetBoardIndex(deviceNo);
-            if (deviceNo < (int)EYMC_Device.STAGE1)
+
+            for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetMotionData_Jog(deviceNo, ref MotionData[0], bJogFastMove);
-            }
-            else
-            {
-                switch (deviceNo)
-                {
-                    case (int)EYMC_Device.STAGE1:
-                        boardNo = 0;
-                        m_Data.MPBoard[boardNo].GetMotionData_Jog((int)EYMC_Axis.STAGE1_X, ref MotionData[0], bJogFastMove);
-                        m_Data.MPBoard[boardNo].GetMotionData_Jog((int)EYMC_Axis.STAGE1_Y, ref MotionData[1], bJogFastMove);
-                        m_Data.MPBoard[boardNo].GetMotionData_Jog((int)EYMC_Axis.STAGE1_T, ref MotionData[2], bJogFastMove);
-                        break;
-
-                    case (int)EYMC_Device.LOADER:
-                        boardNo = 0;
-                        m_Data.MPBoard[boardNo].GetMotionData_Jog((int)EYMC_Axis.LOADER_Z, ref MotionData[0], bJogFastMove);
-                        break;
-
-                    case (int)EYMC_Device.PUSHPULL:
-                        break;
-
-                    case (int)EYMC_Device.HANDLER:
-                        break;
-                }
+                m_Data.MPBoard[boardNo].GetMotionData_Jog(axisList[i], ref MotionData[i], bJogFastMove);
             }
 
             return SUCCESS;
@@ -559,38 +784,17 @@ namespace LWDicer.Control
             out UInt16[] Method, out UInt16[] Dir, out CMotionAPI.POSITION_DATA[] Position)
         {
             int length = GetDeviceLength(deviceNo);
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
             MotionData = new CMotionAPI.MOTION_DATA[length];
+            int boardNo = GetBoardIndex(deviceNo);
             Method = new UInt16[length];
             Dir = new UInt16[length];
             Position = new CMotionAPI.POSITION_DATA[length];
 
-            int boardNo = GetBoardIndex(deviceNo);
-            if (deviceNo < (int)EYMC_Device.STAGE1)
+            for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetMotionData_Home(deviceNo, ref MotionData[0], out Method[0], out Dir[0], out Position[0]);
-            }
-            else
-            {
-                switch (deviceNo)
-                {
-                    case (int)EYMC_Device.STAGE1:
-                        boardNo = 0;
-                        m_Data.MPBoard[boardNo].GetMotionData_Home((int)EYMC_Axis.STAGE1_X, ref MotionData[0], out Method[0], out Dir[0], out Position[0]);
-                        m_Data.MPBoard[boardNo].GetMotionData_Home((int)EYMC_Axis.STAGE1_Y, ref MotionData[1], out Method[1], out Dir[1], out Position[1]);
-                        m_Data.MPBoard[boardNo].GetMotionData_Home((int)EYMC_Axis.STAGE1_T, ref MotionData[2], out Method[2], out Dir[2], out Position[2]);
-                        break;
-
-                    case (int)EYMC_Device.LOADER:
-                        boardNo = 0;
-                        m_Data.MPBoard[boardNo].GetMotionData_Home((int)EYMC_Axis.LOADER_Z, ref MotionData[0], out Method[0], out Dir[0], out Position[0]);
-                        break;
-
-                    case (int)EYMC_Device.PUSHPULL:
-                        break;
-
-                    case (int)EYMC_Device.HANDLER:
-                        break;
-                }
+                m_Data.MPBoard[boardNo].GetMotionData_Home(axisList[i], ref MotionData[i], out Method[i], out Dir[i], out Position[i]);
             }
 
             return SUCCESS;
@@ -601,10 +805,23 @@ namespace LWDicer.Control
         {
             int length = GetDeviceLength(deviceNo);
             Position = new CMotionAPI.POSITION_DATA[length];
+
             for(int i = 0; i < length; i++)
             {
                 Position[length].DataType = (ushort)type;
                 Position[length].PositionData = (int)(pos[length] * UNIT_REF);
+            }
+
+            int boardNo = GetBoardIndex(deviceNo);
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
+            bool bExceedPlusLimit, bExceedMinusLimit;
+
+            for (int i = 0; i < length; i++)
+            {
+                m_Data.MPBoard[boardNo].CheckSWLimit(axisList[i], pos[i], out bExceedPlusLimit, out bExceedMinusLimit);
+                if (bExceedPlusLimit == true) return GenerateErrorCode(ERR_YASKAWA_TARGET_POS_EXCEED_PLUS_LIMIT);
+                if (bExceedMinusLimit == true) return GenerateErrorCode(ERR_YASKAWA_TARGET_POS_EXCEED_MINUS_LIMIT);
             }
 
             return SUCCESS;
@@ -612,7 +829,10 @@ namespace LWDicer.Control
 
         private int GetBoardIndex(int servoNo)
         {
-            return servoNo / MP_AXIS_PER_CPU;
+            // 우선은 보드 한장 기준으로 작업하자.
+            return 0;
+
+//             return servoNo / MP_AXIS_PER_CPU;
         }
 
 
@@ -639,8 +859,8 @@ namespace LWDicer.Control
                 rc = CMotionAPI.ymcOpenController(ref ComDevice, ref m_hController[i]);
                 if (rc != CMotionAPI.MP_SUCCESS)
                 {
-                    string str = String.Format("Error ymcOpenController Board {0} ErrorCode [ 0x{1} ]", i, rc.ToString("X"));
-                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
+                    LastHWMessage = String.Format("Error ymcOpenController Board {0} ErrorCode [ 0x{1} ]", i, rc.ToString("X"));
+                    WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
                     return GenerateErrorCode(ERR_YASKAWA_FAIL_OPEN_YMC);
                 }
 
@@ -662,7 +882,7 @@ namespace LWDicer.Control
                 {
                     LastHWMessage = String.Format("Error ClearAllAxes  Board ErrorCode [ 0x{0} ]", rc.ToString("X"));
                     WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
-                    return GenerateErrorCode(ERR_YASKAWA_FAIL_CLEAR_ALL_AXIS);
+                    return GenerateErrorCode(ERR_YASKAWA_FAIL_CLEAR_AXIS);
                 }
 
                 for (int j = 0; j < MP_AXIS_PER_CPU; j++)
@@ -697,29 +917,46 @@ namespace LWDicer.Control
             for (int i = 0; i < (int)EYMC_Device.MAX; i++)
             {
                 UInt32[] hAxis;
-                iResult = GetDeviceAxis(i, out hAxis);
-                //if (iResult != SUCCESS) return iResult;
-                
-                rc = CMotionAPI.ymcDeclareDevice((UInt16)GetDeviceLength(i), hAxis, ref m_hDevice[i]);
-                if (rc != CMotionAPI.MP_SUCCESS)
-                {
-                    LastHWMessage = String.Format("Error ymcDeclareDevice  Board ErrorCode [ 0x{0} ]", rc.ToString("X"));
-                    WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
-                    return GenerateErrorCode(ERR_YASKAWA_FAIL_DECLARE_DEVICE);
-                }
+                iResult = GetDeviceAxisHandle(i, out hAxis);
+                if (iResult != SUCCESS) return iResult;
 
-                // servo on
-                if(bServoOn == true)
-                {
-                    rc = CMotionAPI.ymcServoControl(m_hDevice[i], (UInt16)CMotionAPI.ApiDefs.SERVO_ON, APITimeOut);
-                    if (rc != CMotionAPI.MP_SUCCESS)
-                    {
-                        LastHWMessage = String.Format("Error ymcServoControl Board  ErrorCode [ 0x{0} ]", rc.ToString("X"));
-                        WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
-                        return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_ON);
-                    }
-                }
+                iResult = DeclareDevice(GetDeviceLength(i), hAxis, ref m_hDevice[i]);
+                if (iResult != SUCCESS) return iResult;
             }
+
+            // servo on
+            if (bServoOn == true)
+            {
+                iResult = AllServoOn();
+                if (iResult != SUCCESS) return iResult;
+            }
+
+            return SUCCESS;
+        }
+
+        private int DeclareDevice(int length, UInt32[] hAxis, ref UInt32 hDevice)
+        {
+            UInt32 rc = CMotionAPI.ymcDeclareDevice((UInt16)length, hAxis, ref hDevice);
+            if (rc != CMotionAPI.MP_SUCCESS)
+            {
+                LastHWMessage = String.Format("Error ymcDeclareDevice  Board ErrorCode [ 0x{0} ]", rc.ToString("X"));
+                WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
+                return GenerateErrorCode(ERR_YASKAWA_FAIL_DECLARE_DEVICE);
+            }
+
+            return SUCCESS;
+        }
+
+        private int ClearDevice(UInt32 hDevice)
+        {
+            UInt32 rc = CMotionAPI.ymcClearDevice(hDevice);
+            if (rc != CMotionAPI.MP_SUCCESS)
+            {
+                LastHWMessage = String.Format("Error ymcClearDevice ErrorCode [ 0x{0} ]", rc.ToString("X"));
+                WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
+                return GenerateErrorCode(ERR_YASKAWA_FAIL_CLEAR_DEVICE);
+            }
+
             return SUCCESS;
         }
 
@@ -739,8 +976,51 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        public bool IsOriginReturn(int servoNo)
+        {
+            return m_bOriginFlag[servoNo];
+        }
+
+        public void SetOriginReturn(int servoNo = -1)
+        {
+            if(servoNo != -1)
+            {
+                m_bOriginFlag[servoNo] = true;
+            }
+            else
+            {
+                for(int i = 0; i < m_bOriginFlag.Length; i++)
+                {
+                    m_bOriginFlag[i] = true;
+                }
+            }
+        }
+
+        public void ResetOriginReturn(int servoNo = -1)
+        {
+            if (servoNo != -1)
+            {
+                m_bOriginFlag[servoNo] = false;
+            }
+            else
+            {
+                for (int i = 0; i < m_bOriginFlag.Length; i++)
+                {
+                    m_bOriginFlag[i] = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// thread와 sync의 관계 확인될때까진, class 작성의 한계로 우선은 보드 한장 사용이라고 가정하고
+        /// 함수는 작성해놓으나, 실행은  막아놓음. by sjr
+        /// </summary>
+        /// <param name="cpuIndex"></param>
+        /// <returns></returns>
         private int ChangeController(int cpuIndex)
         {
+            return SUCCESS;
+
             if (cpuIndex >= m_hController.Length || m_hController[cpuIndex] == 0)
             {
                 return GenerateErrorCode(ERR_YASKAWA_INVALID_CONTROLLER);
@@ -901,19 +1181,20 @@ namespace LWDicer.Control
             if (rc == CMotionAPI.MP_SUCCESS)
             {
                 //Servo + Limit Sensor
-                ServoStatus[servoNo].Limit_P = Convert.ToBoolean((returnValue >> 2) & 0x1);
+                ServoStatus[servoNo].DetectPlusSensor = Convert.ToBoolean((returnValue >> 2) & 0x1);
                 //Servo - Limit Sensor
-                ServoStatus[servoNo].Limit_N = Convert.ToBoolean((returnValue >> 3) & 0x1);
+                ServoStatus[servoNo].DetectMinusSensor = Convert.ToBoolean((returnValue >> 3) & 0x1);
                 //Servo Origin
-                ServoStatus[servoNo].Origin = Convert.ToBoolean((returnValue >> 4) & 0x1);
+                ServoStatus[servoNo].DetectHomeSensor = Convert.ToBoolean((returnValue >> 4) & 0x1);
             }
         }
 
         public int ServoOn(int deviceNo)
         {
-            UInt32 rc = 0;
+            int iResult = ResetAlarm(deviceNo);
+            if (iResult != SUCCESS) return iResult;
 
-            rc = CMotionAPI.ymcServoControl(m_hDevice[deviceNo], (UInt16)CMotionAPI.ApiDefs.SERVO_ON, APITimeOut);
+            UInt32 rc = CMotionAPI.ymcServoControl(m_hDevice[deviceNo], (UInt16)CMotionAPI.ApiDefs.SERVO_ON, APITimeOut);
             if (rc != CMotionAPI.MP_SUCCESS)
             {
                 LastHWMessage = String.Format("Error ymcServoControl On/Off Board : ErrorCode [ 0x{0} ]", rc.ToString("X"));
@@ -921,14 +1202,26 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_ON);
             }
 
+            return SUCCESS;
+        }
+
+        public int AllServoOn()
+        {
+            int iResult = ServoOn((int)EYMC_Device.ALL);
+            if (iResult != SUCCESS) return iResult;
+            return SUCCESS;
+        }
+
+        public int AllServoOff()
+        {
+            int iResult = ServoOff((int)EYMC_Device.ALL);
+            if (iResult != SUCCESS) return iResult;
             return SUCCESS;
         }
 
         public int ServoOff(int deviceNo)
         {
-            UInt32 rc = 0;
-
-            rc = CMotionAPI.ymcServoControl(m_hDevice[deviceNo], (UInt16)CMotionAPI.ApiDefs.SERVO_OFF, APITimeOut);
+            UInt32 rc = CMotionAPI.ymcServoControl(m_hDevice[deviceNo], (UInt16)CMotionAPI.ApiDefs.SERVO_OFF, APITimeOut);
             if (rc != CMotionAPI.MP_SUCCESS)
             {
                 LastHWMessage = String.Format("Error ymcServoControl On/Off Board : ErrorCode [ 0x{0} ]", rc.ToString("X"));
@@ -939,13 +1232,11 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int ResetAlarm()
+        public int ResetAlarm(int deviceNo = (int)EYMC_Device.ALL)
         {
             UInt32 rc;
 
-            //============================================================================
             // Clears all the Machine Controller alarms. 
-            //============================================================================
             rc = CMotionAPI.ymcClearAlarm(0);
             if (rc != CMotionAPI.MP_SUCCESS)
             {
@@ -955,31 +1246,17 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_YASKAWA_FAIL_RESET_ALARM);
             }
 
-            // servo off
-            for (int i = 0; i < (int)EYMC_Device.MAX; i++)
+            // check warning
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
+            for(int i = 0; i < axisList.Length; i++)
             {
-                // 실제 Servo Off 되어 있으나 ServoOn Command 가 살아 있을 경우 RESET 안되는 문제해결하기 위해
-                bool ServoNotOn = IsServoNotOnReally(i);
-                if (ServoNotOn)
+                if(IsServoWarning(axisList[i]) == true)
                 {
-                    rc = CMotionAPI.ymcServoControl(m_hDevice[i], (UInt16)CMotionAPI.ApiDefs.SERVO_OFF, APITimeOut);
-                    if (rc != CMotionAPI.MP_SUCCESS)
-                    {
-                        //MessageBox.Show(String.Format("Error ymcServoControl ReserAlarm ErrorCode [ 0x{0} ]", rc.ToString("X"));
-                        LastHWMessage = String.Format("Error ymcServoControl ReserAlarm ErrorCode [ 0x{0} ]", rc.ToString("X"));
-                        WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
-                        return GenerateErrorCode(ERR_YASKAWA_FAIL_RESET_ALARM);
-                    }
+                    ServoOff(axisList[i]);
                 }
 
-            }
-
-            //============================================================================
-            // Clears the servo alarm. 
-            //============================================================================
-            for (int i = 0; i < InstalledAxisNo ; i++)
-            {
-                rc = CMotionAPI.ymcClearServoAlarm(m_hAxis[i]);
+                rc = CMotionAPI.ymcClearServoAlarm(m_hAxis[axisList[i]]);
                 if (rc != CMotionAPI.MP_SUCCESS)
                 {
                     //MessageBox.Show(String.Format("Error ymcClearServoAlarm ErrorCode [ 0x{0} ]", rc.ToString("X"));
@@ -992,12 +1269,12 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int ChkHomeComplete(int servoNo, out bool bComplete)
+        public int CheckHomeComplete(int servoNo, out bool bComplete)
         {
-            return ChkMoveComplete(servoNo, out bComplete);
+            return CheckMoveComplete(servoNo, out bComplete);
         }
 
-        public int ChkMoveComplete(int servoNo, out bool bComplete)
+        public int CheckMoveComplete(int servoNo, out bool bComplete)
         {
             UInt32 returnValue = 0;
             bComplete = false;
@@ -1015,17 +1292,36 @@ namespace LWDicer.Control
             }
 
             //Move 완료 확인 
-            if (((returnValue >> (int)CMotionAPI.ApiDefs.POSITIONING_COMPLETED) & 0x1) == 1)
+            if (((returnValue >> (int)CMotionAPI.ApiDefs.DISTRIBUTION_COMPLETED) & 0x1) == 1)
                 bComplete = true;
             else bComplete = false;
 
             return SUCCESS;
         }
 
-        public int ServoStop(int deviceNo)
+        public int CheckMoveComplete(int[] axisList, out bool[] bComplete)
+        {
+            bComplete = new bool[axisList.Length];
+            for(int i = 0; i < axisList.Length; i++)
+            {
+                int iResult = CheckMoveComplete(axisList[i], out bComplete[i]);
+                if (iResult != SUCCESS) return iResult;
+            }
+
+            return SUCCESS;
+        }
+
+        public int AllServoStop()
+        {
+            int iResult = ServoMotionStop((int)EYMC_Device.ALL);
+            if (iResult != SUCCESS) return iResult;
+            return SUCCESS;
+        }
+
+        public int JogMoveStop(int deviceNo)
         {
             ushort[] WaitForCompletion;
-            GetDeviceWait(deviceNo, out WaitForCompletion);
+            GetDeviceWaitCompletion(deviceNo, out WaitForCompletion);
             UInt32 rc = CMotionAPI.ymcStopJOG(m_hDevice[deviceNo], 0, "STOP", WaitForCompletion, 0);
             if (rc != CMotionAPI.MP_SUCCESS)
             {
@@ -1039,44 +1335,28 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int ServoMotionStop(int deviceNo, ushort mode = (ushort)CMotionAPI.ApiDefs.POSITIONING_COMPLETED)
+        public int JogMoveStart(int deviceNo, bool jogDir, bool bJogFastMove = false)
         {
-            CMotionAPI.MOTION_DATA[] MotionData;
-            GetDeviceMotionData(deviceNo, out MotionData);
-            ushort[] WaitForCompletion;
-            GetDeviceWait(deviceNo, out WaitForCompletion, mode);
+            // check safety
+            int iResult = IsSafe4Move();
+            if (iResult != SUCCESS) return iResult;
 
-            UInt32 rc = CMotionAPI.ymcStopMotion(m_hDevice[deviceNo], MotionData, "STOP", WaitForCompletion, 0);
-            if (rc != CMotionAPI.MP_SUCCESS)
-            {
-                //MessageBox.Show(String.Format("Error ymcStopJOG ErrorCode [ 0x{0} ]", rc.ToString("X"));
-                LastHWMessage = String.Format("Error ymcStopJOG ErrorCode [ 0x{0} ]", rc.ToString("X"));
-                WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
-                return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_STOP);
-            }
-
-            return SUCCESS;
-        }
-        // 
-
-        public int MoveStartToJog(int deviceNo, bool jogDir, bool bJogFastMove = false)
-        {
             // Jog함수는 multi axis device를 고려하지 않고 작성
-            if (deviceNo >= (int)EYMC_Device.STAGE1) return SUCCESS;
+            if (deviceNo >= (int)EYMC_Device.ALL) return SUCCESS;
 
             //============================================================================
             // Executes JOG operation.										
             //============================================================================
             // Motion data setting
             Int16[] Direction = new Int16[1];
-            UInt16[] TimeOut = new UInt16[1] { APITimeOut };
+            UInt16[] TimeOut = new UInt16[1] { APIJogTime };
 
             if (jogDir == JOG_DIR_POS)
             {
                 //Jog +
                 if (ServoStatus[deviceNo].Ready && ServoStatus[deviceNo].ServoOn)
                 {
-                    if (ServoStatus[deviceNo].Limit_P)
+                    if (ServoStatus[deviceNo].DetectPlusSensor)
                     {
                         LastHWMessage = "Servo No[" + deviceNo + "] : + Limit";
                         WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Warning, true);
@@ -1093,7 +1373,7 @@ namespace LWDicer.Control
                 //Jog -
                 if (ServoStatus[deviceNo].Ready && ServoStatus[deviceNo].ServoOn)
                 {
-                    if (ServoStatus[deviceNo].Limit_N)
+                    if (ServoStatus[deviceNo].DetectMinusSensor)
                     {
                         LastHWMessage = "Servo No[" + deviceNo + "] : - Limit";
                         WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Warning, true);
@@ -1120,22 +1400,56 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int MoveStartToPos(int deviceNo, double[] pos, ushort waitMode = (ushort)CMotionAPI.ApiDefs.COMMAND_STARTED)
+        public int ServoMotionStop(int deviceNo, ushort mode = (ushort)CMotionAPI.ApiDefs.DISTRIBUTION_COMPLETED)
         {
-            return MoveToPos(deviceNo, pos, waitMode);
-
-        }
-
-        public int MoveToPos(int deviceNo, double[] pos, ushort waitMode = (ushort)CMotionAPI.ApiDefs.POSITIONING_COMPLETED)
-        {
-            // Position data setting
-            CMotionAPI.POSITION_DATA[] PositionData;
-            GetDevicePositon(deviceNo, out PositionData, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
             CMotionAPI.MOTION_DATA[] MotionData;
             GetDeviceMotionData(deviceNo, out MotionData);
             ushort[] WaitForCompletion;
-            GetDeviceWait(deviceNo, out WaitForCompletion, waitMode);
+            GetDeviceWaitCompletion(deviceNo, out WaitForCompletion, mode);
 
+            UInt32 rc = CMotionAPI.ymcStopMotion(m_hDevice[deviceNo], MotionData, "STOP", WaitForCompletion, 0);
+            if (rc != CMotionAPI.MP_SUCCESS)
+            {
+                //MessageBox.Show(String.Format("Error ymcStopMotion ErrorCode [ 0x{0} ]", rc.ToString("X"));
+                LastHWMessage = String.Format("Error ymcStopMotion ErrorCode [ 0x{0} ]", rc.ToString("X"));
+                WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
+                return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_STOP);
+            }
+
+            return SUCCESS;
+        }
+
+        public int StartMoveToPos(int deviceNo, double[] pos, CMotorSpeedData[] tempSpeed = null, ushort waitMode = (ushort)CMotionAPI.ApiDefs.COMMAND_STARTED)
+        {
+            return MoveToPos(deviceNo, pos, tempSpeed, waitMode);
+
+        }
+
+        /// <summary>
+        /// device의 모든 축을 함께 이동시킬 때 호출 
+        /// </summary>
+        /// <param name="deviceNo"></param>
+        /// <param name="pos"></param>
+        /// <param name="tempSpeed"></param>
+        /// <param name="waitMode"></param>
+        /// <returns></returns>
+        public int MoveToPos(int deviceNo, double[] pos, CMotorSpeedData[] tempSpeed = null, ushort waitMode = (ushort)CMotionAPI.ApiDefs.DISTRIBUTION_COMPLETED)
+        {
+            // check safety
+            int iResult = IsSafe4Move();
+            if (iResult != SUCCESS) return iResult;
+
+            // 0. init data
+            CMotionAPI.POSITION_DATA[] PositionData;
+            CMotionAPI.MOTION_DATA[] MotionData;
+            ushort[] WaitForCompletion;
+            iResult = GetDevicePositon(deviceNo, out PositionData, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
+            if (iResult != SUCCESS) return iResult;
+            GetDeviceMotionData(deviceNo, out MotionData, tempSpeed);
+            GetDeviceWaitCompletion(deviceNo, out WaitForCompletion, waitMode);
+
+            // 1. call api
+            // ymcMovePositioning 함수는 motion controller 가 부하를 담당하고, ymcMoveDriverPositioning는 driver가 부하를 담당
             UInt32 rc = CMotionAPI.ymcMoveDriverPositioning(m_hDevice[deviceNo], MotionData, PositionData, 0, "Move", WaitForCompletion, 0);
             if (rc != CMotionAPI.MP_SUCCESS)
             {
@@ -1147,24 +1461,277 @@ namespace LWDicer.Control
 
             return SUCCESS;
         }
-        
-        public int MoveStartToHome(int deviceNo)
+
+        public int StartMoveToPos(int[] axisList, bool[] useAxis, double[] pos, CMotorSpeedData[] tempSpeed = null, ushort waitMode = (ushort)CMotionAPI.ApiDefs.DISTRIBUTION_COMPLETED)
         {
-            return HomePosition(deviceNo);
+            return MoveToPos(axisList, useAxis, pos, tempSpeed, waitMode);
+
+        }
+
+        /// <summary>
+        /// 축 번호 리스트와 useAxis등을 이용해서 Move to position
+        /// </summary>
+        /// <param name="axisNo"></param>
+        /// <param name="useAxis"></param>
+        /// <param name="pos"></param>
+        /// <param name="tempSpeed"></param>
+        /// <param name="waitMode"></param>
+        /// <returns></returns>
+        public int MoveToPos(int[] axisList, bool[] useAxis, double[] pos, CMotorSpeedData[] tempSpeed = null, ushort waitMode = (ushort)CMotionAPI.ApiDefs.DISTRIBUTION_COMPLETED)
+        {
+            // check safety
+            int iResult = IsSafe4Move();
+            if (iResult != SUCCESS) return iResult;
+
+            // 0. init data
+            // 0.1 get device length
+            int length = 0;
+            for(int i = 0; i < axisList.Length; i++)
+            {
+                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                length++;
+            }
+
+            // 0.2 allocate temp device
+            UInt32[] hAxis;
+            iResult = GetAxisHandleList(axisList, out hAxis);
+            if (iResult != SUCCESS) return iResult;
+            UInt32 tDevice = 0;
+            iResult = DeclareDevice(length, hAxis, ref tDevice);
+            if (iResult != SUCCESS) return iResult;
+
+            // 0.3 allocate data buffer
+            CMotionAPI.MOTION_DATA[] MotionData = new CMotionAPI.MOTION_DATA[length];
+            CMotionAPI.POSITION_DATA[] PositionData = new CMotionAPI.POSITION_DATA[length];
+            ushort[] WaitForCompletion = new ushort[length];
+
+            // 0.4 copy motion data to buffer
+            CMotionAPI.MOTION_DATA[] tMotion = new CMotionAPI.MOTION_DATA[1];
+            CMotionAPI.POSITION_DATA[] tPosition = new CMotionAPI.POSITION_DATA[1];
+            ushort[] tWait = new ushort[1];
+            CMotorSpeedData[] tSpeed = new CMotorSpeedData[1];
+
+            for (int i = 0, j = 0; i < axisList.Length; i++)
+            {
+                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                if (tempSpeed != null)
+                {
+                    tSpeed[0] = tempSpeed[i];
+                }
+                GetDeviceMotionData(axisList[i], out tMotion, tSpeed);
+                iResult = GetDevicePositon(axisList[i], out tPosition, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
+                if (iResult != SUCCESS) return iResult;
+                GetDeviceWaitCompletion(axisList[i], out tWait, waitMode);
+
+                MotionData[j] = tMotion[0];
+                PositionData[j] = tPosition[0];
+                WaitForCompletion[j] = tWait[0];
+                j++;
+            }
+
+            // 1. call api
+            // ymcMovePositioning 함수는 motion controller 가 부하를 담당하고, ymcMoveDriverPositioning는 driver가 부하를 담당
+            UInt32 rc = CMotionAPI.ymcMoveDriverPositioning(tDevice, MotionData, PositionData, 0, "Move", WaitForCompletion, 0);
+            if (rc != CMotionAPI.MP_SUCCESS)
+            {
+                //MessageBox.Show(String.Format("Error ymcMoveDriverPositioning ErrorCode [ 0x{0} ]",rc.ToString("X")));
+                LastHWMessage = String.Format("Error ymcMoveDriverPositioning ErrorCode [ 0x{0} ]", rc.ToString("X"));
+                WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
+                return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_MOVE_DRIVING_POSITIONING);
+            }
+
+            // 2. clear device
+            iResult = ClearDevice(tDevice);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+
+        public int Wait4Done(int[] axisList, bool[] useAxis, bool bWait4Home = false)
+        {
+            // 0. init data
+            // 0.1 get device length
+            int length = 0;
+            for (int i = 0; i < axisList.Length; i++)
+            {
+                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                length++;
+            }
+
+            // 0.2 allocate temp device
+            UInt32[] hAxis;
+            int iResult = GetAxisHandleList(axisList, out hAxis);
+            if (iResult != SUCCESS) return iResult;
+
+            // 0.3 allocate data buffer
+            CMotorTimeLimitData[] timeLimit = new CMotorTimeLimitData[length];
+            bool[] bDone = new bool[length];
+            int[] servoList = new int[length];
+
+            // 0.4 copy motion data to buffer
+            CMotorTimeLimitData[] tLimit = new CMotorTimeLimitData[1];
+
+            for (int i = 0, j = 0; i < axisList.Length; i++)
+            {
+                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                GetDeviceTimeLimitData(axisList[i], out tLimit);
+
+                timeLimit[j] = tLimit[0];
+                bDone[j] = false;
+                servoList[j] = axisList[i];
+                j++;
+            }
+
+            // 1. wait for done
+            int sum = 0;
+            m_waitTimer.StartTimer();
+            while(true)
+            {
+                // 1.1 check safety
+                iResult = IsSafe4Move(true);
+                if (iResult != SUCCESS) return iResult;
+
+                // 1.2 check all done
+                if(sum == length)
+                {
+                    return SUCCESS;
+                }
+
+                // 1.3 check each axis
+                for (int i = 0; i < length; i++)
+                {
+                    if (bDone[i] == true) continue;
+
+                    if(bWait4Home == false) // wait for move done
+                    {
+                        // 1.3.1 check each axis done
+                        iResult = CheckMoveComplete(servoList[i], out bDone[i]);
+                        if (iResult != SUCCESS) return iResult;
+                        if (bDone[i] == true)
+                        {
+                            sum++;
+                            Sleep(timeLimit[i].TimeAfterMove * 1000);
+                        }
+
+                        // 1.3.2 check time limit
+                        if (m_waitTimer.MoreThan(timeLimit[i].TimeMoveLimit * 1000))
+                        {
+                            return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_MOVE_IN_LIMIT_TIME);
+                        }
+                    } else // wait for home done
+                    {
+                        // 1.3.1 check each axis done
+                        iResult = CheckHomeComplete(servoList[i], out bDone[i]);
+                        if (iResult != SUCCESS) return iResult;
+                        if (bDone[i] == true)
+                        {
+                            sum++;
+                            Sleep(timeLimit[i].TimeAfterMove * 1000);
+                        }
+
+                        // 1.3.2 check time limit
+                        if (m_waitTimer.MoreThan(timeLimit[i].TimeOriginLimit * 1000))
+                        {
+                            return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_HOME_IN_LIMIT_TIME);
+                        }
+                    }
+                }
+
+                Sleep(WhileSleepTime);
+            }
+
+            return SUCCESS;
+        }
+
+        public int Wait4HomeDone(int[] axisList, bool[] useAxis)
+        {
+            return Wait4Done(axisList, useAxis, true);
+        }
+
+        public int StartOriginReturn(int[] axisList, bool[] useAxis)
+        {
+            // check safety
+            int iResult = IsSafe4Move();
+            if (iResult != SUCCESS) return iResult;
+
+            // 0. init data
+            // 0.1 get device length
+            int length = 0;
+            for (int i = 0; i < axisList.Length; i++)
+            {
+                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                length++;
+            }
+
+            // 0.2 allocate temp device
+            UInt32[] hAxis;
+            iResult = GetAxisHandleList(axisList, out hAxis);
+            if (iResult != SUCCESS) return iResult;
+            UInt32 tDevice = 0;
+            iResult = DeclareDevice(length, hAxis, ref tDevice);
+            if (iResult != SUCCESS) return iResult;
+
+            // 0.3 allocate data buffer
+            CMotionAPI.MOTION_DATA[] MotionData = new CMotionAPI.MOTION_DATA[length];
+            CMotionAPI.POSITION_DATA[] PositionData = new CMotionAPI.POSITION_DATA[length];
+            ushort[] WaitForCompletion = new ushort[length];
+            ushort[] Method = new ushort[length];
+            ushort[] Dir = new ushort[length];
+
+            // 0.4 copy motion data to buffer
+            CMotionAPI.MOTION_DATA[] tMotion = new CMotionAPI.MOTION_DATA[1];
+            CMotionAPI.POSITION_DATA[] tPosition = new CMotionAPI.POSITION_DATA[1];
+            ushort[] tWait = new ushort[1];
+            ushort[] tMethod = new ushort[1];
+            ushort[] tDir = new ushort[1];
+
+            for (int i = 0, j = 0; i < axisList.Length; i++)
+            {
+                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+
+                GetDeviceMotionData_Home(axisList[i], out tMotion, out tMethod, out tDir, out tPosition);
+                GetDeviceWaitCompletion(axisList[i], out tWait, (UInt16)CMotionAPI.ApiDefs.COMMAND_STARTED);
+
+                MotionData[j] = tMotion[0];
+                PositionData[j] = tPosition[0];
+                WaitForCompletion[j] = tWait[0];
+                Method[j] = tMethod[0];
+                Dir[j] = tDir[0];
+                j++;
+            }
+
+            // 1. call api
+            UInt32 rc = CMotionAPI.ymcMoveHomePosition(tDevice, MotionData, PositionData, Method, Dir, 0, null, WaitForCompletion, 0);
+            if (rc != CMotionAPI.MP_SUCCESS)
+            {
+                //MessageBox.Show(String.Format("Error ymcMoveHomePositioning ErrorCode [ 0x{0} ]", rc.ToString("X"));
+                LastHWMessage = String.Format("Error ymcMoveHomePositioning ErrorCode [ 0x{0} ]", rc.ToString("X"));
+                WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Error, true);
+                return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_MOVE_HOME);
+            }
+
+            // 2. clear device
+            iResult = ClearDevice(tDevice);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
         }
 
         private int HomePosition(int deviceNo)
         {
+            // check safety
+            int iResult = IsSafe4Move();
+            if (iResult != SUCCESS) return iResult;
+
             CMotionAPI.MOTION_DATA[] MotionData;
+            CMotionAPI.POSITION_DATA[] PositionData;
+            ushort[] WaitForCompletion;
             ushort[] Method;
             ushort[] Dir;
-            CMotionAPI.POSITION_DATA[] Position;
-            GetDeviceMotionData_Home(deviceNo, out MotionData, out Method, out Dir, out Position);
-            ushort[] WaitForCompletion;
-            GetDeviceWait(deviceNo, out WaitForCompletion, (UInt16)CMotionAPI.ApiDefs.COMMAND_STARTED);
+            GetDeviceMotionData_Home(deviceNo, out MotionData, out Method, out Dir, out PositionData);
+            GetDeviceWaitCompletion(deviceNo, out WaitForCompletion, (UInt16)CMotionAPI.ApiDefs.COMMAND_STARTED);
 
-            UInt32 rc;
-            rc = CMotionAPI.ymcMoveHomePosition(m_hDevice[deviceNo], MotionData, Position, Method, Dir, 0, null, WaitForCompletion, 0);
+            UInt32 rc = CMotionAPI.ymcMoveHomePosition(m_hDevice[deviceNo], MotionData, PositionData, Method, Dir, 0, null, WaitForCompletion, 0);
             if (rc != CMotionAPI.MP_SUCCESS)
             {
                 //MessageBox.Show(String.Format("Error ymcMoveHomePositioning ErrorCode [ 0x{0} ]", rc.ToString("X"));
@@ -1193,7 +1760,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public bool IsServoNotOnReally(int servoNo)//140316 
+        public bool IsServoWarning(int servoNo)
         {
 
             UInt32 returnValue = 0;
@@ -1202,7 +1769,6 @@ namespace LWDicer.Control
                                                           (UInt16)CMotionAPI.ApiDefs.MONITOR_PARAMETER,
                                                           (UInt16)CMotionAPI.ApiDefs_MonPrm.SER_WARNING,
                                                           ref returnValue);
-
             return Convert.ToBoolean((returnValue >> 8) & 0x1);
         }
         /*
@@ -1246,7 +1812,7 @@ namespace LWDicer.Control
 
             cRegisterName_ML_1214 = "ML01214";   //ydh150803 ML Register 주소는 짝수로 설정해야함. 홀수일때 핸들에러 발생
             cRegisterName_ML_1300 = "ML01300";
-            #region MB 영역 read/write
+#region MB 영역 read/write
             // MB Register 핸들
             rc = CMotionAPI.ymcGetRegisterDataHandle(cRegisterName_MB, ref hRegister_MB);
             if (rc != CMotionAPI.MP_SUCCESS)
@@ -1280,11 +1846,11 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_YASKAWA_FAIL_SET_REGISTER_DATA_FAIL);
                 return;
             }
-            #endregion
+#endregion
 
             //RegisterDataNumber = 0;
 
-            #region ML 영역 read/write (ML1000)
+#region ML 영역 read/write (ML1000)
             // ML Register 전송용 핸들
             rc = CMotionAPI.ymcGetRegisterDataHandle(cRegisterName_ML, ref hRegister_ML);
             if (rc != CMotionAPI.MP_SUCCESS)
@@ -1493,9 +2059,9 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_YASKAWA_FAIL_SET_REGISTER_DATA_FAIL);
                 return;
             }
-            #endregion
+#endregion
 
-            #region ML 영역 read/write (ML 1210)
+#region ML 영역 read/write (ML 1210)
             // ML Register 전송용 핸들
             rc = CMotionAPI.ymcGetRegisterDataHandle(cRegisterName_ML_1214, ref hRegister_ML_Read);
             if (rc != CMotionAPI.MP_SUCCESS)
@@ -1528,9 +2094,9 @@ namespace LWDicer.Control
             OHTInform.OverShootDist = (int)Reg_IntData_1214[4];  // ML1222
 
 
-            #endregion
+#endregion
 
-            #region ML 영역 read/write (ML 1300)
+#region ML 영역 read/write (ML 1300)
             // ML Register 전송용 핸들
             rc = CMotionAPI.ymcGetRegisterDataHandle(cRegisterName_ML_1300, ref hRegister_ML_Read);
             if (rc != CMotionAPI.MP_SUCCESS)
@@ -1586,7 +2152,7 @@ namespace LWDicer.Control
                 TOHSMain.ServoAlarmCodeWriteLogFlag[1] = true;
                 MainForm.LOG(LOGType.Warning, "Rear Servo Alarm Code :: " + ServoStatus[1].AlarmCode.ToString());
             }
-            #endregion
+#endregion
 
             //UInt32 rc;
             //UInt32 hRegister_ML;                     // Register data handle for ML register

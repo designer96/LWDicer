@@ -48,6 +48,7 @@ namespace LWDicer.Control
         }
         public enum EYMC_Axis
         {
+            NULL = -1,
             STAGE1_X = 0,
             STAGE1_Y,
             STAGE1_T,
@@ -68,6 +69,7 @@ namespace LWDicer.Control
             LOADER_Z,
 
             // 그룹으로 축 제어를 위해 선언
+            ALL,    // for control all axis at a time
             STAGE1,
             LOADER,
             PUSHPULL,
@@ -244,6 +246,9 @@ namespace LWDicer.Control
 
     public class DEF_Common
     {
+        //
+        public const int WhileSleepTime        = 10; // while interval time
+
         //
         public const int TRUE                  = 1;
         public const int FALSE                 = 0;

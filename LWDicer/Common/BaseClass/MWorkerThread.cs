@@ -25,7 +25,7 @@ namespace LWDicer.Control
         public int ThreadID { get; private set; }
         public bool IsAlive { get; private set; }
         private int selfChannel;
-        Thread m_hThread;   // Thread의 Handle 
+        Thread m_hThread;   // Thread Handle
 
         protected int OpeartionMode;
         protected int RunMode;
@@ -67,7 +67,7 @@ namespace LWDicer.Control
             Dispose();
         }
 
-        public int Start()
+        public int ThreadStart()
         {
             IsAlive = true;
 
@@ -77,7 +77,7 @@ namespace LWDicer.Control
             return DEF_Error.SUCCESS;
         }
 
-        public int Stop()
+        public int ThreadStop()
         {
             IsAlive = false;
             m_hThread.Abort();

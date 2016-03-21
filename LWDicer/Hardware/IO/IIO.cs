@@ -16,7 +16,7 @@ namespace LWDicer.Control
         /// <summary>
         /// Incoming Buffer를 Update하고, Outgoing Buffer의 내용을 Physical I/O에 적용하는 IOThread를 Run한다.
         /// </summary>
-        void RunIOThread();
+        //void RunIOThread();
 
         /// <summary>
         /// Stop Communication and close driver handle
