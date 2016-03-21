@@ -75,3 +75,20 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 2. MLWDicer -> CreatePolygonScanner() Scanner 갯수 만큼 Hardware Layer 생성하는 Function 추가. : Scanner Max 4 ea
 3. UI - FormMessageBox 추가
 4. UI - FormLaserMaint Scanner IP, Port 입력 추가
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// LHS
+// Version : 0.0.5
+// Grade : ★
+// Date : 2016-03-21
+// Context
+// * Polygon Scanner Interface 보완
+// 1. TFTP 통신 Protocol 추가
+//   - InitializeTFTP()
+//   - SendTFTPFile(string strIP, string strFilePath)
+// 2. COM Serial 통신 Debugging 수정
+//   - Event Handler 생성 해제 위치 변경
+//   - Receive Event Byte 사이즈 Read로 변경
+// 3. Scanner Interface Test를 위한 Manual UI 추가
+//   - FormLaserMaint 
+// 4. ImageSave 1빈트 단색 Bitmap 형식으로 저장하도록 수정

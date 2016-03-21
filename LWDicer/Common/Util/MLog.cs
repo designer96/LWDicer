@@ -107,10 +107,13 @@ namespace LWDicer.Control
 
                 sfFileName = sfFileName.Replace("\\", "");
                 sfFileName = sfFileName.Replace("/", "");
+                
             }
 
             // 0.5 show debug window
             strLog = strLog.Replace("\r\n", " ");
+            strLog = strLog.Replace("'", "");
+
             if (bShowDebugLine)
             {
                 string log = $"{now.ToString("yyyy-MM-dd HH:mm:ss.fff")}, {logType.ToString()}, {writeType.ToString()}, {strLog}, ({sfFileName}, {sfErrLine.ToString()} line)";

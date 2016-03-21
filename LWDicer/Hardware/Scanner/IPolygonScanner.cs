@@ -199,5 +199,10 @@ namespace LWDicer.Control
         void SaveImage(string strBMP);
         void DrawRound(LineData Data);
         void DrawSquare(LineData Data);
+
+        int LSEPortOpen();
+        int LSEPortClose();
+
+        bool SendTFTPFile(string strIP, string strFilePath);
     }
 }

@@ -195,6 +195,8 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(200, out objInfo);
             CreatePolygonScanner(objInfo, PolygonIni, (int)EObjectScanner.SCANNER1, m_PolygonComPort);
 
+            m_Scanner[0].LSEPortOpen();
+
             ////////////////////////////////////////////////////////////////////////
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
@@ -404,8 +406,8 @@ namespace LWDicer.Control
         {
             m_DataManager.m_SystemData.Scanner[objIndex] = PolygonIni;
 
-            m_DataManager.m_SystemData.Scanner[objIndex].strIP = "192.168.22.60";
-            m_DataManager.m_SystemData.Scanner[objIndex].strPort = "21";
+            m_DataManager.m_SystemData.Scanner[objIndex].strIP = "192.168.1.161";
+            m_DataManager.m_SystemData.Scanner[objIndex].strPort = "70";
 
             m_Scanner[objIndex] = new MPolygonScanner(objInfo, m_DataManager.m_SystemData.Scanner[objIndex], objIndex, m_ComPort);
         }
@@ -413,9 +415,9 @@ namespace LWDicer.Control
         void CreatePolygonSerialPort(CObjectInfo objInfo, out ISerialPort pComport)
         {
             // Polygon Scanner Serial Port 
-            string PortName = "COM1";
-            int BaudRate = 115200;
-            Parity _Parity = Parity.Even;
+            string PortName = "COM3";
+            int BaudRate = 57600;
+            Parity _Parity = Parity.None;
             int DataBits = 8;
             StopBits _StopBits = StopBits.One;
 
@@ -459,6 +461,14 @@ namespace LWDicer.Control
             m_trsPushPull.Start();
             m_trsStage1.Start();
             m_trsAutoManager.Start();
+        }
+
+        public void StopThreads()
+        {
+            m_trsLoader.Stop();
+            m_trsPushPull.Stop();
+            m_trsStage1.Stop();
+            m_trsAutoManager.Stop();
         }
 
         void SetAllParameterToComponent()

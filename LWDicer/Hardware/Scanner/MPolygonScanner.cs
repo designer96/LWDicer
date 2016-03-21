@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using System.Net;
 using System.IO;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Windows.Forms;
 
 using System.Runtime.InteropServices;
 using System.IO.Ports;
+
+using System.Diagnostics;
 
 using static LWDicer.Control.DEF_System;
 using static LWDicer.Control.DEF_Common;
@@ -33,6 +36,9 @@ namespace LWDicer.Control
 
         protected CPolygonIni[] m_PolygonData = new CPolygonIni[(int)EObjectScanner.MAX_OBJ];
 
+        protected ProcessStartInfo proInfo = new ProcessStartInfo();
+        protected Process m_process = new Process();
+        
         private Graphics m_Grapic;
         private Image Image;
         public PictureBox PicWafer;
@@ -53,6 +59,8 @@ namespace LWDicer.Control
             SetScannerPort(scannerIndex, m_PolygonData[scannerIndex].strPort);
 
             PicWafer = new PictureBox();
+
+            InitializeTFTP();
 
         }
 
@@ -379,6 +387,10 @@ namespace LWDicer.Control
 
             key = "SeedClockFrequency";
             value = Convert.ToString(m_PolygonData.SeedClockFrequency);
+            bRet = SetValue(section, key, value, filepath);
+
+            key = "RepetitionRate";
+            value = Convert.ToString(m_PolygonData.RepetitionRate);
             bRet = SetValue(section, key, value, filepath);
 
             key = "PulsePickWidth";
@@ -840,11 +852,11 @@ namespace LWDicer.Control
          ------------------------------------------------------------------------------------*/
         public bool SendConfig(int scannerIndex, string strFile)
         {
-            string strFTP = string.Format("{0:s}{1:s}.ini",GetIPData(scannerIndex),strFile); // ex) "ftp://192.168.22.60:21/configure.ini"
+            string strFTP = string.Format("{0:s}{1:s}",GetIPData(scannerIndex),strFile); // ex) "ftp://192.168.22.60:21/configure.ini"
 
-            string strPath = string.Format("{0:s}{1:s}.ini", m_DBInfo.ScannerLogDir,strFile);  // ex) "SFA\LWDicer\ScannerLog\configure.ini"
+            string strPath = string.Format("{0:s}{1:s}", m_DBInfo.ScannerLogDir,strFile);  // ex) "SFA\LWDicer\ScannerLog\configure.ini"
 
-            if (SendFile(strPath, strFTP) == true)
+            if (SendFTPFile(strPath, strFTP) == true)
             {
                 return true;
             }
@@ -865,11 +877,11 @@ namespace LWDicer.Control
          ------------------------------------------------------------------------------------*/
         public bool SendBitMap(int scannerIndex, string strFile)
         {
-            string strFTP = string.Format("{0:s}{1:s}.bmp", GetIPData(scannerIndex), strFile); // ex) "ftp://192.168.22.60:21/BitMap.bmp"
+            string strFTP = string.Format("{0:s}{1:s}", GetIPData(scannerIndex), strFile); // ex) "ftp://192.168.22.60:21/BitMap.bmp"
 
-            string strPath = string.Format("{0:s}{1:s}.bmp", m_DBInfo.ScannerLogDir, strFile); // ex) "SFA\LWDicer\ScannerLog\BitMap.bmp"
+            string strPath = string.Format("{0:s}{1:s}", m_DBInfo.ScannerLogDir, strFile); // ex) "SFA\LWDicer\ScannerLog\BitMap.bmp"
 
-            if (SendFile(strPath, strFTP) == true)
+            if (SendFTPFile(strPath, strFTP) == true)
             {
                 return true;
             }
@@ -920,16 +932,22 @@ namespace LWDicer.Control
             {
                 m_COM.ReceiveMessage(out message, out QueueSize);
 
-                m_COM.ClearReceiveQue();
+                if(QueueSize != 0)
+                {
+                    Message = message;
 
-                Message = message;
-
-                return SUCCESS;
+                    return SUCCESS;
+                }
+                else
+                {
+                    Message = "";
+                    return ERR_SERIALPORT_RECEIVEDQUE_EMPTY;
+                }
             }
             else
             {
                 Message = "";
-                return ERR_SERIALPORT_RECEIVEDQUE_EMPTY;
+                return ERR_SERIALPORT_OPENPORT_FAIL;
             }
         }
 
@@ -961,12 +979,12 @@ namespace LWDicer.Control
         /*------------------------------------------------------------------------------------
         * Date : 2016.02.24
         * Author : HSLEE
-        * Function : SendFile(string strPath, string strFTP)
+        * Function : SendFTPFile(string strPath, string strFTP)
         * Description : Scanner LSE Controller FTP Data 전송
         * Parameter : strPath - 전송하고 하는 파일 경로   ex)  SFA\LWDicer\ScannerLog\BitMap.bmp"
         *             strFTP - Controlller IP, Port, File Name 조합 ex) ex) "ftp://192.168.22.60:21/BitMap.bmp"
         ------------------------------------------------------------------------------------*/
-        public bool SendFile(string strPath, string strFTP)
+        public bool SendFTPFile(string strPath, string strFTP)
         {
             FtpWebRequest FTPUploader = (FtpWebRequest)WebRequest.Create(strFTP);
 
@@ -981,6 +999,7 @@ namespace LWDicer.Control
             try
             {
                 Stream uploadStream = FTPUploader.GetRequestStream();
+
                 int contentLength = fileStream.Read(buffer, 0, bufferLength);
 
                 while (contentLength != 0)
@@ -1022,11 +1041,70 @@ namespace LWDicer.Control
             Image = new Bitmap(PicWafer.Width, PicWafer.Height);
 
             // 생성된 BitMap Image에 Graphic 속성을 생성
-            m_Grapic = Graphics.FromImage(Image);       
-            
+            m_Grapic = Graphics.FromImage(Image);
+
             // PictureBox Image 생성         
             PicWafer.Image = Image;
+
+            // Background Color는 White
+            m_Grapic.Clear(Color.White);
         }
+
+        /// <summary>
+        /// Date : 2016.03.11
+        /// Author : HSLEE
+        /// Function : InitializeTFTP()
+        /// Description : Scanner LSE Controller TFTP Data을 위한 초기화 구문
+        /// </summary>
+        public void InitializeTFTP()
+        {
+            proInfo.FileName = @"cmd";
+
+            proInfo.CreateNoWindow = true;
+
+            proInfo.UseShellExecute = false;
+
+            proInfo.RedirectStandardOutput = true;
+
+            proInfo.RedirectStandardInput = true;
+
+            proInfo.RedirectStandardError = true;
+
+            m_process.StartInfo = proInfo;
+
+        }
+
+        /// <summary>
+        /// Date : 2016.03.11
+        /// Author : HSLEE
+        /// Function : SendTFTPFile(string strIP, string strFTP)
+        /// Description : Scanner LSE Controller TFTP Data 전송
+        ///               ex) tftp -i 192.168.22.76 put t:\test.bmp
+        /// </summary>
+        /// <param name="strIP"></param>  : TFTP Server IP
+        /// <param name="strFilePath"></param> : 전송하고자 하는 File Path
+        public bool SendTFTPFile(string strIP, string strFilePath)
+        {
+            string strTFTP = string.Empty;
+
+            strTFTP = string.Format("tftp -i {0:s} put {1:s}", strIP, strFilePath);
+
+            m_process.Start();
+
+            m_process.StandardInput.Write(strTFTP + Environment.NewLine);
+
+            m_process.StandardInput.Close();
+
+            if (m_process.WaitForExit(10000) == false)
+            {
+                m_process.Close();
+                return false;
+            }
+
+            m_process.Close();
+            return true;
+        }
+
 
         /*------------------------------------------------------------------------------------
         * Date : 2016.02.26
@@ -1061,8 +1139,21 @@ namespace LWDicer.Control
             strFile = string.Format("{0:s}{1:s}.bmp", m_DBInfo.ScannerLogDir,strBMP);
 
             Bitmap bmp = new Bitmap(PicWafer.Width, PicWafer.Height);
+
             PicWafer.DrawToBitmap(bmp, new Rectangle(0, 0, PicWafer.Width, PicWafer.Height));
-            bmp.Save(strFile);
+
+            // 흑백색으로 구성된 단색 Bitmap 형식으로 변환해야함 [Scanner에서 단색 비트맵 인식]
+            // BMP 파일 비트 수준 : 1
+            // 1. 단색 비트맵을 저장을 위한 Bitmap 생성
+            Bitmap SaveImage = new Bitmap(PicWafer.Width, PicWafer.Height, PixelFormat.Format1bppIndexed);
+
+            // 2. 사용자가 입력한 Image Size에 해당하는 복사본을 만들위한 Rectangle 생성
+            Rectangle rectangle = new Rectangle(0, 0, PicWafer.Width, PicWafer.Height);
+
+            // 3. 원본 이미지에 단색 Bitmap 속성을 바꾼 복사본을 만든다.
+            SaveImage = bmp.Clone(rectangle, PixelFormat.Format1bppIndexed);
+
+            SaveImage.Save(strFile);
         }
 
 

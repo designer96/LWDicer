@@ -141,7 +141,7 @@ namespace LWDicer.UI
 
             this.Size = new Size(DEF_UI.FORM_SIZE_WIDTH, DEF_UI.FORM_SIZE_HEIGHT);
             this.IsMdiContainer = true;
-            this.FormBorderStyle = FormBorderStyle.None;
+            this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
 
             PanelTop.Location = new Point(DEF_UI.TOP_POS_X, DEF_UI.TOP_POS_Y);
             PanelTop.Size = new Size(DEF_UI.TOP_SIZE_WIDTH, DEF_UI.TOP_SIZE_HEIGHT);
@@ -565,6 +565,17 @@ namespace LWDicer.UI
 
             }
             return true;
+        }
+
+        private void CMainFrame_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Program 종료를 위해 Thread Kill
+            LWDicer.StopThreads();
+
+            LWDicer.m_Scanner[0].LSEPortClose();
+
+            this.Dispose();
+            this.Close();
         }
     }
     public class PageInfo

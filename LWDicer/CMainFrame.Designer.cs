@@ -62,7 +62,7 @@
             this.MainUIPanel.Size = new System.Drawing.Size(1275, 773);
             this.MainUIPanel.TabIndex = 15;
             // 
-            // MainUI
+            // CMainFrame
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -72,8 +72,9 @@
             this.Controls.Add(this.PanelBottom);
             this.Controls.Add(this.MainUIPanel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "MainUI";
+            this.Name = "CMainFrame";
             this.Text = "SFA Wafer Dicing";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CMainFrame_FormClosing);
             this.ResumeLayout(false);
 
         }

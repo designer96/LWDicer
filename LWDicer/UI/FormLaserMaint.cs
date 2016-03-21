@@ -11,6 +11,8 @@ using LWDicer.Control;
 using Syncfusion.Windows.Forms.Grid;
 using Syncfusion.Windows.Forms;
 
+using Syncfusion.Windows.Forms.Tools;
+
 using static LWDicer.Control.DEF_PolygonScanner;
 
 namespace LWDicer.UI
@@ -23,7 +25,12 @@ namespace LWDicer.UI
 
         private CPolygonIni m_Polygon = null;
 
-        private int objIndex;
+        private int scannerIndex;
+
+        public string strBMPFileName;
+        public string strCFGFileName;
+
+        Queue<string> m_ReceivedQueue = new Queue<string>();
 
         public void SetPrevPage(PageInfo page)
         {
@@ -43,9 +50,15 @@ namespace LWDicer.UI
         {
             InitializeComponent();
 
-            objIndex = 0;
+            scannerIndex = 0;
+
+            InitTabControl();
 
             InitializeForm();
+
+            TmrScannerTest.Enabled = true;
+            TmrScannerTest.Interval = 100;
+            TmrScannerTest.Stop();
         }
         protected virtual void InitializeForm()
         {
@@ -53,6 +66,16 @@ namespace LWDicer.UI
             this.DesktopLocation = new Point(DEF_UI.MAIN_POS_X, DEF_UI.MAIN_POS_Y);
             this.Size = new Size(DEF_UI.MAIN_SIZE_WIDTH, DEF_UI.MAIN_SIZE_HEIGHT);
             this.FormBorderStyle = FormBorderStyle.None;
+        }
+
+        private void InitTabControl()
+        {
+            TabCtlLaserMaint.TabStyle = typeof(Syncfusion.Windows.Forms.Tools.TabRendererVS2008);
+
+            TabCtlLaserMaint.TabPages[0].Text = "Configure Data";
+            TabCtlLaserMaint.TabPages[1].Text = "Scanner Test";
+
+            TabCtlLaserMaint.Padding = new Point(6,5);
         }
 
         private void BtnNext_Click(object sender, EventArgs e)
@@ -140,28 +163,28 @@ namespace LWDicer.UI
             GridConfigure[24, 0].Text = "AutoIncrementStartFacet";
             GridConfigure[25, 0].Text = "MotorStableTime";
 
-            GridConfigure[1, 1].Text = "[m]";
-            GridConfigure[2, 1].Text = "[m]";
-            GridConfigure[3, 1].Text = "[m]";
+            GridConfigure[1, 1].Text = "[u]";
+            GridConfigure[2, 1].Text = "[u]";
+            GridConfigure[3, 1].Text = "[u]";
             GridConfigure[4, 1].Text = "[-]";
             GridConfigure[5, 1].Text = "[-]";
             GridConfigure[6, 1].Text = "[sec]";
             GridConfigure[7, 1].Text = "[-]";
-            GridConfigure[8, 1].Text = "[Hz]";
-            GridConfigure[9, 1].Text = "[Hz]";
-            GridConfigure[10, 1].Text = "[m]";
+            GridConfigure[8, 1].Text = "[kHz]";
+            GridConfigure[9, 1].Text = "[kHz]";
+            GridConfigure[10, 1].Text = "[u]";
             GridConfigure[11, 1].Text = "[m/s^2]";
             GridConfigure[12, 1].Text = "[-]";
             GridConfigure[13, 1].Text = "[-]";
             GridConfigure[14, 1].Text = "[-]";
-            GridConfigure[15, 1].Text = "[m]";
-            GridConfigure[16, 1].Text = "[m]";
-            GridConfigure[17, 1].Text = "[m]";
-            GridConfigure[18, 1].Text = "[m]";
-            GridConfigure[19, 1].Text = "[m]";
-            GridConfigure[20, 1].Text = "[m]";
-            GridConfigure[21, 1].Text = "[m]";
-            GridConfigure[22, 1].Text = "[m]";
+            GridConfigure[15, 1].Text = "[u]";
+            GridConfigure[16, 1].Text = "[u]";
+            GridConfigure[17, 1].Text = "[u]";
+            GridConfigure[18, 1].Text = "[u]";
+            GridConfigure[19, 1].Text = "[u]";
+            GridConfigure[20, 1].Text = "[u]";
+            GridConfigure[21, 1].Text = "[u]";
+            GridConfigure[22, 1].Text = "[u]";
             GridConfigure[23, 1].Text = "[-]";
             GridConfigure[24, 1].Text = "[-]";
             GridConfigure[25, 1].Text = "[ms]";
@@ -213,7 +236,7 @@ namespace LWDicer.UI
             GridConfigure.ResizeColsBehavior = 0;
             GridConfigure.ResizeRowsBehavior = 0;
 
-            GetPolygonPara(objIndex);
+            GetPolygonPara(scannerIndex);
 
             // Grid Display Update
             GridConfigure.Refresh();
@@ -227,31 +250,31 @@ namespace LWDicer.UI
         private void UpdateScreen(CPolygonIni m_PolygonPara)
         {
             // User Enable Para
-            GridConfigure[1, 2].Text = string.Format("{0:F6}", m_PolygonPara.InScanResolution);
-            GridConfigure[2, 2].Text = string.Format("{0:F6}", m_PolygonPara.CrossScanResolution);
-            GridConfigure[3, 2].Text = Convert.ToString(m_PolygonPara.InScanOffset);
+            GridConfigure[1, 2].Text = string.Format("{0:f}", m_PolygonPara.InScanResolution*1000000);
+            GridConfigure[2, 2].Text = string.Format("{0:f}", m_PolygonPara.CrossScanResolution*1000000);
+            GridConfigure[3, 2].Text = string.Format("{0:f}", m_PolygonPara.InScanOffset * 1000000);
             GridConfigure[4, 2].Text = Convert.ToString(m_PolygonPara.StopMotorBetweenJobs);
             GridConfigure[5, 2].Text = Convert.ToString(m_PolygonPara.PixInvert);
             GridConfigure[6, 2].Text = Convert.ToString(m_PolygonPara.JobStartBufferTime);
             GridConfigure[7, 2].Text = Convert.ToString(m_PolygonPara.PrecedingBlankLines);
 
-            GridConfigure[8, 2].Text = Convert.ToString(m_PolygonPara.SeedClockFrequency);
-            GridConfigure[9, 2].Text = Convert.ToString(m_PolygonPara.RepetitionRate);
+            GridConfigure[8, 2].Text = string.Format("{0:f}", m_PolygonPara.SeedClockFrequency / 1000);
+            GridConfigure[9, 2].Text = string.Format("{0:f}", m_PolygonPara.RepetitionRate / 1000);
 
-            GridConfigure[10, 2].Text = string.Format("{0:F7}", m_PolygonPara.CrossScanEncoderResol);
+            GridConfigure[10, 2].Text = string.Format("{0:f}", m_PolygonPara.CrossScanEncoderResol * 1000000);
+
             GridConfigure[11, 2].Text = Convert.ToString(m_PolygonPara.CrossScanMaxAccel);
             GridConfigure[12, 2].Text = Convert.ToString(m_PolygonPara.EnCarSig);
             GridConfigure[13, 2].Text = Convert.ToString(m_PolygonPara.SwapCarSig);
-
             GridConfigure[14, 2].Text = Convert.ToString(m_PolygonPara.InterleaveRatio);
-            GridConfigure[15, 2].Text = Convert.ToString(m_PolygonPara.FacetFineDelayOffset0);
-            GridConfigure[16, 2].Text = Convert.ToString(m_PolygonPara.FacetFineDelayOffset1);
-            GridConfigure[17, 2].Text = Convert.ToString(m_PolygonPara.FacetFineDelayOffset2);
-            GridConfigure[18, 2].Text = Convert.ToString(m_PolygonPara.FacetFineDelayOffset3);
-            GridConfigure[19, 2].Text = Convert.ToString(m_PolygonPara.FacetFineDelayOffset4);
-            GridConfigure[20, 2].Text = Convert.ToString(m_PolygonPara.FacetFineDelayOffset5);
-            GridConfigure[21, 2].Text = Convert.ToString(m_PolygonPara.FacetFineDelayOffset6);
-            GridConfigure[22, 2].Text = Convert.ToString(m_PolygonPara.FacetFineDelayOffset7);
+            GridConfigure[15, 2].Text = string.Format("{0:f}", m_PolygonPara.FacetFineDelayOffset0 * 1000000);
+            GridConfigure[16, 2].Text = string.Format("{0:f}", m_PolygonPara.FacetFineDelayOffset1 * 1000000);
+            GridConfigure[17, 2].Text = string.Format("{0:f}", m_PolygonPara.FacetFineDelayOffset2 * 1000000);
+            GridConfigure[18, 2].Text = string.Format("{0:f}", m_PolygonPara.FacetFineDelayOffset3 * 1000000);
+            GridConfigure[19, 2].Text = string.Format("{0:f}", m_PolygonPara.FacetFineDelayOffset4 * 1000000);
+            GridConfigure[20, 2].Text = string.Format("{0:f}", m_PolygonPara.FacetFineDelayOffset5 * 1000000);
+            GridConfigure[21, 2].Text = string.Format("{0:f}", m_PolygonPara.FacetFineDelayOffset6 * 1000000);
+            GridConfigure[22, 2].Text = string.Format("{0:f}", m_PolygonPara.FacetFineDelayOffset7 * 1000000);
             GridConfigure[23, 2].Text = Convert.ToString(m_PolygonPara.StartFacet);
             GridConfigure[24, 2].Text = Convert.ToString(m_PolygonPara.AutoIncrementStartFacet);
             GridConfigure[25, 2].Text = Convert.ToString(m_PolygonPara.MotorStableTime);
@@ -265,38 +288,38 @@ namespace LWDicer.UI
                 return;
             }
 
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetPixelGridX(objIndex, Convert.ToDouble(GridConfigure[1, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetPixelGridY(objIndex, Convert.ToDouble(GridConfigure[2, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetStartOffset(objIndex, Convert.ToDouble(GridConfigure[3, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetMotorBetweenJob(objIndex, Convert.ToInt16(GridConfigure[4, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetBitMapColor(objIndex, Convert.ToInt16(GridConfigure[5, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetBufferTime(objIndex, Convert.ToInt16(GridConfigure[6, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetDummyBlankLine(objIndex, Convert.ToInt16(GridConfigure[7, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSeedClock(objIndex, Convert.ToDouble(GridConfigure[8, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetRepRate(objIndex, Convert.ToDouble(GridConfigure[9, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetEncoderResol(objIndex, Convert.ToDouble(GridConfigure[10, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetMaxAccel(objIndex, Convert.ToDouble(GridConfigure[11, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetEnCarSig(objIndex, Convert.ToInt16(GridConfigure[12, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSwapCarSig(objIndex, Convert.ToInt16(GridConfigure[13, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetLeaveRatio(objIndex, Convert.ToInt16(GridConfigure[14, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSuperSync(objIndex, Convert.ToDouble(GridConfigure[15, 2].Text), Facet0);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSuperSync(objIndex, Convert.ToDouble(GridConfigure[16, 2].Text), Facet1);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSuperSync(objIndex, Convert.ToDouble(GridConfigure[17, 2].Text), Facet2);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSuperSync(objIndex, Convert.ToDouble(GridConfigure[18, 2].Text), Facet3);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSuperSync(objIndex, Convert.ToDouble(GridConfigure[19, 2].Text), Facet4);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSuperSync(objIndex, Convert.ToDouble(GridConfigure[20, 2].Text), Facet5);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSuperSync(objIndex, Convert.ToDouble(GridConfigure[21, 2].Text), Facet6);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetSuperSync(objIndex, Convert.ToDouble(GridConfigure[22, 2].Text), Facet7);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetStartFacet(objIndex, Convert.ToInt16(GridConfigure[23, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetAutoIncStartFacet(objIndex, Convert.ToInt16(GridConfigure[24, 2].Text));
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetMotorStableTime(objIndex, Convert.ToInt16(GridConfigure[25, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetPixelGridX(scannerIndex, Convert.ToDouble(GridConfigure[1, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetPixelGridY(scannerIndex, Convert.ToDouble(GridConfigure[2, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetStartOffset(scannerIndex, Convert.ToDouble(GridConfigure[3, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetMotorBetweenJob(scannerIndex, Convert.ToInt16(GridConfigure[4, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetBitMapColor(scannerIndex, Convert.ToInt16(GridConfigure[5, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetBufferTime(scannerIndex, Convert.ToInt16(GridConfigure[6, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetDummyBlankLine(scannerIndex, Convert.ToInt16(GridConfigure[7, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSeedClock(scannerIndex, Convert.ToDouble(GridConfigure[8, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetRepRate(scannerIndex, Convert.ToDouble(GridConfigure[9, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetEncoderResol(scannerIndex, Convert.ToDouble(GridConfigure[10, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetMaxAccel(scannerIndex, Convert.ToDouble(GridConfigure[11, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetEnCarSig(scannerIndex, Convert.ToInt16(GridConfigure[12, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSwapCarSig(scannerIndex, Convert.ToInt16(GridConfigure[13, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetLeaveRatio(scannerIndex, Convert.ToInt16(GridConfigure[14, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSuperSync(scannerIndex, Convert.ToDouble(GridConfigure[15, 2].Text), Facet0);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSuperSync(scannerIndex, Convert.ToDouble(GridConfigure[16, 2].Text), Facet1);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSuperSync(scannerIndex, Convert.ToDouble(GridConfigure[17, 2].Text), Facet2);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSuperSync(scannerIndex, Convert.ToDouble(GridConfigure[18, 2].Text), Facet3);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSuperSync(scannerIndex, Convert.ToDouble(GridConfigure[19, 2].Text), Facet4);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSuperSync(scannerIndex, Convert.ToDouble(GridConfigure[20, 2].Text), Facet5);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSuperSync(scannerIndex, Convert.ToDouble(GridConfigure[21, 2].Text), Facet6);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetSuperSync(scannerIndex, Convert.ToDouble(GridConfigure[22, 2].Text), Facet7);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetStartFacet(scannerIndex, Convert.ToInt16(GridConfigure[23, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetAutoIncStartFacet(scannerIndex, Convert.ToInt16(GridConfigure[24, 2].Text));
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetMotorStableTime(scannerIndex, Convert.ToInt16(GridConfigure[25, 2].Text));
 
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetScannerIP(objIndex, LabelIP.Text);
-            CMainFrame.LWDicer.m_Scanner[objIndex].SetScannerPort(objIndex, LabelPort.Text);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetScannerIP(scannerIndex, LabelIP.Text);
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SetScannerPort(scannerIndex, LabelPort.Text);
             
-            CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[objIndex]= GetPolygonPara(objIndex);
+            CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[scannerIndex] = GetPolygonPara(scannerIndex);
 
-            CMainFrame.LWDicer.m_Scanner[objIndex].SavePolygonPara(CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[objIndex], "config");
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SavePolygonPara(CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[scannerIndex], "config");
 
             UpdateScreen(m_Polygon);
         }
@@ -331,6 +354,7 @@ namespace LWDicer.UI
             GridConfigure[nRow, nCol].Text = strModify;
         }
 
+
         private void LabelIP_Click(object sender, EventArgs e)
         {
             string strModify = "";
@@ -341,6 +365,9 @@ namespace LWDicer.UI
             }
 
             LabelIP.Text = strModify;
+
+            CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[scannerIndex].strIP = LabelIP.Text;
+
         }
 
         private void LabelPort_Click(object sender, EventArgs e)
@@ -355,6 +382,111 @@ namespace LWDicer.UI
             }
 
             LabelPort.Text = strModify;
+
+            CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[scannerIndex].strPort = LabelPort.Text;
+        }
+
+        private void TabCtlLaserMaint_Click(object sender, EventArgs e)
+        {
+            int nIndex = 0;
+
+            TabControlAdv Tab = sender as TabControlAdv;
+
+            nIndex = Tab.SelectedTab.TabIndex;
+
+            if(nIndex == 1)
+            {
+                BtnConfigureSave.Show();
+                TmrScannerTest.Stop();
+
+            }else if(nIndex == 2)
+            {
+                BtnConfigureSave.Hide();
+                TmrScannerTest.Start();
+            }
+        }
+
+        private void BtnLoadFile_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog OpenIniFile = new OpenFileDialog();
+            OpenIniFile.Filter = "TXT Text|*.ini";
+            OpenIniFile.InitialDirectory = "T:\\SFA\\LWDicer\\ScannerLog";
+
+            if (OpenIniFile.ShowDialog() == DialogResult.OK)
+            {
+                if (OpenIniFile.FileName.Length > 0)
+                {
+                    foreach (string filename in OpenIniFile.FileNames)
+                    {
+                        this.TextConfigureFile.Text = filename;
+                        strCFGFileName = OpenIniFile.SafeFileName;
+                    }
+                }
+            }
+
+            OpenIniFile.Dispose();
+        }
+
+        private void BtnUploadFile_Click(object sender, EventArgs e)
+        {
+            string strPath = string.Empty;
+
+            strPath = string.Format(@"{0:s}", @TextConfigureFile.Text);
+
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SendTFTPFile(LabelIP.Text, strPath);
+        }
+
+        private void TmrScannerTest_Tick(object sender, EventArgs e)
+        {
+            string strText = "";
+            string strMsg = "";
+
+            if (CMainFrame.LWDicer.m_Scanner[scannerIndex].GetSerialData(out strText) == DEF_Error.SUCCESS)
+            {
+                if (strText != "")
+                {
+                    strMsg = strText;
+
+                    TextComLog.Text = TextComLog.Text + strMsg + "\r\n";
+
+                }
+            }
+        }
+
+
+        private void BtnLoadBitmap_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog OpenBmpFile = new OpenFileDialog();
+            OpenBmpFile.Filter = "Bitmap Image|*.bmp";
+            OpenBmpFile.InitialDirectory = "T:\\SFA\\LWDicer\\ScannerLog";
+
+            if (OpenBmpFile.ShowDialog() == DialogResult.OK)
+            {
+                if (OpenBmpFile.FileName.Length > 0)
+                {
+                    foreach (string filename in OpenBmpFile.FileNames)
+                    {
+                        TextBitmapFile.Text = filename;
+                        strBMPFileName = OpenBmpFile.SafeFileName;
+                    }
+                }
+            }
+
+            OpenBmpFile.Dispose();
+        }
+
+        private void BtnStreaming_Click(object sender, EventArgs e)
+        {
+            string strPath = string.Empty;
+
+            strPath = string.Format(@"{0:s}", TextBitmapFile.Text);
+
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SendTFTPFile(LabelIP.Text, strPath);
+        }
+
+        private void BtnClear_Click(object sender, EventArgs e)
+        {
+            TextComLog.Text = "";
         }
     }
 }

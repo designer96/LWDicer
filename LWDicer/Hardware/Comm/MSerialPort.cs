@@ -4,18 +4,23 @@ using System.Linq;
 using System.Text;
 using System.IO.Ports;
 
+
 using static LWDicer.Control.DEF_SerialPort;
 using static LWDicer.Control.DEF_Common;
 using static LWDicer.Control.DEF_Error;
+
+using LWDicer.UI;
 
 namespace LWDicer.Control
 {
     public class MSerialPort : MObject, ISerialPort, IDisposable
     {
         CSerialPortData m_Data;
-
+       
         SerialPort m_SerialPort;
         Queue<string> m_ReceivedQueue = new Queue<string>();
+
+        FormLaserMaint DisScanner = new FormLaserMaint();
 
         public MSerialPort(CObjectInfo objInfo, CSerialPortData data) 
             : base(objInfo)
@@ -47,7 +52,7 @@ namespace LWDicer.Control
                 m_SerialPort = new SerialPort(m_Data.PortName, m_Data.BaudRate, m_Data._Parity,
                     m_Data.DataBits, m_Data._StopBits);
 
-                m_SerialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPortReceiveEvent);
+               // m_SerialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPortReceiveEvent);
             }
             catch (Exception ex)
             {
@@ -62,22 +67,40 @@ namespace LWDicer.Control
         {
             try
             {
-                SerialPort sp;
-                sp = (SerialPort)sender;
-                string message = sp.ReadLine();
-                message.Trim();
-                if(message.Length > 0)
+                //SerialPort sp;
+                //sp = (SerialPort)sender;
+
+                //string message = m_SerialPort.ReadLine();
+
+                //message.Trim();
+
+                //if (message.Length > 0)
+                //{
+                //    m_ReceivedQueue.Enqueue(message);
+                //}
+
+                byte[] byteData = new byte[1024];
+                int byteCount = 0;
+                string strText = string.Empty;
+                byteCount = m_SerialPort.Read(byteData, 0, 1024);
+
+                for (int i = 0; i < byteCount; i++)
                 {
-                    m_ReceivedQueue.Enqueue(message);
+                    strText += (char)byteData[i];
                 }
+
+                strText.Trim();
+
+                m_ReceivedQueue.Enqueue(strText);
             }
             catch (Exception ex)
             {
                 WriteExLog(ex.ToString());
                 //return GenerateErrorCode(ERR_SERIALPORT_CREATEPORT_FAIL);
             }
-
         }
+
+
         public int OpenPort()
         {
             try
@@ -85,6 +108,8 @@ namespace LWDicer.Control
                 if (IsOpened() == false)
                 {
                     m_SerialPort?.Open();
+
+                    m_SerialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPortReceiveEvent);
                 }
             }
             catch (Exception ex)
@@ -102,6 +127,8 @@ namespace LWDicer.Control
                 if (IsOpened() == true)
                 {
                     m_SerialPort.Close();
+
+                    m_SerialPort.DataReceived -= new SerialDataReceivedEventHandler(SerialPortReceiveEvent);
                 }
             }
             catch (Exception ex)
@@ -143,6 +170,7 @@ namespace LWDicer.Control
             }
 
             message = m_ReceivedQueue.Dequeue();
+
             return SUCCESS;
         }
 
