@@ -11,7 +11,7 @@ namespace LWDicer.Control
     public class DEF_Motion
     {
         // 
-        public const int DEF_MAX_AXIS_PER_SAXIS = 4;
+        public const int DEF_MAX_AXIS_PER_SAXIS = 4;    // DEF_XYTZ
 
         // Board에 따른 축 수
         public const int DEF_AXIS_NO_PER_BRD    = 8; // Motion Board가 Full-Size이면 8개
@@ -46,12 +46,8 @@ namespace LWDicer.Control
         public const int DEF_MAX_AXIS_NO        = DEF_AXIS_NO_PER_BRD * DEF_MAX_MOTION_BD;
         public const int DEF_MIN_AXIS_NO        = 0;
 
-        public const int MAX_LENGTH_AXIS_NAME   = 32;
-
         // Coordinate Value
-        public const int DEF_MAX_COORDINATE     = DEF_MAX_AXIS_NO; // Mulit Axes의 축 Max.
-
-        public const int DEF_NO_COORDINATE      = 0;  // Multi Axes의 축 구성 안함
+        public const int DEF_MAX_COORDINATE     = DEF_XYTZ; // Multi Axes의 축 Max.
         public const int DEF_ALL_COORDINATE     = -1; // Multi Axes의 모든 축 선택
 
         public const int DEF_AXIS_USE           = 1;  // 축 사  용
@@ -61,71 +57,104 @@ namespace LWDicer.Control
         public const int DEF_AXIS_NON_ID        = -1; // 축 ID 미할당 (축 미구성)
         public const int DEF_AXIS_ALL_ID        = -1; // 축 전체 선택
 
-        // Move Priority Value ("1"이 우선순위 높음)
-        public const int DEF_PRIORITY_NO   = DEF_MAX_AXIS_NO; // Multi Axes의 다축 이동 시 우선순위 사용 가능 개수
-        public const int DEF_PRIORITY_NONE = -1; // Multi Axes의 다축 이동 시 우선순위 1
-        public const int DEF_PRIORITY_1    = 1;  // Multi Axes의 다축 이동 시 우선순위 1
-        public const int DEF_PRIORITY_2    = 2;  // Multi Axes의 다축 이동 시 우선순위 2
-        public const int DEF_PRIORITY_3    = 3;  // Multi Axes의 다축 이동 시 우선순위 3
-        public const int DEF_PRIORITY_4    = 4;  // Multi Axes의 다축 이동 시 우선순위 4
-        public const int DEF_PRIORITY_5    = 5;  // Multi Axes의 다축 이동 시 우선순위 5
-        public const int DEF_PRIORITY_6    = 6;  // Multi Axes의 다축 이동 시 우선순위 6
-        public const int DEF_PRIORITY_7    = 7;  // Multi Axes의 다축 이동 시 우선순위 7
-        public const int DEF_PRIORITY_8    = 8;  // Multi Axes의 다축 이동 시 우선순위 8
-        public const int DEF_PRIORITY_9    = 9;  // Multi Axes의 다축 이동 시 우선순위 9
-        public const int DEF_PRIORITY_10   = 10; // Multi Axes의 다축 이동 시 우선순위 10
-        public const int DEF_PRIORITY_11   = 11; // Multi Axes의 다축 이동 시 우선순위 11
-        public const int DEF_PRIORITY_12   = 12; // Multi Axes의 다축 이동 시 우선순위 12
-        public const int DEF_PRIORITY_13   = 13; // Multi Axes의 다축 이동 시 우선순위 13
-        public const int DEF_PRIORITY_14   = 14; // Multi Axes의 다축 이동 시 우선순위 14
-        public const int DEF_PRIORITY_15   = 15; // Multi Axes의 다축 이동 시 우선순위 15
-        public const int DEF_PRIORITY_16   = 16; // Multi Axes의 다축 이동 시 우선순위 16
-        public const int DEF_PRIORITY_17   = 17; // Multi Axes의 다축 이동 시 우선순위 17
-        public const int DEF_PRIORITY_18   = 18; // Multi Axes의 다축 이동 시 우선순위 18
-        public const int DEF_PRIORITY_19   = 19; // Multi Axes의 다축 이동 시 우선순위 19
-        public const int DEF_PRIORITY_20   = 20; // Multi Axes의 다축 이동 시 우선순위 20
-        public const int DEF_PRIORITY_21   = 21; // Multi Axes의 다축 이동 시 우선순위 21
-        public const int DEF_PRIORITY_22   = 22; // Multi Axes의 다축 이동 시 우선순위 22
-        public const int DEF_PRIORITY_23   = 23; // Multi Axes의 다축 이동 시 우선순위 23
-        public const int DEF_PRIORITY_24   = 24; // Multi Axes의 다축 이동 시 우선순위 24
-        public const int DEF_PRIORITY_25   = 25; // Multi Axes의 다축 이동 시 우선순위 25
-        public const int DEF_PRIORITY_26   = 26; // Multi Axes의 다축 이동 시 우선순위 26
-        public const int DEF_PRIORITY_27   = 27; // Multi Axes의 다축 이동 시 우선순위 27
-        public const int DEF_PRIORITY_28   = 28; // Multi Axes의 다축 이동 시 우선순위 28
-        public const int DEF_PRIORITY_29   = 29; // Multi Axes의 다축 이동 시 우선순위 29
-        public const int DEF_PRIORITY_30   = 30; // Multi Axes의 다축 이동 시 우선순위 30
-        public const int DEF_PRIORITY_31   = 31; // Multi Axes의 다축 이동 시 우선순위 31
-        public const int DEF_PRIORITY_32   = 32; // Multi Axes의 다축 이동 시 우선순위 32
-        public const int DEF_PRIORITY_33   = 33; // Multi Axes의 다축 이동 시 우선순위 33
-        public const int DEF_PRIORITY_34   = 34; // Multi Axes의 다축 이동 시 우선순위 34
-        public const int DEF_PRIORITY_35   = 35; // Multi Axes의 다축 이동 시 우선순위 35
-        public const int DEF_PRIORITY_36   = 36; // Multi Axes의 다축 이동 시 우선순위 36
-        public const int DEF_PRIORITY_37   = 37; // Multi Axes의 다축 이동 시 우선순위 37
-        public const int DEF_PRIORITY_38   = 38; // Multi Axes의 다축 이동 시 우선순위 38
-        public const int DEF_PRIORITY_39   = 39; // Multi Axes의 다축 이동 시 우선순위 39
-        public const int DEF_PRIORITY_40   = 40; // Multi Axes의 다축 이동 시 우선순위 40
-        public const int DEF_PRIORITY_41   = 41; // Multi Axes의 다축 이동 시 우선순위 41
-        public const int DEF_PRIORITY_42   = 42; // Multi Axes의 다축 이동 시 우선순위 42
-        public const int DEF_PRIORITY_43   = 43; // Multi Axes의 다축 이동 시 우선순위 43
-        public const int DEF_PRIORITY_44   = 44; // Multi Axes의 다축 이동 시 우선순위 44
-        public const int DEF_PRIORITY_45   = 45; // Multi Axes의 다축 이동 시 우선순위 45
-        public const int DEF_PRIORITY_46   = 46; // Multi Axes의 다축 이동 시 우선순위 46
-        public const int DEF_PRIORITY_47   = 47; // Multi Axes의 다축 이동 시 우선순위 47
-        public const int DEF_PRIORITY_48   = 48; // Multi Axes의 다축 이동 시 우선순위 48
-        public const int DEF_PRIORITY_49   = 49; // Multi Axes의 다축 이동 시 우선순위 49
-        public const int DEF_PRIORITY_50   = 50; // Multi Axes의 다축 이동 시 우선순위 50
-        public const int DEF_PRIORITY_53   = 53; // Multi Axes의 다축 이동 시 우선순위 53
-        public const int DEF_PRIORITY_54   = 54; // Multi Axes의 다축 이동 시 우선순위 54
-        public const int DEF_PRIORITY_55   = 55; // Multi Axes의 다축 이동 시 우선순위 55
-        public const int DEF_PRIORITY_56   = 56; // Multi Axes의 다축 이동 시 우선순위 56
-        public const int DEF_PRIORITY_57   = 57; // Multi Axes의 다축 이동 시 우선순위 57
-        public const int DEF_PRIORITY_58   = 58; // Multi Axes의 다축 이동 시 우선순위 58
-        public const int DEF_PRIORITY_59   = 59; // Multi Axes의 다축 이동 시 우선순위 59
-        public const int DEF_PRIORITY_60   = 60; // Multi Axes의 다축 이동 시 우선순위 60
-        public const int DEF_PRIORITY_61   = 61; // Multi Axes의 다축 이동 시 우선순위 61
-        public const int DEF_PRIORITY_62   = 62; // Multi Axes의 다축 이동 시 우선순위 62
-        public const int DEF_PRIORITY_63   = 63; // Multi Axes의 다축 이동 시 우선순위 63
-        public const int DEF_PRIORITY_64   = 64; // Multi Axes의 다축 이동 시 우선순위 64
+        // X,Y,T 코드 정의
+        public const int DEF_X = 0;
+        public const int DEF_Y = 1;
+        public const int DEF_T = 2;
+        public const int DEF_Z = 3;
+        public const int DEF_XYTZ = 4;
+
+        // Left / Right 코드 정의
+        public const int DEF_LEFT = 0;
+        public const int DEF_RIGHT = 1;
+
+        // UP / Down 코드 정의
+        public const int DEF_UP = 0;
+        public const int DEF_DOWN = 1;
+
+        // 좌표 종류를 정의 한다.
+        public const int POSITION_FIXED = 0;
+        public const int POSITION_OFFSET = 1;
+        public const int POSITION_MODEL = 2;
+        public const int POSITION_MARKOFFSET = 3;
+        public const int POSITION_MAX = 4;
+
+        // Limit Sensor Check 상태
+        public const int DEF_NONE_SENSOR_CHECK = 0;
+        public const int DEF_NEG_SENSOR_CHECK = 1;
+        public const int DEF_POS_SENSOR_CHECK = 2;
+        public const int DEF_HOME_SENSOR_CHECK = 3;
+
+        // Move Priority Value ("0"이 우선순위 높음)
+        public enum EPriority
+        {
+            NONE = -1,
+            P_0 = 0,
+            P_1,
+            P_2,
+            P_3,
+            P_4,
+            P_5,
+            P_6,
+            P_7,
+            P_8,
+            P_9,
+            P_10,
+            P_11,
+            P_12,
+            P_13,
+            P_14,
+            P_15,
+            P_16,
+            P_17,
+            P_18,
+            P_19,
+            P_20,
+            P_21,
+            P_22,
+            P_23,
+            P_24,
+            P_25,
+            P_26,
+            P_27,
+            P_28,
+            P_29,
+            P_30,
+            P_31,
+            P_32,
+            P_33,
+            P_34,
+            P_35,
+            P_36,
+            P_37,
+            P_38,
+            P_39,
+            P_40,
+            P_41,
+            P_42,
+            P_43,
+            P_44,
+            P_45,
+            P_46,
+            P_47,
+            P_48,
+            P_49,
+            P_50,
+            P_51,
+            P_52,
+            P_53,
+            P_54,
+            P_55,
+            P_56,
+            P_57,
+            P_58,
+            P_59,
+            P_60,
+            P_61,
+            P_62,
+            P_63,
+            MAX,
+        }
 
         // Move 종류
         public const int DEF_MOVE_POSITION   = 0; // 사다리꼴 속도 Profile, 절대좌표 이동

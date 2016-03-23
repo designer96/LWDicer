@@ -225,7 +225,7 @@ namespace LWDicer.Control
             // 센서를 체크하지 않으면 바로 리턴 한다.
             if (skip_sensor)
             {
-                Sleep(1);
+                Sleep(WhileSleepTime);
                 return SUCCESS;
             }
 
@@ -255,7 +255,7 @@ namespace LWDicer.Control
             // 센서를 체크하지 않으면 바로 리턴 한다.
             if (skip_sensor)
             {
-                Sleep(1);
+                Sleep(WhileSleepTime);
                 return SUCCESS;
             }
 
@@ -303,7 +303,7 @@ namespace LWDicer.Control
             // 센서를 체크하지 않으면 바로 리턴 한다.
             if (skip_sensor)
             {
-                Sleep(1);
+                Sleep(WhileSleepTime);
                 return SUCCESS;
             }
 
@@ -551,7 +551,7 @@ namespace LWDicer.Control
                         if (bVal) // 감속 센서를 체크 했으면
                             m_IO.OutputOn(m_Data.AccSolenoid[0]);
                     }
-                    Sleep(100);
+                    Sleep(WhileSleepTime);
                 }
             }
             // Sensor가 없을때는 Delay 처리
@@ -633,7 +633,7 @@ namespace LWDicer.Control
                         if (bVal) // 감속 센서를 체크 했으면
                             m_IO.OutputOn(m_Data.AccSolenoid[1]);
                     }
-                    Sleep(1);
+                    Sleep(WhileSleepTime);
                 }
             }
             // Sensor가 없을때는 Delay 처리
@@ -684,7 +684,7 @@ namespace LWDicer.Control
                     }
                     return GenerateErrorCode(ERR_CYLINDER_TIMEOUT);
                 }
-                Sleep(1);
+                Sleep(WhileSleepTime);
             }
 
             if (m_Data.SolenoidType != SINGLE_SOLENOID)

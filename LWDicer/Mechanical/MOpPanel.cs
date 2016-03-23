@@ -1150,42 +1150,42 @@ namespace LWDicer.Control
             int i = 0;
             int iResult = SUCCESS;
 
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // AMP Disable 
             //    if ((iResult = m_pMotionLib.SetAmpEnable(i, false)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // AMP Fault Reset 
             //    if ((iResult = m_pMotionLib.SetAmpFaultEnable(i, false)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // AMP Fault Set 
             //    if ((iResult = m_pMotionLib.SetAmpFaultEnable(i, true)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // Status Clear 
             //    if ((iResult = m_pMotionLib.ClearStatus(i)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // Frame Clear 
             //    if ((iResult = m_pMotionLib.ClearFrames(i)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // AMP Enable 
             //    if ((iResult = m_pMotionLib.SetAmpEnable(i, true)) != ERR_MOTION_SUCCESS)
@@ -1204,35 +1204,35 @@ namespace LWDicer.Control
             int i = 0;
             int iResult = SUCCESS;
 
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // AMP Disable 
             //    if ((iResult = m_pMotionLib.SetAmpEnable(i, false)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // AMP Fault Reset 
             //    if ((iResult = m_pMotionLib.SetAmpFaultEnable(i, false)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // AMP Fault Set 
             //    if ((iResult = m_pMotionLib.SetAmpFaultEnable(i, true)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // Status Clear 
             //    if ((iResult = m_pMotionLib.ClearStatus(i)) != ERR_MOTION_SUCCESS)
             //        return iResult;
             //} // Next i
             //Sleep(10);
-            //for (i = 0; i < DEF_MAX_MOTION_AXIS_NO; i++)
+            //for (i = 0; i < DEF_MAX_MOTION_AXIS; i++)
             //{
             //    // Frame Clear 
             //    if ((iResult = m_pMotionLib.ClearFrames(i)) != ERR_MOTION_SUCCESS)
@@ -1404,9 +1404,9 @@ namespace LWDicer.Control
         *
         * @param	bool *pbSts :  원점복귀 전체 상태
         */
-        public bool CheckAllOrigin(out bool[/*DEF_MAX_MOTION_AXIS_NO*/] bOriginSts)
+        public bool CheckAllOrigin(out bool[/*DEF_MAX_MOTION_AXIS*/] bOriginSts)
         {
-            bOriginSts = new bool[DEF_MAX_MOTION_AXIS_NO];
+            bOriginSts = new bool[1];
             return false;
             //int i = 0;
             //bool rgbResult[4] = { false, false, false, false };
@@ -2137,7 +2137,7 @@ namespace LWDicer.Control
          *
          * @param	rgdVelocity[] : 설정할 Motion 속도 (배열 Index 순서는 MMC 축 ID 순서)
          */
-        public void SetVelocityMode(double[/*DEF_MAX_MOTION_AXIS_NO*/] rgdVelocity)
+        public void SetVelocityMode(double[/*DEF_MAX_MOTION_AXIS*/] rgdVelocity)
         {
             //. Motion 속도 수정...
             int i = 0;

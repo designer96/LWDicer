@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using MotionYMC;
@@ -17,6 +18,7 @@ namespace LWDicer.Control
         UInt32 m_hController; // Yaskawa controller handle
 
         MTickTimer m_waitTimer = new MTickTimer();
+        Thread m_hThread;   // Thread Handle
 
         public enum EYMCRegisterType
         {
@@ -36,7 +38,7 @@ namespace LWDicer.Control
             F,  // float
         }
 
-        public MIO_YMC(CObjectInfo objInfo, UInt32 hController)
+        public MIO_YMC(CObjectInfo objInfo, UInt32 hController = 0)
             : base(objInfo)
         {
             m_hController = hController;
@@ -55,12 +57,31 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        /// <summary>
-        /// Incoming Buffer를 Update하고, Outgoing Buffer의 내용을 Physical I/O에 적용하는 IOThread를 Run한다.
-        /// </summary>
-        public void RunIOThread()
+        public int ThreadStart()
         {
-            return;
+            m_hThread = new Thread(ThreadProcess);
+            m_hThread.Start();
+
+            return DEF_Error.SUCCESS;
+        }
+
+        public int ThreadStop()
+        {
+            m_hThread.Abort();
+
+            return DEF_Error.SUCCESS;
+        }
+
+        public void ThreadProcess()
+        {
+            while (true)
+            {
+#if SIMULATION_MOTION
+                GetAllServoStatus();
+#endif
+
+                Sleep(DEF_Thread.ThreadSleepTime);
+            }
         }
 
         /// <summary>

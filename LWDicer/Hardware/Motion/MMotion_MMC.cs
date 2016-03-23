@@ -11,12 +11,12 @@ using static LWDicer.Control.DEF_Motion;
 
 namespace LWDicer.Control
 {
-    class MMotion_YMC : MObject
+    class MMotion_MMC : MObject
     {
         UInt32 m_hController; // Yaskawa controller handle
         MMotionBoard m_BoardConfig;
 
-        public MMotion_YMC(CObjectInfo objInfo, UInt32 hController)
+        public MMotion_MMC(CObjectInfo objInfo, UInt32 hController)
             : base(objInfo)
         {
             m_hController = hController;

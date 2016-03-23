@@ -19,6 +19,9 @@ using static LWDicer.Control.DEF_OpPanel;
 using static LWDicer.Control.DEF_Thread;
 using static LWDicer.Control.DEF_DataManager;
 
+using static LWDicer.Control.DEF_Motion;
+using static LWDicer.Control.DEF_Yaskawa;
+using static LWDicer.Control.DEF_MultiAxesYMC;
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 using static LWDicer.Control.DEF_Vision;
@@ -30,37 +33,64 @@ namespace LWDicer.Control
 {
     public class MLWDicer : MObject, IDisposable
     {
-        public const int ERR_SYSTEM_FAIL_OPEN_YMC = 1;
-        public const int ERR_SYSTEM_FAIL_SET_TIMEOUT = 2;
 
+        ///////////////////////////////////////////////////////////////////////
         // Common Class
         public MSystemInfo m_SystemInfo { get; private set; }
         public MDataManager m_DataManager { get; private set; }
 
+        ///////////////////////////////////////////////////////////////////////
         // Hardware Layer
-        public UInt32[] m_hYMC = new UInt32[DEF_MAX_YMC_BOARD];
 
+        // Motion
+        public MYaskawa m_YMC;
+
+        // MultiAxes
+        public MMultiAxes_YMC m_AxStage1;
+        public MMultiAxes_YMC m_AxLoader;
+        public MMultiAxes_YMC m_AxPushPull;
+        public MMultiAxes_YMC m_AxCentering1;
+        public MMultiAxes_YMC m_AxRotate1;
+        public MMultiAxes_YMC m_AxCleanNozzle1;
+        public MMultiAxes_YMC m_AxCoatNozzle1;
+        public MMultiAxes_YMC m_AxCentering2;
+        public MMultiAxes_YMC m_AxRotate2;
+        public MMultiAxes_YMC m_AxCleanNozzle2;
+        public MMultiAxes_YMC m_AxCoatNozzle2;
+        public MMultiAxes_YMC m_AxHandler1;
+        public MMultiAxes_YMC m_AxHandler2;
+        public MMultiAxes_YMC m_AxCamera1;
+        public MMultiAxes_YMC m_AxLaser1;
+
+        // IO
         public IIO m_IO { get; private set; }
 
+        // Cylinder
         public ICylinder m_UHandlerUDCyl;
         public ICylinder m_UHandlerUDCyl2;
 
+        // Vacuum
         public IVacuum m_Stage1Vac;
         public IVacuum m_Stage2Vac;
 
+        // Serial
         public ISerialPort m_PolygonComPort;
 
+        // Scanner
         public IPolygonScanner[] m_Scanner = new IPolygonScanner[(int)EObjectScanner.MAX_OBJ];
 
+        ///////////////////////////////////////////////////////////////////////
         // Mechanical Layer
 
         public MVision m_Vision { get; set; }
 
+        ///////////////////////////////////////////////////////////////////////
         // Control Layer
         public MCtrlLoader m_ctrlLoader { get; private set; }
         public MCtrlPushPull m_ctrlPushPull { get; private set; }
         public MCtrlStage1 m_ctrlStage1 { get; private set; }
 
+        ///////////////////////////////////////////////////////////////////////
         // Process Layer
         public MTrsAutoManager m_trsAutoManager { get; private set; }
         public MTrsLoader m_trsLoader { get; private set; }
@@ -81,18 +111,6 @@ namespace LWDicer.Control
         {
             // close handle
 
-            // yaskawa
-            for (int i = 0; i < DEF_MAX_YMC_BOARD; i++)
-            {
-                if (m_hYMC[i] == 0) continue;
-                uint rc = CMotionAPI.ymcCloseController(m_hYMC[i]);
-                if (rc != CMotionAPI.MP_SUCCESS)
-                {
-                    string str = String.Format("Error ymcCloseController Board {0} \nErrorCode [ 0x{1} ]", i, rc.ToString("X"));
-                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
-                    MessageBox.Show(str);
-                }
-            }
         }
 
         public CLoginData GetLogin()
@@ -131,15 +149,17 @@ namespace LWDicer.Control
             // 1. Hardware Layer
             ////////////////////////////////////////////////////////////////////////
 
-            // YMC
-            CreateYMCBoard();
-
-            // IO
-            m_SystemInfo.GetObjectInfo(2, out objInfo);
-            m_IO = new MIO_YMC(objInfo, m_hYMC[0]);
-            m_IO.OutputOn(oUHandler_Self_Vac_On);
-
             // Motion
+            m_SystemInfo.GetObjectInfo(2, out objInfo);
+            CreateYMCBoard(objInfo);
+
+            // MultiAxes
+            CreateMultiAxes_YMC();
+            m_AxHandler1.UpdateAxisStatus();
+            // IO
+            m_SystemInfo.GetObjectInfo(6, out objInfo);
+            m_IO = new MIO_YMC(objInfo);
+            m_IO.OutputOn(oUHandler_Self_Vac_On);
 
             // Cylinder
             // UHandlerUDCyl
@@ -188,7 +208,7 @@ namespace LWDicer.Control
             CreateVacuum(objInfo, vacData, (int)EObjectVacuum.STAGE2, out m_Stage2Vac);
 
             // Polygon Scanner Serial Com Port
-            m_SystemInfo.GetObjectInfo(10, out objInfo);
+            m_SystemInfo.GetObjectInfo(30, out objInfo);
             CreatePolygonSerialPort(objInfo, out m_PolygonComPort);
 
             CPolygonIni PolygonIni = new CPolygonIni();
@@ -201,7 +221,7 @@ namespace LWDicer.Control
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
 
-            m_SystemInfo.GetObjectInfo(20, out objInfo);
+            m_SystemInfo.GetObjectInfo(9, out objInfo);
             CreateVision(objInfo);
 
             CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
@@ -251,6 +271,8 @@ namespace LWDicer.Control
             ////////////////////////////////////////////////////////////////////////
             // 6. Start Thread & System
             ////////////////////////////////////////////////////////////////////////
+            m_YMC.ThreadStart();
+
             SetThreadChannel();
             StartThreads();
 
@@ -262,49 +284,163 @@ namespace LWDicer.Control
             dbInfo = new CDBInfo();
         }
 
-        int CreateYMCBoard()
+        int CreateYMCBoard(CObjectInfo objInfo)
         {
+            CYaskawaRefComp refComp = new CYaskawaRefComp();
+            CYaskawaData data = m_DataManager.m_SystemData.YaskawaData;
+
+            m_YMC = new MYaskawa(objInfo, refComp, data);
 #if SIMULATION_MOTION
-            return SUCCESS;
+            int iResult = m_YMC.OpenController();
+            if (iResult != SUCCESS) return iResult;
 #endif
-            UInt32 rc;
-            CMotionAPI.COM_DEVICE ComDevice;
 
-            for(int i = 0; i < DEF_MAX_YMC_BOARD; i++)
+            return SUCCESS;
+        }
+
+        int CreateMultiAxes_YMC()
+        {
+            CObjectInfo objInfo;
+            CMutliAxesYMCRefComp refComp = new CMutliAxesYMCRefComp();
+            CMultiAxesYMCData data;
+            int deviceNo;
+            int[] axisList = new int[DEF_MAX_COORDINATE];
+            int[] initArray = new int[DEF_MAX_COORDINATE];
+            for(int i = 0; i < DEF_MAX_COORDINATE; i++)
             {
-                //============================================================================ To Contents of Processing
-                // Sets the ymcOpenController parameters.		
-                //============================================================================
-                ComDevice.ComDeviceType = (UInt16)CMotionAPI.ApiDefs.COMDEVICETYPE_PCI_MODE;
-                ComDevice.PortNumber = Convert.ToUInt16(i+1);
-                ComDevice.CpuNumber = 1;    //cpuno;
-                ComDevice.NetworkNumber = 0;
-                ComDevice.StationNumber = 0;
-                ComDevice.UnitNumber = 0;
-                ComDevice.IPAddress = "";
-                ComDevice.Timeout = 10000;
-
-                rc = CMotionAPI.ymcOpenController(ref ComDevice, ref m_hYMC[i]);
-                if (rc != CMotionAPI.MP_SUCCESS)
-                {
-                    string str = String.Format("Error ymcOpenController Board {0} \nErrorCode [ 0x{1} ]", i, rc.ToString("X"));
-                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
-                    MessageBox.Show(str);
-                    return GenerateErrorCode(ERR_SYSTEM_FAIL_OPEN_YMC);
-                }
-
-                //============================================================================ To Contents of Processing
-                // Sets the motion API timeout. 		
-                //============================================================================
-                rc = CMotionAPI.ymcSetAPITimeoutValue(30000);
-                if (rc != CMotionAPI.MP_SUCCESS)
-                {
-                    string str = String.Format("Error ymcSetAPITimeoutValue \nErrorCode [ 0x{0} ]", rc.ToString("X"));
-                    WriteLog(str, ELogType.Debug, ELogWType.Error, true);
-                    MessageBox.Show(str);
-                    return GenerateErrorCode(ERR_SYSTEM_FAIL_SET_TIMEOUT);
-                }
+                initArray[i] = DEF_AXIS_NON_ID;
             }
+
+            refComp.Motion = m_YMC;
+
+            // Loader
+            deviceNo = (int)EYMC_Device.LOADER;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_Z] = (int)EYMC_Axis.LOADER_Z;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(251, out objInfo);
+            m_AxLoader = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // PushPull
+            deviceNo = (int)EYMC_Device.PUSHPULL;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_Y] = (int)EYMC_Axis.PUSHPULL_Y;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(252, out objInfo);
+            m_AxPushPull = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // C1_CENTERING
+            deviceNo = (int)EYMC_Device.C1_CENTERING;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_T] = (int)EYMC_Axis.C1_CENTERING_T;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(253, out objInfo);
+            m_AxCentering1 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // C1_ROTATE
+            deviceNo = (int)EYMC_Device.C1_ROTATE;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_T] = (int)EYMC_Axis.C1_CHUCK_ROTATE_T;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(254, out objInfo);
+            m_AxRotate1 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // C1_CLEAN_NOZZLE
+            deviceNo = (int)EYMC_Device.C1_CLEAN_NOZZLE;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_T] = (int)EYMC_Axis.C1_CLEAN_NOZZLE_T;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(255, out objInfo);
+            m_AxCleanNozzle1 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // C1_COAT_NOZZLE
+            deviceNo = (int)EYMC_Device.C1_COAT_NOZZLE;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_T] = (int)EYMC_Axis.C1_COAT_NOZZLE_T;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(256, out objInfo);
+            m_AxCoatNozzle1 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // C2_CENTERING
+            deviceNo = (int)EYMC_Device.C2_CENTERING;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_T] = (int)EYMC_Axis.C2_CENTERING_T;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(257, out objInfo);
+            m_AxCentering2 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // C2_ROTATE
+            deviceNo = (int)EYMC_Device.C2_ROTATE;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_T] = (int)EYMC_Axis.C2_CHUCK_ROTATE_T;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(258, out objInfo);
+            m_AxRotate2 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // C2_CLEAN_NOZZLE
+            deviceNo = (int)EYMC_Device.C2_CLEAN_NOZZLE;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_T] = (int)EYMC_Axis.C2_CLEAN_NOZZLE_T;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(259, out objInfo);
+            m_AxCleanNozzle2 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // C2_COAT_NOZZLE
+            deviceNo = (int)EYMC_Device.C2_COAT_NOZZLE;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_T] = (int)EYMC_Axis.C2_COAT_NOZZLE_T;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(260, out objInfo);
+            m_AxCoatNozzle2 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // HANDLER1
+            deviceNo = (int)EYMC_Device.HANDLER1;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_Y] = (int)EYMC_Axis.HANDLER1_Y;
+            axisList[DEF_Z] = (int)EYMC_Axis.HANDLER1_Z;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(261, out objInfo);
+            m_AxHandler1 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // HANDLER2
+            deviceNo = (int)EYMC_Device.HANDLER2;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_Y] = (int)EYMC_Axis.HANDLER2_Y;
+            axisList[DEF_Z] = (int)EYMC_Axis.HANDLER2_Z;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(262, out objInfo);
+            m_AxHandler2 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // CAMERA1
+            deviceNo = (int)EYMC_Device.CAMERA1;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_Z] = (int)EYMC_Axis.CAMERA1_Z;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(263, out objInfo);
+            m_AxCamera1 = new MMultiAxes_YMC(objInfo, refComp, data);
+
+            // LASER1
+            deviceNo = (int)EYMC_Device.LASER1;
+            Array.Copy(initArray, axisList, initArray.Length);
+            axisList[DEF_Z] = (int)EYMC_Axis.LASER1_Z;
+            data = new CMultiAxesYMCData(deviceNo, axisList);
+
+            m_SystemInfo.GetObjectInfo(264, out objInfo);
+            m_AxLaser1 = new MMultiAxes_YMC(objInfo, refComp, data);
+
             return SUCCESS;
         }
 
@@ -457,10 +593,10 @@ namespace LWDicer.Control
 
         void StartThreads()
         {
-            m_trsLoader.Start();
-            m_trsPushPull.Start();
-            m_trsStage1.Start();
-            m_trsAutoManager.Start();
+            m_trsLoader.ThreadStart();
+            m_trsPushPull.ThreadStart();
+            m_trsStage1.ThreadStart();
+            m_trsAutoManager.ThreadStart();
         }
 
         public void StopThreads()

@@ -50,7 +50,7 @@ namespace LWDicer.Control
         };
 
         // Cylinder Component가 가지는 Mechanical Component List
-        public class CCylinderRefCompList
+        public class CCylinderRefComp
         {
         }
 

@@ -23,8 +23,8 @@ namespace MotionYMC
         public struct COM_DEVICE
         {
             public UInt16 		ComDeviceType;             	// Communication type
-            public UInt16 		PortNumber;                	// Port number
-            public UInt16 		CpuNumber;                 	// CPU number
+            public UInt16 		PortNumber;                	// Port number  // communication port임에 주의할것
+            public UInt16 		CpuNumber;                 	// CPU number   
             public UInt16 		NetworkNumber;				// Network number
             public UInt16 		StationNumber;             	// Station number
             public UInt16 		UnitNumber;                	// Unit number

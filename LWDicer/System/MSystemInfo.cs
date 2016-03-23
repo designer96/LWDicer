@@ -22,19 +22,20 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_SYSTEM, "System", 0, "MLWDicer", 0, "System", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_DATAMANAGER, "DataManger", 1, "DataManager", 500, "DataManager", LOG_ALL, LOG_DAY ),
 
-	            new CObjectInfo( (int)OBJ_HL_IO, "IO", 2, "Device Net", 1000, "IO", LOG_ALL, LOG_DAY ),	
+	            new CObjectInfo( (int)OBJ_HL_MOTION_LIB, "MotionLib", 2, "MMC Board", 1000, "MotionLib", LOG_ALL, LOG_DAY ),
+	            new CObjectInfo( (int)OBJ_HL_MOTION_LIB, "MotionLib", 3, "YMC Board", 1500, "YMCLib", LOG_ALL, LOG_DAY ),
+
+	            new CObjectInfo( (int)OBJ_HL_IO, "IO", 6, "Device Net", 2000, "IO", LOG_ALL, LOG_DAY ),	
+				
+	            new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 9, "Vision", 3000, "Vision", LOG_ALL, LOG_DAY ),
 		
-	            new CObjectInfo( (int)OBJ_HL_MOTION_LIB, "MotionLib", 3, "MMC Board", 2000, "MotionLib", LOG_ALL, LOG_DAY ),
-		
-	            new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 4, "Vision", 3000, "Vision", LOG_ALL, LOG_DAY ),
-		
-	            new CObjectInfo( (int)OBJ_HL_MELSEC, "Melsec", 5, "Melsec", 7000, "Melsec", LOG_ALL, LOG_DAY ),
+	            new CObjectInfo( (int)OBJ_HL_MELSEC, "Melsec", 11, "Melsec", 4000, "Melsec", LOG_ALL, LOG_DAY ),
 		
 	            // 30-39 : Serial ------------------------------------------------------------------------
-	            new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 10, "RS232 SHead1", 5000, "RS232_SHead1", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 11, "RS232 SHead2", 5000, "RS232_SHead2", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 12, "RS232 GHead1", 5000, "RS232_GHead1", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 13, "RS232 GHead2", 5000, "RS232_GHead2", LOG_ALL, LOG_DAY ),
+	            new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 30, "RS232 SHead1", 5000, "RS232_SHead1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 31, "RS232 SHead2", 5000, "RS232_SHead2", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 32, "RS232 GHead1", 5000, "RS232_GHead1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 33, "RS232 GHead2", 5000, "RS232_GHead2", LOG_ALL, LOG_DAY ),
 		
 	            // 40-49 : Dummy Reserved
 	            // 50-59 : Ethernet Reserved
@@ -78,20 +79,25 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_HL_VACUUM, "Vacuum", 157, "UHandler Extra Vacuum", 9000, "UHandlerExtraVac", LOG_ALL, LOG_DAY ),
 		
 	            // 200-209 : Scanner & Laser  -------------------------------------------------------------	
-                new CObjectInfo( (int)OBJ_ML_POLYGON,   "PolygonScanner",    200, "Polygon Scanner",  6000, "PolygonScanner",  LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_ML_POLYGON,   "PolygonScanner",    200, "Polygon Scanner",  9100, "PolygonScanner",  LOG_ALL, LOG_DAY ),
 	            // 210-249 : Multi Actuator, Induction Motor, etc Reserved -------------------------------------------------------------
 
 	            // 250-299 : Motion Multi Axes --------------------------------------------------------------------		
-	            new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes Stage1",   250, "Stage1 Motion", 11000, "Stage1Axis", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes Stage1",   251, "Stage2 Motion", 11000, "Stage2Axis", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes Stage1",   252, "Stage3 Motion", 11000, "Stage3Axis", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes Camera1",  253, "Camera1 Motion", 11000, "Camera1Axis", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes Camera2",  254, "Camera2 Motion", 11000, "Camera2Axis", LOG_ALL, LOG_DAY ),	
-	            new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes SHead1",   255, "SHead1 Motion", 11000, "SHead1Axis", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes SHead2",   256, "SHead2 Motion", 11000, "SHead2Axis", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes GHead1",   257, "GHead1 Motion", 11000, "GHead1Axis", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes GHead2",   258, "GHead2 Motion", 11000, "GHead2Axis", LOG_ALL, LOG_DAY ),
-	            new CObjectInfo( (int)OBJ_HL_MULTI_AXES, "MultiAxes UHandler", 259, "UHandler Motion", 11000, "UHandlerAxis", LOG_ALL, LOG_DAY ),
+	            new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 250, "Stage1 Motion",               11000, "MA_Stage1",        LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 251, "Loader Motion",               11000, "MA_Loader",        LOG_ALL, LOG_DAY ),	
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 252, "PushPull Motion",             11000, "MA_PushPull",      LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 253, "Coater1 Centering Motion",    11000, "MA_Centering1",    LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 254, "Coater1 ChuckRotate Motion",  11000, "MA_Chuck1",        LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 255, "Coater1 CleanNozzle Motion",  11000, "MA_CleanNozzle1",  LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 256, "Coater1 CoatNozzle Motion",   11000, "MA_CoatNozzle1",   LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 257, "Coater2 Centering Motion",    11000, "MA_Centering2",    LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 258, "Coater2 ChuckRotate Motion",  11000, "MA_Chuck2",        LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 259, "Coater2 CleanNozzle Motion",  11000, "MA_CleanNozzle2",  LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 260, "Coater2 CoatNozzle Motion",   11000, "MA_CoatNozzle2",   LOG_ALL, LOG_DAY ),
+	            new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 261, "Handler1 Motion",             11000, "MA_Handler1",      LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 262, "Handler2 Motion",             11000, "MA_Handler2",      LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 263, "Camera1 Motion",              11000, "MA_Camera1",       LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_MULTIAXES_YMC, "MultiAxes_YMC", 264, "Laser1 Motion",               11000, "MA_Laser1",        LOG_ALL, LOG_DAY ),
 		
 	            // 300-349 : Mechanical Layer --------------------------------------------------------------------
 	            new CObjectInfo( (int)OBJ_ML_LIGHTENING, "Lightening", 300, "Mechanical : Lightening", 12000, "Lightening", LOG_ALL, LOG_DAY ),

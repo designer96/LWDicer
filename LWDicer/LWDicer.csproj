@@ -145,10 +145,11 @@
     <Compile Include="Common\Util\CUtils.cs" />
     <Compile Include="Common\Util\DBManager.cs" />
     <Compile Include="Hardware\IO\MIO_YMC.cs" />
+    <Compile Include="Hardware\Motion\MMultiAxes_YMC.cs" />
     <Compile Include="Hardware\Scanner\IPolygonScanner.cs" />
     <Compile Include="Hardware\Motion\IMotionLib.cs" />
     <Compile Include="Hardware\Motion\MMotionBoard.cs" />
-    <Compile Include="Hardware\Motion\MMotion_YMC.cs" />
+    <Compile Include="Hardware\Motion\MMotion_MMC.cs" />
     <Compile Include="Hardware\Scanner\MPolygonScanner.cs" />
     <Compile Include="Hardware\Vision\DEF_Vision.cs" />
     <Compile Include="Hardware\Vision\IVision.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Hardware\Vision\MVisionDisplay.cs" />
     <Compile Include="Hardware\Vision\MVisionModelData.cs" />
     <Compile Include="Hardware\Vision\MVisionSystem.cs" />
+    <Compile Include="Hardware\YMC\MYaskawa.cs" />
     <Compile Include="Hardware\YMC\ymcErrorCode.cs" />
     <Compile Include="Hardware\YMC\ymcPCConst.cs" />
     <Compile Include="Hardware\YMC\ymcPCFunction.cs" />
