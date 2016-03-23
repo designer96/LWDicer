@@ -30,24 +30,27 @@ namespace LWDicer.Control
         public const int ERR_YASKAWA_FAIL_RESET_ALARM                    = 11;
         public const int ERR_YASKAWA_FAIL_GET_MOTION_PARAM               = 12;
         public const int ERR_YASKAWA_FAIL_SERVO_STOP                     = 13;
-        public const int ERR_YASKAWA_SERVO_DETECTED_PLUS_LIMIT           = 14;
-        public const int ERR_YASKAWA_SERVO_DETECTED_MINUS_LIMIT          = 15;
-        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_JOG                 = 16;
-        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_DRIVING_POSITIONING = 17;
-        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_HOME                = 18;
-        public const int ERR_YASKAWA_FAIL_SERVO_GET_POS                  = 19;
-        public const int ERR_YASKAWA_FAIL_GET_REGISTER_DATA_HANDLE       = 20;
-        public const int ERR_YASKAWA_FAIL_GET_REGISTER_DATA              = 21;
-        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_IN_LIMIT_TIME       = 22;
-        public const int ERR_YASKAWA_FAIL_SERVO_HOME_IN_LIMIT_TIME       = 23;
-        public const int ERR_YASKAWA_TARGET_POS_EXCEED_PLUS_LIMIT        = 24;
-        public const int ERR_YASKAWA_TARGET_POS_EXCEED_MINUS_LIMIT       = 25;
-        public const int ERR_YASKAWA_DETECTED_DOOR_OPEN                  = 26;
-        public const int ERR_YASKAWA_DETECTED_ESTOP                      = 27;
+        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_JOG                 = 14;
+        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_DRIVING_POSITIONING = 15;
+        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_HOME                = 16;
+        public const int ERR_YASKAWA_FAIL_SERVO_GET_POS                  = 17;
+        public const int ERR_YASKAWA_FAIL_GET_REGISTER_DATA_HANDLE       = 18;
+        public const int ERR_YASKAWA_FAIL_GET_REGISTER_DATA              = 19;
+        public const int ERR_YASKAWA_FAIL_SERVO_MOVE_IN_LIMIT_TIME       = 20;
+        public const int ERR_YASKAWA_FAIL_SERVO_HOME_IN_LIMIT_TIME       = 21;
+        public const int ERR_YASKAWA_TARGET_POS_EXCEED_PLUS_LIMIT        = 22;
+        public const int ERR_YASKAWA_TARGET_POS_EXCEED_MINUS_LIMIT       = 23;
+        public const int ERR_YASKAWA_DETECTED_DOOR_OPEN                  = 24;
+        public const int ERR_YASKAWA_DETECTED_ESTOP                      = 25;
+        public const int ERR_YASKAWA_DETECTED_PLUS_LIMIT                 = 26;
+        public const int ERR_YASKAWA_DETECTED_MINUS_LIMIT                = 27;
+        public const int ERR_YASKAWA_DETECTED_SERVO_ALARM                = 28;
+        public const int ERR_YASKAWA_NOT_ORIGIN_RETURNED                 = 29;
+        public const int ERR_YASKAWA_NOT_SERVO_ON                        = 30;
 
         public const int MAX_MP_CPU = 4;    // pci board EA
         public const int MAX_MP_PORT = 2;   // ports per board
-        public const int MP_AXIS_PER_PORT = 16; // physical axis per port
+        public const int MP_AXIS_PER_PORT = 8; // physical axis per port
         public const int MP_AXIS_PER_CPU = MAX_MP_PORT * MP_AXIS_PER_PORT; // physical axis per cpu
         public const int MAX_MP_AXIS = MAX_MP_CPU * MAX_MP_PORT * MP_AXIS_PER_PORT;
 
@@ -142,6 +145,7 @@ namespace LWDicer.Control
             public bool ServoOn;
             public int LoadFactor;
             public int AlarmCode;
+            public bool OriginFlag;       // origin return flag
         }
 
         public class CMPMotionData
@@ -449,9 +453,9 @@ namespace LWDicer.Control
         public class CYaskawaData
         {
             //
-            public int CpuNo = 1;       // PCI 모드일때는 보드 숫자라고 생각하면 됨
-            public int PortNo = 1;      // MP Background 프로그램에서 설정하는 communication port number
+            public int MPComPort = 1;      // MP Background 프로그램에서 설정하는 communication port number, 거의 고정 1
 
+            public int CpuNo = 1;       // PCI 모드일때는 보드 숫자라고 생각하면 됨
             public CMPBoard[] MPBoard = new CMPBoard[MAX_MP_CPU];
 
             public CYaskawaData()
@@ -462,11 +466,11 @@ namespace LWDicer.Control
                 }
             }
 
-            public CYaskawaData(int CpuNo, int PortNo, CMPBoard[] boards = null)
+            public CYaskawaData(int MPComPort, int CpuNo, CMPBoard[] boards = null)
                 : this()
             {
+                this.MPComPort = MPComPort;
                 this.CpuNo = CpuNo;
-                this.PortNo = PortNo;
 
                 for(int i = 0; i < boards?.Length; i++)
                 {
@@ -502,11 +506,10 @@ namespace LWDicer.Control
         UInt32[] m_hController = new UInt32[MAX_MP_CPU];    // Yaskawa controller handle
         UInt32[] m_hAxis = new UInt32[MAX_MP_AXIS];         // Axis handle
         UInt32[] m_hDevice = new UInt32[MAX_MP_AXIS];       // Device handle
-        bool[] m_bOriginFlag = new bool[MAX_MP_AXIS];       // origin return flag
+        public CServoStatus[] ServoStatus = new CServoStatus[MAX_MP_AXIS];
 
         //
         Thread m_hThread;   // Thread Handle
-        public CServoStatus[] ServoStatus = new CServoStatus[MAX_MP_AXIS];
 
         //
         public bool NeedCheckSafety { get; set; } = false;
@@ -516,6 +519,11 @@ namespace LWDicer.Control
         {
             m_RefComp = refComp;
             SetData(data);
+
+            for(int i = 0; i < MAX_MP_AXIS; i++)
+            {
+                ServoStatus[i] = new CServoStatus();
+            }
         }
 
         ~MYaskawa()
@@ -598,6 +606,51 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        public int CheckAxisState4Move(int[] axisList)
+        {
+            // check safety
+            int iResult = IsSafe4Move();
+            if (iResult != SUCCESS) return iResult;
+
+
+            for (int i = 0; i < axisList.Length; i++)
+            {
+                GetServoStatus(i);
+
+                // servo on
+                if (ServoStatus[i].ServoOn == false)
+                {
+                    return GenerateErrorCode(ERR_YASKAWA_NOT_SERVO_ON);
+                }
+
+                // alarm
+                if(ServoStatus[i].Alarm)
+                {
+                    return GenerateErrorCode(ERR_YASKAWA_DETECTED_SERVO_ALARM);
+                }
+
+                // origin return
+                if (ServoStatus[i].OriginFlag == false)
+                {
+                    return GenerateErrorCode(ERR_YASKAWA_NOT_ORIGIN_RETURNED);
+                }
+
+                // plus limit
+                if (ServoStatus[i].DetectPlusSensor)
+                {
+                    return GenerateErrorCode(ERR_YASKAWA_DETECTED_PLUS_LIMIT);
+                }
+
+                // alarm
+                if (ServoStatus[i].DetectMinusSensor)
+                {
+                    return GenerateErrorCode(ERR_YASKAWA_DETECTED_MINUS_LIMIT);
+                }
+            }
+
+            return SUCCESS;
+        }
+
         private int GetDeviceLength(int deviceNo)
         {
             int length = 1;
@@ -613,10 +666,6 @@ namespace LWDicer.Control
                         length = (int)EYMC_Axis.MAX;
                         break;
 
-                    case (int)EYMC_Device.STAGE1:
-                        length = 3;
-                        break;
-
                     case (int)EYMC_Device.LOADER:
                         length = 1;
                         break;
@@ -625,9 +674,54 @@ namespace LWDicer.Control
                         length = 1;
                         break;
 
-                    case (int)EYMC_Device.HANDLER:
+                    case (int)EYMC_Device.C1_CENTERING:
                         length = 1;
                         break;
+
+                    case (int)EYMC_Device.C1_ROTATE:
+                        length = 1;
+                        break;
+
+                    case (int)EYMC_Device.C1_CLEAN_NOZZLE:
+                        length = 1;
+                        break;
+
+                    case (int)EYMC_Device.C1_COAT_NOZZLE:
+                        length = 1;
+                        break;
+
+                    case (int)EYMC_Device.C2_CENTERING:
+                        length = 1;
+                        break;
+
+                    case (int)EYMC_Device.C2_ROTATE:
+                        length = 1;
+                        break;
+
+                    case (int)EYMC_Device.C2_CLEAN_NOZZLE:
+                        length = 1;
+                        break;
+
+                    case (int)EYMC_Device.C2_COAT_NOZZLE:
+                        length = 1;
+                        break;
+
+                    case (int)EYMC_Device.HANDLER1:
+                        length = 2;
+                        break;
+
+                    case (int)EYMC_Device.HANDLER2:
+                        length = 2;
+                        break;
+
+                    case (int)EYMC_Device.CAMERA1:
+                        length = 1;
+                        break;
+
+                    case (int)EYMC_Device.LASER1:
+                        length = 1;
+                        break;
+
                 }
             }
 
@@ -644,29 +738,84 @@ namespace LWDicer.Control
             }
             else
             {
+                int index = 0;
                 switch (deviceNo)
                 {
                     case (int)EYMC_Device.ALL:
-                        axisList[0] = (int)EYMC_Axis.STAGE1_X;
-                        axisList[1] = (int)EYMC_Axis.STAGE1_Y;
-                        axisList[2] = (int)EYMC_Axis.STAGE1_T;
-                        axisList[3] = (int)EYMC_Axis.LOADER_Z;
-                        break;
-
-                    case (int)EYMC_Device.STAGE1:
-                        axisList[0] = (int)EYMC_Axis.STAGE1_X;
-                        axisList[1] = (int)EYMC_Axis.STAGE1_Y;
-                        axisList[2] = (int)EYMC_Axis.STAGE1_T;
+                        axisList[index++] = (int)EYMC_Axis.LOADER_Z;
+                        axisList[index++] = (int)EYMC_Axis.PUSHPULL_Y;
+                        axisList[index++] = (int)EYMC_Axis.C1_CENTERING_T;
+                        axisList[index++] = (int)EYMC_Axis.C1_CHUCK_ROTATE_T;
+                        axisList[index++] = (int)EYMC_Axis.C1_CLEAN_NOZZLE_T;
+                        axisList[index++] = (int)EYMC_Axis.C1_COAT_NOZZLE_T;
+                        axisList[index++] = (int)EYMC_Axis.C2_CENTERING_T;
+                        axisList[index++] = (int)EYMC_Axis.C2_CHUCK_ROTATE_T;
+                        axisList[index++] = (int)EYMC_Axis.C2_CLEAN_NOZZLE_T;
+                        axisList[index++] = (int)EYMC_Axis.C2_COAT_NOZZLE_T;
+                        axisList[index++] = (int)EYMC_Axis.HANDLER1_Y;
+                        axisList[index++] = (int)EYMC_Axis.HANDLER1_Z;
+                        axisList[index++] = (int)EYMC_Axis.HANDLER2_Y;
+                        axisList[index++] = (int)EYMC_Axis.HANDLER2_Z;
+                        axisList[index++] = (int)EYMC_Axis.CAMERA1_Z;
+                        axisList[index++] = (int)EYMC_Axis.LASER1_Z;
                         break;
 
                     case (int)EYMC_Device.LOADER:
-                        axisList[0] = (int)EYMC_Axis.LOADER_Z;
+                        axisList[index++] = (int)EYMC_Axis.LOADER_Z;
                         break;
 
                     case (int)EYMC_Device.PUSHPULL:
+                        axisList[index++] = (int)EYMC_Axis.PUSHPULL_Y;
                         break;
 
-                    case (int)EYMC_Device.HANDLER:
+                    case (int)EYMC_Device.C1_CENTERING:
+                        axisList[index++] = (int)EYMC_Axis.C1_CENTERING_T;
+                        break;
+
+                    case (int)EYMC_Device.C1_ROTATE:
+                        axisList[index++] = (int)EYMC_Axis.C1_CHUCK_ROTATE_T;
+                        break;
+
+                    case (int)EYMC_Device.C1_CLEAN_NOZZLE:
+                        axisList[index++] = (int)EYMC_Axis.C1_CLEAN_NOZZLE_T;
+                        break;
+
+                    case (int)EYMC_Device.C1_COAT_NOZZLE:
+                        axisList[index++] = (int)EYMC_Axis.C1_COAT_NOZZLE_T;
+                        break;
+
+                    case (int)EYMC_Device.C2_CENTERING:
+                        axisList[index++] = (int)EYMC_Axis.C2_CENTERING_T;
+                        break;
+
+                    case (int)EYMC_Device.C2_ROTATE:
+                        axisList[index++] = (int)EYMC_Axis.C2_CHUCK_ROTATE_T;
+                        break;
+
+                    case (int)EYMC_Device.C2_CLEAN_NOZZLE:
+                        axisList[index++] = (int)EYMC_Axis.C2_CLEAN_NOZZLE_T;
+                        break;
+
+                    case (int)EYMC_Device.C2_COAT_NOZZLE:
+                        axisList[index++] = (int)EYMC_Axis.C2_COAT_NOZZLE_T;
+                        break;
+
+                    case (int)EYMC_Device.HANDLER1:
+                        axisList[index++] = (int)EYMC_Axis.HANDLER1_Y;
+                        axisList[index++] = (int)EYMC_Axis.HANDLER1_Z;
+                        break;
+
+                    case (int)EYMC_Device.HANDLER2:
+                        axisList[index++] = (int)EYMC_Axis.HANDLER2_Y;
+                        axisList[index++] = (int)EYMC_Axis.HANDLER2_Z;
+                        break;
+
+                    case (int)EYMC_Device.CAMERA1:
+                        axisList[index++] = (int)EYMC_Axis.CAMERA1_Z;
+                        break;
+
+                    case (int)EYMC_Device.LASER1:
+                        axisList[index++] = (int)EYMC_Axis.LASER1_Z;
                         break;
                 }
             }
@@ -848,7 +997,7 @@ namespace LWDicer.Control
             {
                 // Sets the ymcOpenController parameters.		
                 ComDevice.ComDeviceType = (UInt16)CMotionAPI.ApiDefs.COMDEVICETYPE_PCI_MODE;
-                ComDevice.PortNumber = (UInt16)m_Data.PortNo;
+                ComDevice.PortNumber = (UInt16)m_Data.MPComPort;
                 ComDevice.CpuNumber = Convert.ToUInt16(i + 1);    //cpuno;
                 ComDevice.NetworkNumber = 0;
                 ComDevice.StationNumber = 0;
@@ -978,20 +1127,20 @@ namespace LWDicer.Control
 
         public bool IsOriginReturn(int servoNo)
         {
-            return m_bOriginFlag[servoNo];
+            return ServoStatus[servoNo].OriginFlag;
         }
 
         public void SetOriginReturn(int servoNo = -1)
         {
             if(servoNo != -1)
             {
-                m_bOriginFlag[servoNo] = true;
+                ServoStatus[servoNo].OriginFlag = true;
             }
             else
             {
-                for(int i = 0; i < m_bOriginFlag.Length; i++)
+                for(int i = 0; i < ServoStatus.Length; i++)
                 {
-                    m_bOriginFlag[i] = true;
+                    ServoStatus[i].OriginFlag = true;
                 }
             }
         }
@@ -1000,13 +1149,13 @@ namespace LWDicer.Control
         {
             if (servoNo != -1)
             {
-                m_bOriginFlag[servoNo] = false;
+                ServoStatus[servoNo].OriginFlag = false;
             }
             else
             {
-                for (int i = 0; i < m_bOriginFlag.Length; i++)
+                for (int i = 0; i < ServoStatus.Length; i++)
                 {
-                    m_bOriginFlag[i] = false;
+                    ServoStatus[i].OriginFlag = false;
                 }
             }
         }
@@ -1059,7 +1208,7 @@ namespace LWDicer.Control
             for (int i = 0; i < InstalledAxisNo ; i++)
             {
                 GetServoStatus(i);
-            }
+           }
 
         }
 
@@ -1360,7 +1509,7 @@ namespace LWDicer.Control
                     {
                         LastHWMessage = "Servo No[" + deviceNo + "] : + Limit";
                         WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Warning, true);
-                        return GenerateErrorCode(ERR_YASKAWA_SERVO_DETECTED_PLUS_LIMIT);
+                        return GenerateErrorCode(ERR_YASKAWA_DETECTED_PLUS_LIMIT);
                     }
                     else
                     {
@@ -1377,7 +1526,7 @@ namespace LWDicer.Control
                     {
                         LastHWMessage = "Servo No[" + deviceNo + "] : - Limit";
                         WriteLog(LastHWMessage, ELogType.Debug, ELogWType.Warning, true);
-                        return GenerateErrorCode(ERR_YASKAWA_SERVO_DETECTED_MINUS_LIMIT);
+                        return GenerateErrorCode(ERR_YASKAWA_DETECTED_MINUS_LIMIT);
                     }
                     else
                     {
@@ -1435,18 +1584,21 @@ namespace LWDicer.Control
         /// <returns></returns>
         public int MoveToPos(int deviceNo, double[] pos, CMotorSpeedData[] tempSpeed = null, ushort waitMode = (ushort)CMotionAPI.ApiDefs.DISTRIBUTION_COMPLETED)
         {
-            // check safety
-            int iResult = IsSafe4Move();
-            if (iResult != SUCCESS) return iResult;
-
             // 0. init data
             CMotionAPI.POSITION_DATA[] PositionData;
             CMotionAPI.MOTION_DATA[] MotionData;
             ushort[] WaitForCompletion;
-            iResult = GetDevicePositon(deviceNo, out PositionData, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
+            int iResult = GetDevicePositon(deviceNo, out PositionData, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
             if (iResult != SUCCESS) return iResult;
             GetDeviceMotionData(deviceNo, out MotionData, tempSpeed);
             GetDeviceWaitCompletion(deviceNo, out WaitForCompletion, waitMode);
+
+            // 0.8 check axis state for move
+            int[] axisList;
+            iResult = GetDeviceAxisList(deviceNo, out axisList);
+            if (iResult != SUCCESS) return iResult;
+            iResult = CheckAxisState4Move(axisList);
+            if (iResult != SUCCESS) return iResult;
 
             // 1. call api
             // ymcMovePositioning 함수는 motion controller 가 부하를 담당하고, ymcMoveDriverPositioning는 driver가 부하를 담당
@@ -1504,6 +1656,7 @@ namespace LWDicer.Control
             CMotionAPI.MOTION_DATA[] MotionData = new CMotionAPI.MOTION_DATA[length];
             CMotionAPI.POSITION_DATA[] PositionData = new CMotionAPI.POSITION_DATA[length];
             ushort[] WaitForCompletion = new ushort[length];
+            int[] tAxisList = new int[length];
 
             // 0.4 copy motion data to buffer
             CMotionAPI.MOTION_DATA[] tMotion = new CMotionAPI.MOTION_DATA[1];
@@ -1526,8 +1679,13 @@ namespace LWDicer.Control
                 MotionData[j] = tMotion[0];
                 PositionData[j] = tPosition[0];
                 WaitForCompletion[j] = tWait[0];
+                tAxisList[j] = axisList[i];
                 j++;
             }
+
+            // 0.8 check axis state for move
+            iResult = CheckAxisState4Move(tAxisList);
+            if (iResult != SUCCESS) return iResult;
 
             // 1. call api
             // ymcMovePositioning 함수는 motion controller 가 부하를 담당하고, ymcMoveDriverPositioning는 driver가 부하를 담당

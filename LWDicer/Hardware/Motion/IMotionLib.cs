@@ -46,12 +46,8 @@ namespace LWDicer.Control
         public const int DEF_MAX_AXIS_NO        = DEF_AXIS_NO_PER_BRD * DEF_MAX_MOTION_BD;
         public const int DEF_MIN_AXIS_NO        = 0;
 
-        public const int MAX_LENGTH_AXIS_NAME   = 32;
-
         // Coordinate Value
-        public const int DEF_MAX_COORDINATE     = DEF_MAX_AXIS_NO; // Mulit Axes의 축 Max.
-
-        public const int DEF_NO_COORDINATE      = 0;  // Multi Axes의 축 구성 안함
+        public const int DEF_MAX_COORDINATE     = DEF_XYTZ; // Multi Axes의 축 Max.
         public const int DEF_ALL_COORDINATE     = -1; // Multi Axes의 모든 축 선택
 
         public const int DEF_AXIS_USE           = 1;  // 축 사  용
@@ -60,6 +56,34 @@ namespace LWDicer.Control
         public const int DEF_AXIS_NON_NO        = 0;  // 축 0개
         public const int DEF_AXIS_NON_ID        = -1; // 축 ID 미할당 (축 미구성)
         public const int DEF_AXIS_ALL_ID        = -1; // 축 전체 선택
+
+        // X,Y,T 코드 정의
+        public const int DEF_X = 0;
+        public const int DEF_Y = 1;
+        public const int DEF_T = 2;
+        public const int DEF_Z = 3;
+        public const int DEF_XYTZ = 4;
+
+        // Left / Right 코드 정의
+        public const int DEF_LEFT = 0;
+        public const int DEF_RIGHT = 1;
+
+        // UP / Down 코드 정의
+        public const int DEF_UP = 0;
+        public const int DEF_DOWN = 1;
+
+        // 좌표 종류를 정의 한다.
+        public const int POSITION_FIXED = 0;
+        public const int POSITION_OFFSET = 1;
+        public const int POSITION_MODEL = 2;
+        public const int POSITION_MARKOFFSET = 3;
+        public const int POSITION_MAX = 4;
+
+        // Limit Sensor Check 상태
+        public const int DEF_NONE_SENSOR_CHECK = 0;
+        public const int DEF_NEG_SENSOR_CHECK = 1;
+        public const int DEF_POS_SENSOR_CHECK = 2;
+        public const int DEF_HOME_SENSOR_CHECK = 3;
 
         // Move Priority Value ("0"이 우선순위 높음)
         public enum EPriority

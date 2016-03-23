@@ -48,32 +48,71 @@ namespace LWDicer.Control
         }
         public enum EYMC_Axis
         {
-            NULL = -1,
-            STAGE1_X = 0,
-            STAGE1_Y,
-            STAGE1_T,
-            NULL_3,
-            NULL_4,
-            LOADER_Z,
+            NULL = -1        ,
+            LOADER_Z = 0     ,
+            PUSHPULL_Y       ,
+            C1_CENTERING_T   ,     // Spinner & Coater 1
+            C1_CHUCK_ROTATE_T,
+            C1_CLEAN_NOZZLE_T,
+            C1_COAT_NOZZLE_T ,
+            C2_CENTERING_T   ,     // Spinner & Coater 2
+            C2_CHUCK_ROTATE_T,
+            C2_CLEAN_NOZZLE_T,
+            C2_COAT_NOZZLE_T ,
+            HANDLER1_Y       ,
+            HANDLER1_Z       ,
+            HANDLER2_Y       ,
+            HANDLER2_Z       ,
+            CAMERA1_Z        ,
+            LASER1_Z         ,
+            // Stage는 ACS 모션으로 설정할 것 같아서 일단 주석 처리
+            //STAGE1_X = 0,
+            //STAGE1_Y,
+            //STAGE1_T,
             MAX,
         }
 
         public enum EYMC_Device
         {
             // 개별 축 제어를 위한 device, Device[index] = Axis[index]를 위해서 NULL 축까지도 선언함 
-            STAGE1_X = 0,
-            STAGE1_Y,
-            STAGE1_T,
-            NULL_3,
-            NULL_4,
-            LOADER_Z,
+            LOADER_Z = 0,
+            PUSHPULL_Y,
+            C1_CENTERING_T,     // Spinner & Coater 1
+            C1_ROTATE_T,
+            C1_CLEAN_NOZZLE_T,
+            C1_COAT_NOZZLE_T,
+            C2_CENTERING_T,     // Spinner & Coater 2
+            C2_ROTATE_T,
+            C2_CLEAN_NOZZLE_T,
+            C2_COAT_NOZZLE_T,
+            HANDLER1_Y,
+            HANDLER1_Z,
+            HANDLER2_Y,
+            HANDLER2_Z,
+            CAMERA1_Z,
+            LASER1_Z,
+            // Stage는 ACS 모션으로 사용하기로 해서 우선 주석 처리
+            //STAGE1_X = 0,
+            //STAGE1_Y,
+            //STAGE1_T,
 
-            // 그룹으로 축 제어를 위해 선언
+            // 그룹으로 축 제어를 위해 선언, MultiAxes
             ALL,    // for control all axis at a time
-            STAGE1,
             LOADER,
             PUSHPULL,
-            HANDLER,
+            C1_CENTERING,     // Spinner & Coater 1
+            C1_ROTATE,
+            C1_CLEAN_NOZZLE,
+            C1_COAT_NOZZLE,
+            C2_CENTERING,     // Spinner & Coater 2
+            C2_ROTATE,
+            C2_CLEAN_NOZZLE,
+            C2_COAT_NOZZLE,
+            HANDLER1,
+            HANDLER2,
+            CAMERA1,
+            LASER1,
+            //STAGE1,
             MAX,
         }
 
@@ -183,7 +222,9 @@ namespace LWDicer.Control
             OBJ_HL_MELSEC,
             OBJ_HL_RFID,
             OBJ_HL_BARCODE,
-            OBJ_HL_MULTI_AXES,              // 11
+            OBJ_HL_MULTIAXES,
+            OBJ_HL_MULTIAXES_YMC,
+            OBJ_HL_MULTIAXES_ACS,
             OBJ_HL_MOTION_LIB,
             OBJ_HL_VISION,
 
@@ -308,34 +349,6 @@ namespace LWDicer.Control
                 return $"{Type}, {Number}, {Name}";
             }
         }
-
-        // X,Y,T 코드 정의
-        public const int DEF_X                 = 0;
-        public const int DEF_Y                 = 1;
-        public const int DEF_T                 = 2;
-        public const int DEF_Z                 = 3;
-        public const int DEF_XYTZ              = 4;
-
-        // Left / Right 코드 정의
-        public const int DEF_LEFT              = 0;
-        public const int DEF_RIGHT             = 1;
-
-        // UP / Down 코드 정의
-        public const int DEF_UP                = 0;
-        public const int DEF_DOWN              = 1;
-
-        // 좌표 종류를 정의 한다.
-        public const int POSITION_FIXED        = 0;
-        public const int POSITION_OFFSET       = 1;
-        public const int POSITION_MODEL        = 2;
-        public const int POSITION_MARKOFFSET   = 3;
-        public const int POSITION_MAX          = 4;
-
-        // Limit Sensor Check 상태
-        public const int DEF_NONE_SENSOR_CHECK = 0;
-        public const int DEF_NEG_SENSOR_CHECK  = 1;
-        public const int DEF_POS_SENSOR_CHECK  = 2;
-        public const int DEF_HOME_SENSOR_CHECK = 3;
 
         //
         public const int ERR_MLOG_FILE_OPEN_ERROR        = 1;

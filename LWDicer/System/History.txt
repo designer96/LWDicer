@@ -56,11 +56,14 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 
 // Version : 0.0.6
 // Grade : ★
-// Date : 2016-03-03
+// Date : 2016-03-22
 // Context
 1. MYaskawa : IO & Motion을 통합 제어하는 class. 1단계로 1cpu & 1port 기준으로 프로그램 작성
    MYaskawa class의 data에서 Motor data를 관리하고(max velocity, home offset, acc,dec, sw limit 등등)
    대신에 MMultiAxes_YMC class에서는 상대적으로 axis data check하는 부분을 MYaskawa가 담당하도록 구성
+2. MMultiAxes_YMC : MYaskawa class의 윗부분을 담당할 멀티축 제어용 class, 
+   단 최대 축수는 DEF_MAX_COORDINATE 4축으로 제한하여 설계함.
+3. LWDicer class에서 MYaskawa 및 MMultiAxes_YMC 인스턴스 생성 부분 추가함
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LJJ
