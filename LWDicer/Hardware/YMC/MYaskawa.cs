@@ -534,9 +534,9 @@ namespace LWDicer.Control
         public void Dispose()
         {
             ThreadStop();
-#if SIMULATION_MOTION 
-            ServoStop();
-            ServoOff();
+#if !SIMULATION_MOTION 
+            AllServoStop();
+            AllServoOff();
             CloseController();
 #endif
         }
@@ -575,7 +575,7 @@ namespace LWDicer.Control
         {
             while (true)
             {
-#if SIMULATION_MOTION
+#if !SIMULATION_MOTION
                 GetAllServoStatus();
 #endif
 

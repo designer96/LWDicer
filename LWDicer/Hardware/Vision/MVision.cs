@@ -14,7 +14,6 @@ using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {
-
     public class MVision : MObject,IVision,IDisposable
     {
         public bool m_bSystemInit { get; private set; }

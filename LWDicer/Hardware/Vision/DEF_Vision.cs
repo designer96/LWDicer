@@ -228,11 +228,6 @@ namespace LWDicer.Control
         /*                          Error Code Define                           */
         /************************************************************************/
 
-        /**
-         * Error Code Define - Success...
-         */
-        public const int ERR_VISION_SUCCESS = 0;
-
         /** Error Code Reference */
         /** generateErrorCode() 를 사용해서 Error Code 를 생성하는 것은
          *  MVision Class 에서만 담당한다.

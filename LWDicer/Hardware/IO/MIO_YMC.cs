@@ -76,8 +76,7 @@ namespace LWDicer.Control
         {
             while (true)
             {
-#if SIMULATION_MOTION
-                GetAllServoStatus();
+#if !SIMULATION_IO
 #endif
 
                 Sleep(DEF_Thread.ThreadSleepTime);

@@ -290,7 +290,7 @@ namespace LWDicer.Control
             CYaskawaData data = m_DataManager.m_SystemData.YaskawaData;
 
             m_YMC = new MYaskawa(objInfo, refComp, data);
-#if SIMULATION_MOTION
+#if !SIMULATION_MOTION
             int iResult = m_YMC.OpenController();
             if (iResult != SUCCESS) return iResult;
 #endif
@@ -601,10 +601,10 @@ namespace LWDicer.Control
 
         public void StopThreads()
         {
-            m_trsLoader.Stop();
-            m_trsPushPull.Stop();
-            m_trsStage1.Stop();
-            m_trsAutoManager.Stop();
+            m_trsLoader.ThreadStop();
+            m_trsPushPull.ThreadStop();
+            m_trsStage1.ThreadStop();
+            m_trsAutoManager.ThreadStop();
         }
 
         void SetAllParameterToComponent()
