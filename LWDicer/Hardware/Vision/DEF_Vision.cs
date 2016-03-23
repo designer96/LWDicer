@@ -142,6 +142,7 @@ namespace LWDicer.Control
 
         };
 
+        // Vision DB 데이터
         public class CSearchData
         {
             //Pattern File Path
@@ -163,6 +164,8 @@ namespace LWDicer.Control
             
         };
 
+        // Vision Pattern Data
+        // DB Data + Mil Data임
         public class CVisionPatternData : CSearchData
         {
             /// Search Model Data

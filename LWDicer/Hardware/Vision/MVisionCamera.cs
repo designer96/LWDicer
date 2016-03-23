@@ -39,15 +39,7 @@ namespace LWDicer.Control
         private CResultData[] m_rgsCResultData;
         private bool m_bLive;
 
-
-
-        ///// Search Model Data
-        //// MIL 에서 사용하는 Model ID (NGC)
-        //public MIL_ID m_milModel = new MIL_ID();
-        //// MIL 에서 영상 Display용
-        //public MIL_ID m_ModelImage = new MIL_ID();
-        //// MIL 에서 사용하는 Model ID (GMF)
-        //public MIL_ID m_milGmfModel = new MIL_ID();
+        
 
         public MVisionCamera()
         {
@@ -270,9 +262,6 @@ namespace LWDicer.Control
             //	strFileName.Format("Cam_%d.dat", m_iCamID);
             strFileName= string.Format("VisionCamera_#{0}.dat", m_iCamID + 1);
 
-            MVisionModelData cameraData= new MVisionModelData(m_pMilSystemID, strFileName, strModelFilePath);
-            iResult = cameraData.ReadCameraData(m_iCamID, ref m_cCameraData);
-            if (iResult != SUCCESS) return ERR_VISION_FILE_READ_FAILURE;
 
             return SUCCESS;            
         }
@@ -285,8 +274,6 @@ namespace LWDicer.Control
         {
             string strFileName;
             strFileName = string.Format("VisionCamera_#{0}.dat", m_iCamID + 1);
-
-            MVisionModelData modelData = new MVisionModelData(m_pMilSystemID, strFileName, strModelFilePath);
 
            // CResultData pRData;
             //for (int i = 0; i < DEF_USE_SEARCH_MARK_NO; i++)

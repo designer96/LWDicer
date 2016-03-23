@@ -148,7 +148,6 @@
     <Compile Include="Hardware\Vision\MVision.cs" />
     <Compile Include="Hardware\Vision\MVisionCamera.cs" />
     <Compile Include="Hardware\Vision\MVisionDisplay.cs" />
-    <Compile Include="Hardware\Vision\MVisionModelData.cs" />
     <Compile Include="Hardware\Vision\MVisionSystem.cs" />
     <Compile Include="Hardware\YMC\ymcErrorCode.cs" />
     <Compile Include="Hardware\YMC\ymcPCConst.cs" />
