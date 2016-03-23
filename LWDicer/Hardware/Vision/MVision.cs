@@ -14,7 +14,13 @@ using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {
+    public class CVisionRefComp
+    {
+        private MVisionSystem m_pSystem;
+        private MVisionCamera[] m_pCamera;
+        private MVisionDisplay[] m_pView;
 
+    }
     public class MVision : MObject,IVision,IDisposable
     {
         public bool m_bSystemInit { get; private set; }
@@ -607,6 +613,7 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
+            if (m_pCamera == null) return ERR_VISION_ERROR;
             // Pattern Data Load
             m_pCamera[iCamNo].SetSearchData(iTypeNo, pSData);
             // Mark Register
@@ -827,6 +834,7 @@ namespace LWDicer.Control
 
         public CSearchData GetSearchData(int iCamNo, int iModelNo)
         {
+            if (m_pCamera == null) return new CSearchData();
             return m_pCamera[iCamNo].GetSearchData(iModelNo);
         }
 
