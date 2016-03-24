@@ -459,6 +459,7 @@ namespace LWDicer.Control
             public string TableIO           ; // IO Information
             public string TableError        ; // Error Information
             public string TableMsg          ; // Message Information
+            public string TableParameter    ; // Parameter Description
 
             // Developer's and Event Log DB
             public string DBDir_Log         ; // Directory
@@ -495,6 +496,7 @@ namespace LWDicer.Control
                 TableIO           = "IO";
                 TableError        = "Error";
                 TableMsg          = "Message";
+                TableParameter    = "Parameter";
 
                 // Developer's and Event Log DB
                 DBDir_Log         = ConfigurationManager.AppSettings["AppFilePath"]/* + @"\Log\"*/;
@@ -552,6 +554,84 @@ namespace LWDicer.Control
                 this.DebugTableName = DebugTableName;
                 this.LogLevel    = LogLevel;
                 this.LogDays     = LogDays;
+            }
+        }
+
+        public enum EUnitType
+        {
+            // Text
+            text,
+
+            // bool
+            boolean,
+
+            // Length
+            km,
+            m,
+            cm,
+            mm,
+            um,
+            nm,
+            inch,
+
+            // square
+            m2,
+
+            // Weight
+            g,
+            kg,
+            lb, // pound
+
+            // Speed
+            m_sec,
+            km_hour,
+            inch_sec,
+            rpm,
+            rad_sec,    // radius / sec
+
+            // Time
+            year,
+            month,
+            week,
+            day,
+            hour,
+            minute,
+            sec,
+
+            // Hz
+            MHz,
+            KHz,
+            Hz,
+
+            // Newton
+            N,
+
+        }
+
+        public class CParaInfo
+        {
+            public string Name;     // DB 관리를 위해서 Group__Name 형식으로 관리. ex) Laser__InScanResolution
+            public string Unit;     // Unit ex) km, km/s, m/s^2 
+            public EUnitType Type;  // Unit Type을 지정해서 자동으로 텍스트로 환산 및 계산하려고 하지만, 너무 많아서 일단 자리만 잡아놓고 not use
+
+            public string[] DisplayName = new string[(int)DEF_Common.ELanguage.MAX];
+            public string[] Description = new string[(int)DEF_Common.ELanguage.MAX];
+
+            public CParaInfo(string Group = "group", string Name = "parameter", string Unit = "[-]")
+            {
+                this.Name = Group + "__" + Name;
+                this.Unit = Unit;
+                this.Type = EUnitType.mm; // temporarily 
+
+                DisplayName[(int)DEF_Common.ELanguage.KOREAN]   = Name;
+                DisplayName[(int)DEF_Common.ELanguage.ENGLISH]  = Name;
+                DisplayName[(int)DEF_Common.ELanguage.CHINESE]  = Name;
+                DisplayName[(int)DEF_Common.ELanguage.JAPANESE] = Name;
+
+                Description[(int)DEF_Common.ELanguage.KOREAN]   = "Parameter Description";
+                Description[(int)DEF_Common.ELanguage.ENGLISH]  = "Parameter Description";
+                Description[(int)DEF_Common.ELanguage.CHINESE]  = "Parameter Description";
+                Description[(int)DEF_Common.ELanguage.JAPANESE] = "Parameter Description";
             }
         }
     }

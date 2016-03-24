@@ -393,6 +393,7 @@ namespace LWDicer.Control
 
         // Error Info는 필요할 때, 하나씩 불러와도 될 것 같은데, db test겸 초기화 편의성 때문에 임시로 만들어 둠
         public List<CErrorInfo> m_ErrorInfoList { get; set; } = new List<CErrorInfo>();
+        public List<CParaInfo> m_ParaInfoList { get; set; } = new List<CParaInfo>();
 
         public MDataManager(CObjectInfo objInfo, CDBInfo dbInfo)
             : base(objInfo)
@@ -409,7 +410,7 @@ namespace LWDicer.Control
                 m_OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.OUTPUT_ORIGIN, DEF_IO.EIOType.DO);
             }
 
-            //TestFunction();
+            TestFunction();
 
             LoadGeneralData();
             LoadSystemData();
@@ -448,6 +449,14 @@ namespace LWDicer.Control
                 errorInfo.Solution[(int)DEF_Common.ELanguage.KOREAN] = $"{i}번 해결책";
                 m_ErrorInfoList.Add(errorInfo);
             }
+
+            for (int i = 0; i < 10; i++)
+            {
+                CParaInfo paraInfo = new CParaInfo("Test", "Name"+i.ToString());
+                paraInfo.Description[(int)DEF_Common.ELanguage.KOREAN] = $"Name{i} 변수";
+                m_ParaInfoList.Add(paraInfo);
+            }
+
             SaveGeneralData();
 
             ///////////////////////////////////////
@@ -798,6 +807,8 @@ namespace LWDicer.Control
             iResult = LoadErrorInfoList();
             //if (iResult != SUCCESS) return iResult;
 
+            iResult = LoadParameterList();
+
             return SUCCESS;
         }
         public int LoadIOList()
@@ -917,6 +928,78 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        public int LoadParameterList()
+        {
+            try
+            {
+                string query;
+
+                // 0. select table
+                query = $"SELECT * FROM {m_DBInfo.TableParameter}";
+
+                // 1. get table
+                DataTable datatable;
+                if (DBManager.GetTable(m_DBInfo.DBConn_Info, query, out datatable) != true)
+                {
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
+                }
+
+                // 2. delete list
+                m_ParaInfoList.Clear();
+
+                // 3. get list
+                foreach (DataRow row in datatable.Rows)
+                {
+                    string output = row["data"].ToString();
+                    DEF_Common.CParaInfo paraInfo = JsonConvert.DeserializeObject<DEF_Common.CParaInfo>(output);
+
+                    // 저장할 때, Group + "__" + Name 형태로 저장하기 때문에, desirialize시에 "__" + Group + "__" + Name 환원되는 문제 해결
+                    if(paraInfo.Name.Length >= 2 && paraInfo.Name.Substring(0, 2) == "__")
+                    {
+                        paraInfo.Name = paraInfo.Name.Remove(0, 2);
+                    }
+
+                    m_ParaInfoList.Add(paraInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
+            }
+
+            WriteLog($"success : load para info list", ELogType.Debug);
+            return SUCCESS;
+        }
+
+        public int LoadParaInfo(string group, string name, out CParaInfo paraInfo)
+        {
+            paraInfo = new CParaInfo(group, name);
+            try
+            {
+                string output;
+
+                // select row
+                if (DBManager.SelectRow(m_DBInfo.DBConn_Info, m_DBInfo.TableError, "name", paraInfo.Name, out output) == true)
+                {
+                    paraInfo = JsonConvert.DeserializeObject<CParaInfo>(output);
+                }
+                else
+                {
+                    WriteLog($"fail : load para info [name = {paraInfo.Name}]", ELogType.Debug);
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
+            }
+
+            WriteLog($"success : load para info", ELogType.Debug);
+            return SUCCESS;
+        }
+
         public int SaveGeneralData()
         {
             int iResult;
@@ -926,6 +1009,8 @@ namespace LWDicer.Control
 
             iResult = SaveErrorInfoList();
             //if (iResult != SUCCESS) return iResult;
+
+            iResult = SaveParaInfoList();
 
             return SUCCESS;
         }
@@ -1015,5 +1100,46 @@ namespace LWDicer.Control
             WriteLog($"success : save error info list", ELogType.Debug);
             return SUCCESS;
         }
+
+        public int SaveParaInfoList()
+        {
+            try
+            {
+                List<string> querys = new List<string>();
+                string query;
+
+                // 0. create table
+                query = $"CREATE TABLE IF NOT EXISTS {m_DBInfo.TableParameter} (name string primary key, data string)";
+                querys.Add(query);
+
+                // 1. delete all
+                query = $"DELETE FROM {m_DBInfo.TableParameter}";
+                querys.Add(query);
+
+                // 2. save list
+                string output;
+                foreach (CParaInfo paraInfo in m_ParaInfoList)
+                {
+                    output = JsonConvert.SerializeObject(paraInfo);
+                    query = $"INSERT INTO {m_DBInfo.TableParameter} VALUES ('{paraInfo.Name}', '{output}')";
+                    querys.Add(query);
+                }
+
+                // 3. execute query
+                if (DBManager.ExecuteNonQuerys(m_DBInfo.DBConn_Info, querys) != true)
+                {
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA);
+            }
+
+            WriteLog($"success : save para info list", ELogType.Debug);
+            return SUCCESS;
+        }
     }
 }
+
