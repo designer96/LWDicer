@@ -410,7 +410,7 @@ namespace LWDicer.Control
                 m_OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.OUTPUT_ORIGIN, DEF_IO.EIOType.DO);
             }
 
-            TestFunction();
+            //TestFunction();
 
             LoadGeneralData();
             LoadSystemData();
