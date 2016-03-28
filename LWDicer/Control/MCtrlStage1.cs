@@ -21,8 +21,6 @@ namespace LWDicer.Control
 
     public class CCtrlStage1Data
     {
-        public bool bUseOnline;
-        public bool bInSfaTest;
     }
 
     public class MCtrlStage1 : MObject
@@ -30,8 +28,7 @@ namespace LWDicer.Control
         private CCtrlStage1RefComp m_RefComp;
         private CCtrlStage1Data m_Data;
 
-        public MCtrlStage1(CObjectInfo objInfo, 
-            CCtrlStage1RefComp refComp, CCtrlStage1Data data)
+        public MCtrlStage1(CObjectInfo objInfo, CCtrlStage1RefComp refComp, CCtrlStage1Data data)
             : base(objInfo)
         {
             m_RefComp = refComp;

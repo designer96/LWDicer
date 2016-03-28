@@ -34,8 +34,6 @@ namespace LWDicer.Control
 
     public class CTrsAutoManagerData
     {
-        public bool bUseOnline;
-        public bool bInSfaTest;
     }
 
     public class MTrsAutoManager : MWorkerThread

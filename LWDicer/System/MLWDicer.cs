@@ -33,6 +33,9 @@ namespace LWDicer.Control
 {
     public class MLWDicer : MObject, IDisposable
     {
+        // static common data
+        public static bool bUseOnline { get; private set; }
+        public static bool bInSfaTest { get; private set; }
 
         ///////////////////////////////////////////////////////////////////////
         // Common Class
@@ -123,8 +126,32 @@ namespace LWDicer.Control
             m_DataManager?.SetLogin(login);
         }
 
+        public void TestFunction()
+        {
+            CPosition[] sArray = new CPosition[2];
+            CPosition[] sArray1 = new CPosition[2];
+            CPosition[] sArray2 = new CPosition[2];
+
+            bool[] bArray = new bool[2];
+            bool[] bArray1 = new bool[2];
+            bool[] bArray2 = new bool[2];
+            for (int i = 0; i < sArray.Length; i++)
+            {
+                sArray[i] = new CPosition();
+                sArray2[i] = ObjectExtensions.Copy(sArray[i]);
+
+                bArray[i] = true;
+            }
+            Array.Copy(sArray, sArray1, sArray.Length);
+            Array.Copy(bArray, bArray1, bArray.Length);
+            int k = 2;
+
+        }
+
         public int Initialize(CMainFrame form1 = null)
         {
+            TestFunction();
+
             ////////////////////////////////////////////////////////////////////////
             // 0. Common Class
             ////////////////////////////////////////////////////////////////////////
@@ -502,8 +529,6 @@ namespace LWDicer.Control
             refComp.trsPushPull = m_trsPushPull;
 
             CTrsAutoManagerData data = new CTrsAutoManagerData();
-            data.bInSfaTest = false;
-            data.bUseOnline = false;
 
             m_trsAutoManager = new MTrsAutoManager(objInfo, TrsAutoManager, refComp, data);
         }
@@ -609,7 +634,12 @@ namespace LWDicer.Control
 
         void SetAllParameterToComponent()
         {
+            m_DataManager.LoadSystemData();
+            m_DataManager.LoadModelList();
+            m_DataManager.ChangeModel(m_DataManager.m_SystemData.ModelName);
 
+            MLWDicer.bInSfaTest = m_DataManager.m_SystemData.UseInSfaTest;
+            MLWDicer.bUseOnline = m_DataManager.m_SystemData.UseOnLineUse;
         }
 
         void SetModelDataToComponent()

@@ -21,8 +21,6 @@ namespace LWDicer.Control
 
     public class CCtrlLoaderData
     {
-        public bool bUseOnline;
-        public bool bInSfaTest;
     }
 
     public class MCtrlLoader : MObject

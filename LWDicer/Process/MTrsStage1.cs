@@ -29,8 +29,6 @@ namespace LWDicer.Control
 
     public class CTrsStage1Data
     {
-        public bool bUseOnline;
-        public bool bInSfaTest;
     }
 
     public class MTrsStage1 : MWorkerThread

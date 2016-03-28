@@ -85,7 +85,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int SetAxesMovePriority(int iCoordID, params int[] iPriorities)
+        public int SetAxesMovePriority(int[] iPriorities, int iCoordID = DEF_MAX_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -109,7 +109,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int SetAxesOriginPriority(int iCoordID, params int[] iPriorities)
+        public int SetAxesOriginPriority(int[] iPriorities, int iCoordID = DEF_MAX_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -136,27 +136,44 @@ namespace LWDicer.Control
         /// <summary>
         /// 축의 현재좌표를 읽는다.
         /// </summary>
-        public int GetCurPos(int iCoordID, out double[] dCurPos)
+        public int GetCurPos(out double[] dPos, int iCoordID = DEF_MAX_COORDINATE)
         {
             int iResult = SUCCESS;
 
             UpdateAxisStatus();
             if (iCoordID == DEF_ALL_COORDINATE)
             {
-                dCurPos = new double[DEF_MAX_COORDINATE];
+                dPos = new double[DEF_MAX_COORDINATE];
                 for (int i = 0; i < DEF_MAX_COORDINATE; i++)
                 {
-                    if (m_Data.AxisList[i] == DEF_AXIS_NON_ID) continue;
-                    dCurPos[i] = ServoStatus[i].EncoderValue;
+                    if (m_Data.AxisList[i] == DEF_AXIS_NON_ID) dPos[i] = 0;
+                    else dPos[i] = ServoStatus[i].EncoderValue;
                 }
             }
             else
             {
-                dCurPos = new double[1];
-                dCurPos[0] = ServoStatus[iCoordID].EncoderValue;
+                dPos = new double[1];
+                dPos[0] = ServoStatus[iCoordID].EncoderValue;
             }
+            return SUCCESS;
+        }
 
+        public int GetCurPos(out CPos_XYTZ pos, int iCoordID = DEF_MAX_COORDINATE)
+        {
+            int iResult = SUCCESS;
 
+            double[] dPos;
+            GetCurPos(out dPos, iCoordID);
+
+            pos = new CPos_XYTZ();
+            if (iCoordID == DEF_ALL_COORDINATE)
+            {
+                pos.TransFromArray(dPos);
+            }
+            else
+            {
+                pos.SetPosition(iCoordID, dPos[0]);
+            }
             return SUCCESS;
         }
 
@@ -258,7 +275,7 @@ namespace LWDicer.Control
             int iResult = SUCCESS;
 
             double[] dCurPos;
-            iResult = GetCurPos(iCoordID, out dCurPos);
+            iResult = GetCurPos(out dCurPos, iCoordID);
             if (iResult != SUCCESS) return iResult;
             Array.Copy(dCurPos, dPosition, dCurPos.Length);
 
@@ -273,7 +290,7 @@ namespace LWDicer.Control
             int iResult = SUCCESS;
 
             double[] dCurPos;
-            iResult = GetCurPos(iCoordID, out dCurPos);
+            iResult = GetCurPos(out dCurPos, iCoordID);
             if (iResult != SUCCESS) return iResult;
             Array.Copy(dCurPos, dPosition, dCurPos.Length);
 
@@ -304,7 +321,7 @@ namespace LWDicer.Control
         /// <param name="iCoordID"></param>
         /// <param name="bMoveUse"></param>
         /// <returns></returns>
-        public int Wait4Done(int iCoordID, bool[] bMoveUse)
+        public int Wait4Done(bool[] bMoveUse, int iCoordID = DEF_MAX_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -327,7 +344,7 @@ namespace LWDicer.Control
         /// <param name="iCoordID"></param>
         /// <param name="bDone"></param>
         /// <returns></returns>
-        public int CheckDone(int iCoordID, out bool[] bDone)
+        public int CheckDone(out bool[] bDone, int iCoordID = DEF_MAX_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -532,6 +549,25 @@ namespace LWDicer.Control
             {
                 alarm[i] = ServoStatus[i].Alarm;
                 alarmCode[i] = ServoStatus[i].AlarmCode;
+            }
+
+            return SUCCESS;
+        }
+
+        public int ComparePosition(double[] dTargetPos, out bool[] bJudge, int iCoordID = DEF_MAX_COORDINATE)
+        {
+            int iResult = SUCCESS;
+
+            if (iCoordID == DEF_ALL_COORDINATE)
+            {
+                iResult = m_RefComp.Motion.ComparePosition(m_Data.AxisList, dTargetPos, out bJudge);
+                if (iResult != SUCCESS) return iResult;
+            }
+            else
+            {
+                int[] tAxes = new int[1] { m_Data.AxisList[iCoordID] };
+                iResult = m_RefComp.Motion.ComparePosition(tAxes, dTargetPos, out bJudge);
+                if (iResult != SUCCESS) return iResult;
             }
 
             return SUCCESS;

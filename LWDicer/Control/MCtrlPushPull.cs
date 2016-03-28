@@ -21,8 +21,6 @@ namespace LWDicer.Control
 
     public class CCtrlPushPullData
     {
-        public bool bUseOnline;
-        public bool bInSfaTest;
     }
 
     public class MCtrlPushPull : MObject

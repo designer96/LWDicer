@@ -415,7 +415,7 @@ namespace LWDicer.Control
             LoadGeneralData();
             LoadSystemData();
             LoadModelList();
-            ChangeModel();
+            ChangeModel(m_SystemData.ModelName);
         }
 
         public void TestFunction()

@@ -47,6 +47,7 @@ namespace LWDicer.Control
         public const int ERR_YASKAWA_DETECTED_SERVO_ALARM                = 28;
         public const int ERR_YASKAWA_NOT_ORIGIN_RETURNED                 = 29;
         public const int ERR_YASKAWA_NOT_SERVO_ON                        = 30;
+        public const int ERR_YASKAWA_SELECTED_AXIS_NONE                  = 31;
 
         public const int MAX_MP_CPU = 4;    // pci board EA
         public const int MAX_MP_PORT = 2;   // ports per board
@@ -410,6 +411,11 @@ namespace LWDicer.Control
                 int addr = 0x8000 + (CPUIndex * 0x800) + servoNo * 0x80;
                 string regAddr = addr.ToString("X4");
                 return regAddr;
+            }
+            public void GetMotionData(int servoNo, out CMPMotionData s)
+            {
+                servoNo = servoNo % MP_AXIS_PER_CPU;
+                s = ObjectExtensions.Copy(MotionData[servoNo]);
             }
 
             public void GetMotionData(int servoNo, ref CMotionAPI.MOTION_DATA s, CMotorSpeedData tempSpeed = null)
@@ -892,6 +898,22 @@ namespace LWDicer.Control
             for (int i = 0; i < length; i++)
             {
                 m_Data.MPBoard[boardNo].GetTimeLimitData(axisList[i], out timeLimit[i]);
+            }
+
+            return SUCCESS;
+        }
+
+        private int GetDeviceMotionData(int deviceNo, out CMPMotionData[] MotionData)
+        {
+            int length = GetDeviceLength(deviceNo);
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
+            MotionData = new CMPMotionData[length];
+            int boardNo = GetBoardIndex(deviceNo);
+
+            for (int i = 0; i < length; i++)
+            {
+                m_Data.MPBoard[boardNo].GetMotionData(axisList[i], out MotionData[i]);
             }
 
             return SUCCESS;
@@ -1460,6 +1482,24 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        public int ComparePosition(int[] axisList, double[] dPos, out bool[] bJudge)
+        {
+            bJudge = new bool[axisList.Length];
+            CMPMotionData[] motionData = new CMPMotionData[axisList.Length];
+            double[] dCurPos = new double[axisList.Length];
+
+            for (int i = 0; i < axisList.Length; i++)
+            {
+                GetServoPos(axisList[i], out dCurPos[i]);
+                GetDeviceMotionData(axisList[i], out motionData);
+
+                if (Math.Abs(dCurPos[i] - dPos[i]) <= motionData[i].Tolerance) bJudge[i] = true;
+                else bJudge[i] = false;
+            }
+
+            return SUCCESS;
+        }
+
         public int AllServoStop()
         {
             int iResult = ServoMotionStop((int)EYMC_Device.ALL);
@@ -1643,6 +1683,10 @@ namespace LWDicer.Control
                 if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
                 length++;
             }
+            if (length == 0)
+            {
+                return GenerateErrorCode(ERR_YASKAWA_SELECTED_AXIS_NONE);
+            }
 
             // 0.2 allocate temp device
             UInt32[] hAxis;
@@ -1714,6 +1758,10 @@ namespace LWDicer.Control
             {
                 if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
                 length++;
+            }
+            if (length == 0)
+            {
+                return GenerateErrorCode(ERR_YASKAWA_SELECTED_AXIS_NONE);
             }
 
             // 0.2 allocate temp device
@@ -1820,6 +1868,11 @@ namespace LWDicer.Control
                 if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
                 length++;
             }
+            if (length == 0)
+            {
+                return GenerateErrorCode(ERR_YASKAWA_SELECTED_AXIS_NONE);
+            }
+
 
             // 0.2 allocate temp device
             UInt32[] hAxis;

@@ -8,7 +8,7 @@ using static LWDicer.Control.DEF_Vision;
 
 namespace LWDicer.Control
 {      
-    interface IVision
+    public interface IVision
     {
         //━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         //	Model Change 시, 기존 Model 에 대한 Vision Model Data 를 제거하고,

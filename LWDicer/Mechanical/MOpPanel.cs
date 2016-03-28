@@ -203,8 +203,6 @@ namespace LWDicer.Control
 
     public class COpPanelData
     {
-        public bool bUseOnline;
-        public bool bInSfaTest;
     }
 
     public class MOpPanel : MObject
