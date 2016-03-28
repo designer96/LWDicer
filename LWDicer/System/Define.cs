@@ -472,6 +472,9 @@ namespace LWDicer.Control
             public string TableDebugLog     ; // 개발자용 Log
             public string TableEventLog     ; // Event History
 
+            public string ExcelIOList       ; // Excel File IO List
+
+
             // Common Dir
             public string SystemDir         ; // System Data가 저장되는 디렉토리
             public string ModelDir          ; // Model Data가 저장되는 디렉토리 
@@ -508,6 +511,8 @@ namespace LWDicer.Control
                 TableLoginHistory = "LoginHistory";
                 TableDebugLog     = "DLog";
                 TableEventLog     = "ELog";
+
+                ExcelIOList       = "LWDicer_IO_List.xlsx";
 
                 // Model Dir
                 SystemDir = ConfigurationManager.AppSettings["AppFilePath"] + @"\SystemData\";

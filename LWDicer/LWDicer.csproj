@@ -71,6 +71,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>T:\SFA\LWDicer\DLL\Mil\Matrox.MatroxImagingLibrary.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -244,17 +247,17 @@
     <Compile Include="UI\FormEngineerMaintBottom.Designer.cs">
       <DependentUpon>FormEngineerMaintBottom.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\FormEngineerMaint_1.cs">
+    <Compile Include="UI\FormAxisOperation.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\FormEngineerMaint_1.Designer.cs">
-      <DependentUpon>FormEngineerMaint_1.cs</DependentUpon>
+    <Compile Include="UI\FormAxisOperation.Designer.cs">
+      <DependentUpon>FormAxisOperation.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\FormEngineerMaint_2.cs">
+    <Compile Include="UI\FormIOCheck.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\FormEngineerMaint_2.Designer.cs">
-      <DependentUpon>FormEngineerMaint_2.cs</DependentUpon>
+    <Compile Include="UI\FormIOCheck.Designer.cs">
+      <DependentUpon>FormIOCheck.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\FormEngineerMaint_3.cs">
       <SubType>Form</SubType>
@@ -494,11 +497,11 @@
     <EmbeddedResource Include="UI\FormEngineerMaintBottom.resx">
       <DependentUpon>FormEngineerMaintBottom.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormEngineerMaint_1.resx">
-      <DependentUpon>FormEngineerMaint_1.cs</DependentUpon>
+    <EmbeddedResource Include="UI\FormAxisOperation.resx">
+      <DependentUpon>FormAxisOperation.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormEngineerMaint_2.resx">
-      <DependentUpon>FormEngineerMaint_2.cs</DependentUpon>
+    <EmbeddedResource Include="UI\FormIOCheck.resx">
+      <DependentUpon>FormIOCheck.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\FormEngineerMaint_3.resx">
       <DependentUpon>FormEngineerMaint_3.cs</DependentUpon>

@@ -109,3 +109,17 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 // 3. Scanner Interface Test를 위한 Manual UI 추가
 //   - FormLaserMaint 
 // 4. ImageSave 1빈트 단색 Bitmap 형식으로 저장하도록 수정
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// LHS
+// Version : 0.0.5
+// Grade : ★
+// Date : 2016-03-28
+// Context
+// * UI 변경
+// 1. Axis Operation UI 추가
+// 2. IO Operation UI 추가
+// 3. Excel IO List Load 추가
+//  -  MDataManager -> LoadExcelIOList()
+//  - IO List 경로 SFA\LWDicer\SystemData\LWDicer_IO_List.xlsx
+

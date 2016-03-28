@@ -10,7 +10,7 @@ using LWDicer.Control;
 
 namespace LWDicer.UI
 {
-    public partial class FormEngineerMaint_1 : Form
+    public partial class FormAxisOperation : Form
     {
         private PageInfo PrevPage = null;
         private PageInfo NextPage = null;
@@ -25,7 +25,7 @@ namespace LWDicer.UI
             NextPage = page;
         }
 
-        public FormEngineerMaint_1()
+        public FormAxisOperation()
         {
             InitializeComponent();
         }
@@ -35,16 +35,6 @@ namespace LWDicer.UI
             this.DesktopLocation = new Point(DEF_UI.MAIN_POS_X, DEF_UI.MAIN_POS_Y);
             this.Size = new Size(DEF_UI.MAIN_SIZE_WIDTH, DEF_UI.MAIN_SIZE_HEIGHT);
             this.FormBorderStyle = FormBorderStyle.None;
-        }
-
-        private void BtnNext_Click(object sender, EventArgs e)
-        {
-            if (NextPage == null)
-            {
-                return;
-            }
-
-            CMainFrame.MainFrame.MoveToPage(NextPage);
         }
 
         private void BtnExit_Click(object sender, EventArgs e)

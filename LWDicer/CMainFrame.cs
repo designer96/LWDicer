@@ -58,8 +58,8 @@ namespace LWDicer.UI
         private FormDeviceDataBottom m_FormDeviceDataBottom;
 
         private FormEngineerMaint m_FormEngineerMaint;
-        private FormEngineerMaint_1 m_FormEngineerMaint_1;
-        private FormEngineerMaint_2 m_FormEngineerMaint_2;
+        private FormAxisOperation m_AxisOperation;
+        private FormIOCheck       m_IOCheck;
         private FormEngineerMaint_3 m_FormEngineerMaint_3;
         private FormEngineerMaintBottom m_FormEngineerMaintBottom;
 
@@ -185,8 +185,8 @@ namespace LWDicer.UI
             m_FormDeviceDataBottom = new FormDeviceDataBottom();
 
             m_FormEngineerMaint = new FormEngineerMaint();
-            m_FormEngineerMaint_1 = new FormEngineerMaint_1();
-            m_FormEngineerMaint_2 = new FormEngineerMaint_2();
+            m_AxisOperation     = new FormAxisOperation();
+            m_IOCheck           = new FormIOCheck();
             m_FormEngineerMaint_3 = new FormEngineerMaint_3();
             m_FormEngineerMaintBottom = new FormEngineerMaintBottom();
 
@@ -244,11 +244,9 @@ namespace LWDicer.UI
             PageInfo PageInfoFormDeviceData_2 = new PageInfo() { BigClassifyingNumber = 3, SmallClassifyingNumber = 3 };
             PageInfo PageInfoFormDeviceData_3 = new PageInfo() { BigClassifyingNumber = 3, SmallClassifyingNumber = 4 };
 
-
             PageInfo PageInfoEngineerMaint = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 1 };
-            PageInfo PageInfoEngineerMaint_1 = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 2 };
-            PageInfo PageInfoEngineerMaint_2 = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 3 };
-            PageInfo PageInfoEngineerMaint_3 = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 4 };
+            PageInfo PageInfoAxisOperation = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 2 };
+            PageInfo PageInfoIOCheck       = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 3 };
 
             PageInfo PageInfoOperatorMaint = new PageInfo() { BigClassifyingNumber = 5, SmallClassifyingNumber = 1 };
             PageInfo PageInfoOperatorMaint_1 = new PageInfo() { BigClassifyingNumber = 5, SmallClassifyingNumber = 2 };
@@ -314,17 +312,13 @@ namespace LWDicer.UI
             m_FormDeviceData_3.SetNextPage(null);
 
             m_FormEngineerMaint.SetPrevPage(PageInfoFormMain);
-            m_FormEngineerMaint.SetNextPage(PageInfoEngineerMaint_1);
+            m_FormEngineerMaint.SetAxisOPPage(PageInfoAxisOperation);
+            m_FormEngineerMaint.SetIOPage(PageInfoIOCheck);
             m_FormEngineerMaint.SetNextBottomPage(PageInfoFormMainBottom);
 
-            m_FormEngineerMaint_1.SetPrevPage(PageInfoEngineerMaint);
-            m_FormEngineerMaint_1.SetNextPage(PageInfoEngineerMaint_2);
+            m_AxisOperation.SetPrevPage(PageInfoEngineerMaint);
+            m_IOCheck.SetPrevPage(PageInfoEngineerMaint);
 
-            m_FormEngineerMaint_2.SetPrevPage(PageInfoEngineerMaint_1);
-            m_FormEngineerMaint_2.SetNextPage(PageInfoEngineerMaint_3);
-
-            m_FormEngineerMaint_3.SetPrevPage(PageInfoEngineerMaint_2);
-            m_FormEngineerMaint_3.SetNextPage(null);
 
             m_FormOperatorMaint.SetPrevPage(PageInfoFormMain);
             m_FormOperatorMaint.SetNextPage(PageInfoOperatorMaint_1);
@@ -395,9 +389,8 @@ namespace LWDicer.UI
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoMachineMaint_3, m_FormMachineMaint_3));
 
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoEngineerMaint, m_FormEngineerMaint));
-            FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoEngineerMaint_1, m_FormEngineerMaint_1));
-            FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoEngineerMaint_2, m_FormEngineerMaint_2));
-            FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoEngineerMaint_3, m_FormEngineerMaint_3));
+            FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoAxisOperation, m_AxisOperation));
+            FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoIOCheck, m_IOCheck));
 
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoLaserMaint, m_FormLaserMaint));
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoLaserMaint_1, m_FormLaserMaint_1));
@@ -535,9 +528,8 @@ namespace LWDicer.UI
             FormAttachToPanel(m_FormMachineMaint_3, MainUIPanel);
 
             FormAttachToPanel(m_FormEngineerMaint, MainUIPanel);
-            FormAttachToPanel(m_FormEngineerMaint_1, MainUIPanel);
-            FormAttachToPanel(m_FormEngineerMaint_2, MainUIPanel);
-            FormAttachToPanel(m_FormEngineerMaint_3, MainUIPanel);
+            FormAttachToPanel(m_AxisOperation, MainUIPanel);
+            FormAttachToPanel(m_IOCheck, MainUIPanel);
 
             FormAttachToPanel(m_FormLaserMaint, MainUIPanel);
             FormAttachToPanel(m_FormLaserMaint_1, MainUIPanel);

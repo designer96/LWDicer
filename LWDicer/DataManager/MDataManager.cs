@@ -11,6 +11,8 @@ using System.Data.SQLite;
 using System.Data.SQLite.Linq;
 using System.IO;
 
+using Excel = Microsoft.Office.Interop.Excel;
+
 using static LWDicer.Control.DEF_System;
 using static LWDicer.Control.DEF_Common;
 using static LWDicer.Control.DEF_Error;
@@ -801,6 +803,8 @@ namespace LWDicer.Control
         {
             int iResult;
 
+            LoadExcelIOList();
+
             iResult = LoadIOList();
             //if (iResult != SUCCESS) return iResult;
 
@@ -1139,6 +1143,45 @@ namespace LWDicer.Control
 
             WriteLog($"success : save para info list", ELogType.Debug);
             return SUCCESS;
+        }
+
+        public void LoadExcelIOList()
+        {
+            int i=0, j=0, nSheetCount = 0, nCount=0;
+
+            string strPath = m_DBInfo.SystemDir + m_DBInfo.ExcelIOList;
+
+            Excel.Application ExcelApp = new Microsoft.Office.Interop.Excel.Application();
+            Excel.Workbook WorkBook = ExcelApp.Workbooks.Open(strPath);
+
+            // 1. Open 한 Excel File에 Sheet Count
+            nSheetCount = WorkBook.Worksheets.Count;
+
+            // 2. Excel Sheet Row, Column 접근을 위한 Range 생성
+            Excel.Range[] IOBoard = new Excel.Range[nSheetCount];
+
+            // 3. Excel Sheet Item Data 획득을 위한 Worksheet 생성
+            Excel.Worksheet[] Sheet = new Excel.Worksheet[nSheetCount];
+
+            // 4. Excel Sheet 정보를 불러 온다.
+            for (i=0;i<nSheetCount;i++)
+            {
+                Sheet[i] = (Excel.Worksheet)WorkBook.Worksheets.get_Item(i+1);
+                IOBoard[i] = Sheet[i].UsedRange;
+
+                for (j = 0; j < 16; j++)
+                {
+                    m_InputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 2] as Excel.Range).Value2;
+                    m_OutputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 4] as Excel.Range).Value2;
+
+                    nCount++;
+                }
+            }
+
+            WorkBook.Close(true);
+            ExcelApp.Quit();
+
+            SaveIOList();
         }
     }
 }

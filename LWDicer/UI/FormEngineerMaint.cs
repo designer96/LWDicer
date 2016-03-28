@@ -13,7 +13,8 @@ namespace LWDicer.UI
     public partial class FormEngineerMaint : Form
     {
         private PageInfo PrevPage = null;
-        private PageInfo NextPage = null;
+        private PageInfo AxisPage = null;
+        private PageInfo IOPage = null;
         private BottomPageInfo NextBottomPage = null;
 
         public void SetPrevPage(PageInfo page)
@@ -21,9 +22,15 @@ namespace LWDicer.UI
             PrevPage = page;
         }
 
-        public void SetNextPage(PageInfo page)
+        public void SetAxisOPPage(PageInfo page)
         {
-            NextPage = page;
+            AxisPage = page;
+        }
+
+        public void SetIOPage(PageInfo page)
+        {
+            IOPage = page;
+
         }
 
         public void SetNextBottomPage(BottomPageInfo page)
@@ -57,14 +64,25 @@ namespace LWDicer.UI
             CMainFrame.MainFrame.MoveToBottomPage(NextBottomPage);
         }
 
-        private void BtnNext_Click(object sender, EventArgs e)
+
+        private void BtnAxisOP_Click(object sender, EventArgs e)
         {
-            if (NextPage == null)
+            if (AxisPage == null)
             {
                 return;
             }
 
-            CMainFrame.MainFrame.MoveToPage(NextPage);
+            CMainFrame.MainFrame.MoveToPage(AxisPage);
+        }
+
+        private void BtnIOCheck_Click(object sender, EventArgs e)
+        {
+            if (IOPage == null)
+            {
+                return;
+            }
+
+            CMainFrame.MainFrame.MoveToPage(IOPage);
         }
     }
 }
