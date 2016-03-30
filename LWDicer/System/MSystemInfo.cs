@@ -118,7 +118,8 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_ML_DISPENSER , "SHead2",     315, "Mechanical : SHead2", 22000, "SHead2", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_ML_DISPENSER , "GHead1",     316, "Mechanical : GHead1", 22000, "GHead1", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_ML_DISPENSER , "GHead2",     317, "Mechanical : GHead2", 22000, "GHead2", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_ML_HANDLER   , "UHandler",   318, "Mechanical : UHandler", 19000, "UHandler", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_ML_HANDLER   , "UpperHandler",   318, "Mechanical : UpperHandler", 19000, "UpperHandler", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_ML_HANDLER   , "LowerHandler",   319, "Mechanical : LowerHandler", 19000, "LowerHandler", LOG_ALL, LOG_DAY ),
 		
 	            // 350-399 : Control Layer --------------------------------------------------------------------
 	            new CObjectInfo( (int)OBJ_CL_MANAGE_OP_PANEL   , "ManageOpPanel",     350, "Control : Manage OP Panel", 32200, "C_ManageOpPanel", LOG_ALL, LOG_DAY ),

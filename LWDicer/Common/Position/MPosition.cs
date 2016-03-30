@@ -11,32 +11,32 @@ namespace LWDicer.Control
         public CPos_XYTZ Fixed;     // 고정 좌표
         public CPos_XYTZ Model;     // 모델 (패널, 웨이퍼의 크기)에 따라 자동으로 구성되는 좌표
         public CPos_XYTZ Offset;    // 옵셋 좌표
-        public CPos_XYTZ Align;     // Align 보정값
+        public CPos_XYTZ AlignOffset;     // Align 보정값
 
         public CPosition(CPos_XYTZ Fixed = null, CPos_XYTZ Model = null, CPos_XYTZ Offset = null, CPos_XYTZ Align = null)
         {
             this.Fixed = Fixed ?? new CPos_XYTZ();
             this.Model = Model ?? new CPos_XYTZ();
             this.Offset = Offset ?? new CPos_XYTZ();
-            this.Align = Align ?? new CPos_XYTZ();
+            this.AlignOffset = Align ?? new CPos_XYTZ();
         }
 
         public void InitAll()
         {
-            Fixed = new CPos_XYTZ();
-            Model = new CPos_XYTZ();
-            Offset = new CPos_XYTZ();
+            Fixed.Init();
+            Model.Init();
+            Offset.Init();
             InitAlign();
         }
 
         public void InitAlign()
         {
-            Align = new CPos_XYTZ();
+            AlignOffset.Init();
         }
 
         public CPos_XYTZ GetTargetPos()
         {
-            CPos_XYTZ target = Fixed + Model + Offset + Align;
+            CPos_XYTZ target = Fixed + Model + Offset + AlignOffset;
             return target;
         }
     }
@@ -57,6 +57,11 @@ namespace LWDicer.Control
         public override string ToString()
         {
             return $"X:{dX}, Y:{dY}";
+        }
+
+        public void Init()
+        {
+            dX = dY = 0.0;
         }
 
         public void Init<T>(T x, T y)
@@ -194,6 +199,11 @@ namespace LWDicer.Control
         public override string ToString()
         {
             return $"X:{dX}, Y:{dY}, T:{dT}";
+        }
+
+        public void Init()
+        {
+            dX = dY = dT = 0.0;
         }
 
         public void Init<T>(T x, T y, T t)
@@ -344,6 +354,11 @@ namespace LWDicer.Control
         public override string ToString()
         {
             return $"X:{dX}, Y:{dY}, T:{dT}, Z:{dZ}";
+        }
+
+        public void Init()
+        {
+            dX = dY = dT = dZ = 0.0;
         }
 
         public void Init<T>(T x, T y, T t, T z)

@@ -85,7 +85,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int SetAxesMovePriority(int[] iPriorities, int iCoordID = DEF_MAX_COORDINATE)
+        public int SetAxesMovePriority(int[] iPriorities, int iCoordID = DEF_ALL_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -109,7 +109,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int SetAxesOriginPriority(int[] iPriorities, int iCoordID = DEF_MAX_COORDINATE)
+        public int SetAxesOriginPriority(int[] iPriorities, int iCoordID = DEF_ALL_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -136,7 +136,7 @@ namespace LWDicer.Control
         /// <summary>
         /// 축의 현재좌표를 읽는다.
         /// </summary>
-        public int GetCurPos(out double[] dPos, int iCoordID = DEF_MAX_COORDINATE)
+        public int GetCurPos(out double[] dPos, int iCoordID = DEF_ALL_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -146,19 +146,19 @@ namespace LWDicer.Control
                 dPos = new double[DEF_MAX_COORDINATE];
                 for (int i = 0; i < DEF_MAX_COORDINATE; i++)
                 {
-                    if (m_Data.AxisList[i] == DEF_AXIS_NON_ID) dPos[i] = 0;
-                    else dPos[i] = ServoStatus[i].EncoderValue;
+                    if (m_Data.AxisList[i] == DEF_AXIS_NONE_ID) dPos[i] = 0;
+                    else dPos[i] = ServoStatus[i].EncoderPos;
                 }
             }
             else
             {
                 dPos = new double[1];
-                dPos[0] = ServoStatus[iCoordID].EncoderValue;
+                dPos[0] = ServoStatus[iCoordID].EncoderPos;
             }
             return SUCCESS;
         }
 
-        public int GetCurPos(out CPos_XYTZ pos, int iCoordID = DEF_MAX_COORDINATE)
+        public int GetCurPos(out CPos_XYTZ pos, int iCoordID = DEF_ALL_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -321,17 +321,19 @@ namespace LWDicer.Control
         /// <param name="iCoordID"></param>
         /// <param name="bMoveUse"></param>
         /// <returns></returns>
-        public int Wait4Done(bool[] bMoveUse, int iCoordID = DEF_MAX_COORDINATE)
+        public int Wait4Done(int iCoordID = DEF_ALL_COORDINATE, bool[] bMoveUse = null)
         {
             int iResult = SUCCESS;
 
             if (iCoordID == DEF_ALL_COORDINATE)
             {
+                bMoveUse = new bool[DEF_MAX_COORDINATE] { true, true, true, true };
                 iResult = m_RefComp.Motion.Wait4Done(m_Data.AxisList, bMoveUse);
             }
             else
             {
                 int[] tAxes = new int[1] { m_Data.AxisList[iCoordID] };
+                bMoveUse = new bool[1] { true };
                 iResult = m_RefComp.Motion.Wait4Done(tAxes, bMoveUse);
             }
 
@@ -344,7 +346,7 @@ namespace LWDicer.Control
         /// <param name="iCoordID"></param>
         /// <param name="bDone"></param>
         /// <returns></returns>
-        public int CheckDone(out bool[] bDone, int iCoordID = DEF_MAX_COORDINATE)
+        public int CheckDone(int iCoordID, out bool[] bDone)
         {
             int iResult = SUCCESS;
 
@@ -446,7 +448,7 @@ namespace LWDicer.Control
         {
             for (int i = 0; i < DEF_MAX_COORDINATE; i++)
             {
-                if (m_Data.AxisList[i] == DEF_AXIS_NON_ID) continue;
+                if (m_Data.AxisList[i] == DEF_AXIS_NONE_ID) continue;
                 ServoStatus[i] = ObjectExtensions.Copy(m_RefComp.Motion.ServoStatus[m_Data.AxisList[i]]);
             }
         }
@@ -554,7 +556,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int ComparePosition(double[] dTargetPos, out bool[] bJudge, int iCoordID = DEF_MAX_COORDINATE)
+        public int ComparePosition(double[] dTargetPos, out bool[] bJudge, int iCoordID = DEF_ALL_COORDINATE)
         {
             int iResult = SUCCESS;
 
@@ -572,5 +574,31 @@ namespace LWDicer.Control
 
             return SUCCESS;
         }
+
+        public int IsOriginReturn(int iCoordID, out bool bResult, out bool[] bStatus)
+        {
+            UpdateAxisStatus();
+            bStatus = new bool[GetCoordLength(iCoordID)];
+
+            if(iCoordID == DEF_ALL_COORDINATE)
+            {
+                bResult = true;
+                for (int i = 0; i < DEF_MAX_COORDINATE; i++)
+                {
+                    if (m_Data.AxisList[i] == DEF_AXIS_NONE_ID) continue;
+                    bStatus[i] = ServoStatus[i].OriginFlag;
+                    if (bStatus[i] == false) bResult = false;
+                }
+
+            }
+            else
+            {
+                bStatus[0] = ServoStatus[iCoordID].OriginFlag;
+                bResult = bStatus[0];
+            }
+
+            return SUCCESS;
+        }
+
     }
 }

@@ -26,6 +26,7 @@ using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 using static LWDicer.Control.DEF_Vision;
 
+using static LWDicer.Control.DEF_MeHandler;
 using static LWDicer.Control.DEF_SerialPort;
 using static LWDicer.Control.DEF_PolygonScanner;
 
@@ -60,8 +61,8 @@ namespace LWDicer.Control
         public MMultiAxes_YMC m_AxRotate2;
         public MMultiAxes_YMC m_AxCleanNozzle2;
         public MMultiAxes_YMC m_AxCoatNozzle2;
-        public MMultiAxes_YMC m_AxHandler1;
-        public MMultiAxes_YMC m_AxHandler2;
+        public MMultiAxes_YMC m_AxUpperHandler;
+        public MMultiAxes_YMC m_AxLowerHandler;
         public MMultiAxes_YMC m_AxCamera1;
         public MMultiAxes_YMC m_AxLaser1;
 
@@ -74,7 +75,9 @@ namespace LWDicer.Control
 
         // Vacuum
         public IVacuum m_Stage1Vac;
-        public IVacuum m_Stage2Vac;
+
+        public IVacuum m_UHandlerSelfVac;
+        public IVacuum m_LHandlerSelfVac;
 
         // Serial
         public ISerialPort m_PolygonComPort;
@@ -84,6 +87,8 @@ namespace LWDicer.Control
 
         ///////////////////////////////////////////////////////////////////////
         // Mechanical Layer
+        public MMeHandler m_MeUpperHandler;         // UpperHandler of 2Layer
+        public MMeHandler m_MeLowerHandler;         // LowerHandler of 2Layer
 
         public MVision m_Vision { get; set; }
 
@@ -128,23 +133,6 @@ namespace LWDicer.Control
 
         public void TestFunction()
         {
-            CPosition[] sArray = new CPosition[2];
-            CPosition[] sArray1 = new CPosition[2];
-            CPosition[] sArray2 = new CPosition[2];
-
-            bool[] bArray = new bool[2];
-            bool[] bArray1 = new bool[2];
-            bool[] bArray2 = new bool[2];
-            for (int i = 0; i < sArray.Length; i++)
-            {
-                sArray[i] = new CPosition();
-                sArray2[i] = ObjectExtensions.Copy(sArray[i]);
-
-                bArray[i] = true;
-            }
-            Array.Copy(sArray, sArray1, sArray.Length);
-            Array.Copy(bArray, bArray1, bArray.Length);
-            int k = 2;
 
         }
 
@@ -182,7 +170,7 @@ namespace LWDicer.Control
 
             // MultiAxes
             CreateMultiAxes_YMC();
-            m_AxHandler1.UpdateAxisStatus();
+            m_AxUpperHandler.UpdateAxisStatus();
             // IO
             m_SystemInfo.GetObjectInfo(6, out objInfo);
             m_IO = new MIO_YMC(objInfo);
@@ -224,15 +212,15 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(150, out objInfo);
             CreateVacuum(objInfo, vacData, (int)EObjectVacuum.STAGE1, out m_Stage1Vac);
 
-            // Stage2 Vacuum
+            // UHandler Self Vacuum
             vacData = new CVacuumData();
             vacData.VacuumType = EVacuumType.SINGLE_VACUUM_WBLOW;
-            vacData.Sensor[0] = iStage2_Vac_On;
-            vacData.Solenoid[0] = oStage2_Vac_On;
-            vacData.Solenoid[1] = oStage2_Vac_Off;
+            vacData.Sensor[0] = iUHandler_Self_Vac_On;
+            vacData.Solenoid[0] = oUHandler_Self_Vac_On;
+            vacData.Solenoid[1] = oUHandler_Self_Vac_Off;
 
             m_SystemInfo.GetObjectInfo(151, out objInfo);
-            CreateVacuum(objInfo, vacData, (int)EObjectVacuum.STAGE2, out m_Stage2Vac);
+            CreateVacuum(objInfo, vacData, (int)EObjectVacuum.UHANDLER_SELF, out m_UHandlerSelfVac);
 
             // Polygon Scanner Serial Com Port
             m_SystemInfo.GetObjectInfo(30, out objInfo);
@@ -251,12 +239,18 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(9, out objInfo);
             CreateVision(objInfo);
 
+#if !SIMULATION_VISION
             CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
-           
-
             CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
             CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
-            
+#endif
+            // Handler
+            m_SystemInfo.GetObjectInfo(318, out objInfo);
+            CreateMeUpperHandler(objInfo);
+
+            m_SystemInfo.GetObjectInfo(319, out objInfo);
+            CreateMeLowerHandler(objInfo);
+
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
             ////////////////////////////////////////////////////////////////////////
@@ -314,9 +308,11 @@ namespace LWDicer.Control
         int CreateYMCBoard(CObjectInfo objInfo)
         {
             CYaskawaRefComp refComp = new CYaskawaRefComp();
-            CYaskawaData data = m_DataManager.m_SystemData.YaskawaData;
+            CYaskawaData data = new CYaskawaData();
 
             m_YMC = new MYaskawa(objInfo, refComp, data);
+            m_YMC.SetMPMotionData(m_DataManager.m_SystemData.MPMotionData);
+
 #if !SIMULATION_MOTION
             int iResult = m_YMC.OpenController();
             if (iResult != SUCCESS) return iResult;
@@ -335,7 +331,7 @@ namespace LWDicer.Control
             int[] initArray = new int[DEF_MAX_COORDINATE];
             for(int i = 0; i < DEF_MAX_COORDINATE; i++)
             {
-                initArray[i] = DEF_AXIS_NON_ID;
+                initArray[i] = DEF_AXIS_NONE_ID;
             }
 
             refComp.Motion = m_YMC;
@@ -438,7 +434,7 @@ namespace LWDicer.Control
             data = new CMultiAxesYMCData(deviceNo, axisList);
 
             m_SystemInfo.GetObjectInfo(261, out objInfo);
-            m_AxHandler1 = new MMultiAxes_YMC(objInfo, refComp, data);
+            m_AxUpperHandler = new MMultiAxes_YMC(objInfo, refComp, data);
 
             // HANDLER2
             deviceNo = (int)EYMC_Device.HANDLER2;
@@ -448,7 +444,7 @@ namespace LWDicer.Control
             data = new CMultiAxesYMCData(deviceNo, axisList);
 
             m_SystemInfo.GetObjectInfo(262, out objInfo);
-            m_AxHandler2 = new MMultiAxes_YMC(objInfo, refComp, data);
+            m_AxLowerHandler = new MMultiAxes_YMC(objInfo, refComp, data);
 
             // CAMERA1
             deviceNo = (int)EYMC_Device.CAMERA1;
@@ -710,5 +706,52 @@ namespace LWDicer.Control
                 return false;
             }
         }
+
+        void CreateMeUpperHandler(CObjectInfo objInfo)
+        {
+            CMeHandlerRefComp refComp = new CMeHandlerRefComp();
+            CMeHandlerData data = new CMeHandlerData();
+
+            refComp.IO = m_IO;
+            refComp.AxHandler = m_AxUpperHandler;
+            refComp.Vacuum[(int)EHandlerVacuum.SELF] = m_UHandlerSelfVac;
+
+            data.HandlerType = EHandlerType.AXIS_ALL;
+            data.VacuumType = EHandlerVacuumType.NORMAL;
+
+            m_MeUpperHandler = new MMeHandler(objInfo, refComp, data);
+
+            // test
+            bool[] vccUseFlag = new bool[(int)EHandlerVacuum.MAX];
+            vccUseFlag[(int)EHandlerVacuum.SELF] = true;
+            m_MeUpperHandler.SetVccUseFlag(vccUseFlag);
+
+            bool bStatus;
+            m_MeUpperHandler.IsAbsorbed(out bStatus);
+
+            bool bResult;
+            m_MeUpperHandler.IsHandlerOrignReturn(out bResult);
+
+            m_MeUpperHandler.CompareHandlerPos((int)EHandlerPos.LOAD, out bResult, true, true);
+
+            m_MeUpperHandler.MoveHandlerPos((int)EHandlerPos.UNLOAD);
+
+            m_AxUpperHandler.Wait4Done();
+
+            m_AxUpperHandler.Wait4Done();
+
+            m_YMC.OriginReturn();
+
+            m_YMC.OriginReturn((int)EYMC_Device.HANDLER2);
+
+            m_MeUpperHandler.InitAlignOffset();
+
+        }
+
+        void CreateMeLowerHandler(CObjectInfo objInfo)
+        {
+
+        }
+
     }
 }

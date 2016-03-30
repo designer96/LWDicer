@@ -54,11 +54,12 @@ namespace LWDicer.Control
 
         public enum EHandlerVacuum
         {
-            SELF,
-            FACTORY,
-            EXTRA,
-            PCB1,
-            PCB2,
+            SELF,           // 자체 발생 진공
+            FACTORY,        // 공장 진공
+            EXTRA_SELF,     // 
+            EXTRA_FACTORY,  //
+            PCB1,           // pcb1
+            PCB2,           // pcb2
             MAX,
         }
 
@@ -77,7 +78,7 @@ namespace LWDicer.Control
 
             // Cylinder
             public ICylinder UDCyl;
-            public ICylinder UDCyl2; // sub
+            public ICylinder SubUDCyl; // sub
             public ICylinder LRCyl;
             public ICylinder SubLRCyl; // sub
             public ICylinder PanelGuideFBCyl;
@@ -127,6 +128,7 @@ namespace LWDicer.Control
         private CPosition[] HandlerPos = new CPosition[(int)EHandlerPos.MAX];
         private int HandlerPosInfo;
         private bool IsMarkAligned;
+        private CPos_XYTZ AlignOffset = new CPos_XYTZ();
 
         MTickTimer m_waitTimer = new MTickTimer();
 
@@ -170,7 +172,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int Absorb(bool bSkipSensor)
+        public int Absorb(bool bSkipSensor)
         {
             bool bStatus;
             int iResult = SUCCESS;
@@ -233,7 +235,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int Release(bool bSkipSensor)
+        public int Release(bool bSkipSensor)
         {
             bool bStatus;
             int iResult = SUCCESS;
@@ -295,7 +297,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int IsAbsorbed(out bool bStatus)
+        public int IsAbsorbed(out bool bStatus)
         {
             int iResult = SUCCESS;
             bStatus = false;
@@ -315,7 +317,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int IsReleased(out bool bStatus)
+        public int IsReleased(out bool bStatus)
         {
             int iResult = SUCCESS;
             bStatus = false;
@@ -335,13 +337,13 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int SetHandlerPos(int iPos, CPosition pos)
+        public int SetHandlerPos(int iPos, CPosition pos)
         {
             HandlerPos[iPos] = ObjectExtensions.Copy(pos);
             return SUCCESS;
         }
 
-        int SetHandlerPos(CPosition[] pos)
+        public int SetHandlerPos(CPosition[] pos)
         {
             if (pos.Length != HandlerPos.Length)
                 return GenerateErrorCode(ERR_HANDLER_INVALID_PARAMETER);
@@ -353,13 +355,13 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int GetHandlerPos(int iPos, out CPosition pos)
+        public int GetHandlerPos(int iPos, out CPosition pos)
         {
             pos = ObjectExtensions.Copy(HandlerPos[iPos]);
             return SUCCESS;
         }
 
-        int GetHandlerPos(out CPosition[] pos)
+        public int GetHandlerPos(out CPosition[] pos)
         {
             pos = new CPosition[HandlerPos.Length];
 
@@ -370,13 +372,13 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int GetHandlerTargetPos(int iPos, out CPos_XYTZ pos)
+        public int GetHandlerTargetPos(int iPos, out CPos_XYTZ pos)
         {
             pos = HandlerPos[iPos].GetTargetPos();
             return SUCCESS;
         }
 
-        int GetHandlerTargetPos(out CPos_XYTZ[] pos)
+        public int GetHandlerTargetPos(out CPos_XYTZ[] pos)
         {
             pos = new CPos_XYTZ[HandlerPos.Length];
 
@@ -387,19 +389,35 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int GetHandlerCurPos(out CPos_XYTZ pos)
+        public int GetHandlerCurPos(out CPos_XYTZ pos)
         {
             m_RefComp.AxHandler.GetCurPos(out pos);
             return SUCCESS;
         }
 
-        void InitAlignOffset()
+        public void InitAlignOffset()
         {
             IsMarkAligned = false;
+            AlignOffset.Init();
             for(int i = 0; i < (int)EHandlerPos.MAX; i++)
             {
                 HandlerPos[i].InitAlign();
             }
+        }
+
+        public void SetAlignOffset(CPos_XYTZ offset)
+        {
+            IsMarkAligned = true;
+            AlignOffset = ObjectExtensions.Copy(offset);
+            for (int i = 0; i < (int)EHandlerPos.MAX; i++)
+            {
+                HandlerPos[i].AlignOffset = ObjectExtensions.Copy(offset);
+            }
+        }
+
+        public void GetAlignOffset(out CPos_XYTZ offset)
+        {
+            offset = ObjectExtensions.Copy(AlignOffset);
         }
 
         /// <summary>
@@ -410,11 +428,16 @@ namespace LWDicer.Control
         /// <param name="bMoveFlag"></param>
         /// <param name="bUseBacklash"></param>
         /// <returns></returns>
-        int MoveHandlerPos(CPos_XYTZ sPos, int iPos, bool[] bMoveFlag, bool bUseBacklash = false,
+        public int MoveHandlerPos(CPos_XYTZ sPos, int iPos, bool[] bMoveFlag = null, bool bUseBacklash = false,
             bool bUsePriority = false, int[] movePriority = null)
         {
             int iResult = SUCCESS;
-            string strLogMessage;
+
+            // assume move all axis if bMoveFlag is null
+            if(bMoveFlag == null)
+            {
+                bMoveFlag = new bool[DEF_MAX_COORDINATE] { true, true, true, true };
+            }
 
             // Load Position으로 가는 것이면 Align Offset을 초기화해야 한다.
             if (iPos == (int)EHandlerPos.LOAD)
@@ -447,7 +470,7 @@ namespace LWDicer.Control
             if (bMoveFlag[DEF_X] == true || bMoveFlag[DEF_Y] == true || bMoveFlag[DEF_T] == true)
             {
                 // set priority
-                if(bUsePriority == true)
+                if(bUsePriority == true && movePriority != null)
                 {
                     m_RefComp.AxHandler.SetAxesMovePriority(movePriority);
                 }
@@ -482,14 +505,17 @@ namespace LWDicer.Control
         /// <param name="dMoveOffset"></param>
         /// <param name="bUseBacklash"></param>
         /// <returns></returns>
-        int MoveHandlerPos(int iPos, bool[] bMoveFlag, double[] dMoveOffset, bool bUseBacklash = false,
+        public int MoveHandlerPos(int iPos, bool[] bMoveFlag = null, double[] dMoveOffset = null, bool bUseBacklash = false,
             bool bUsePriority = false, int[] movePriority = null)
         {
             int iResult = SUCCESS;
 
             CPos_XYTZ sTargetPos;
             GetHandlerTargetPos(iPos, out sTargetPos);
-            sTargetPos = sTargetPos + dMoveOffset;
+            if (dMoveOffset != null)
+            {
+                sTargetPos = sTargetPos + dMoveOffset;
+            }
 
             iResult = MoveHandlerPos(sTargetPos, iPos, bMoveFlag, bUseBacklash, bUsePriority, movePriority);
             if (iResult != SUCCESS) return iResult;
@@ -506,7 +532,7 @@ namespace LWDicer.Control
         /// <param name="bCheck_ZAxis"></param>
         /// <param name="bSkipError">위치가 틀릴경우 에러 보고할지 여부</param>
         /// <returns></returns>
-        int CompareHandlerPos(CPos_XYTZ sPos, out bool bResult, bool bCheck_TAxis, bool bCheck_ZAxis, bool bSkipError = true)
+        public int CompareHandlerPos(CPos_XYTZ sPos, out bool bResult, bool bCheck_TAxis, bool bCheck_ZAxis, bool bSkipError = true)
         {
             int iResult = SUCCESS;
 
@@ -517,7 +543,7 @@ namespace LWDicer.Control
             sPos.TransToArray(out dPos);
 
             bool[] bJudge = new bool[DEF_MAX_COORDINATE];
-            iResult = m_RefComp.AxHandler.ComparePosition(dPos, out bJudge, DEF_MAX_COORDINATE);
+            iResult = m_RefComp.AxHandler.ComparePosition(dPos, out bJudge, DEF_ALL_COORDINATE);
             if (iResult != SUCCESS) return iResult;
 
             // skip axis
@@ -543,7 +569,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        int CompareHandlerPos(int iPos, out bool bResult, bool bCheck_TAxis, bool bCheck_ZAxis, bool bSkipError = true)
+        public int CompareHandlerPos(int iPos, out bool bResult, bool bCheck_TAxis, bool bCheck_ZAxis, bool bSkipError = true)
         {
             int iResult = SUCCESS;
 
@@ -555,6 +581,24 @@ namespace LWDicer.Control
 
             iResult = CompareHandlerPos(targetPos, out bResult, bCheck_TAxis, bCheck_ZAxis, bSkipError);
             if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+
+        public int GetHandlerPosInfo()
+        {
+            return HandlerPosInfo;
+        }
+
+        public void SetHandlerPosInfo(int posInfo)
+        {
+            HandlerPosInfo = posInfo;
+        }
+
+        public int IsHandlerOrignReturn(out bool bResult)
+        {
+            bool[] bStatus;
+            m_RefComp.AxHandler.IsOriginReturn(DEF_ALL_COORDINATE, out bResult, out bStatus);
 
             return SUCCESS;
         }

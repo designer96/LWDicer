@@ -48,12 +48,13 @@ namespace LWDicer.Control
         public const int ERR_YASKAWA_NOT_ORIGIN_RETURNED                 = 29;
         public const int ERR_YASKAWA_NOT_SERVO_ON                        = 30;
         public const int ERR_YASKAWA_SELECTED_AXIS_NONE                  = 31;
+        public const int ERR_YASKAWA_OBSOLETE_FUNCTION                   = 32;
 
         public const int MAX_MP_CPU = 4;    // pci board EA
         public const int MAX_MP_PORT = 2;   // ports per board
         public const int MP_AXIS_PER_PORT = 8; // physical axis per port
-        public const int MP_AXIS_PER_CPU = MAX_MP_PORT * MP_AXIS_PER_PORT; // physical axis per cpu
-        public const int MAX_MP_AXIS = MAX_MP_CPU * MAX_MP_PORT * MP_AXIS_PER_PORT;
+        public const int MP_AXIS_PER_CPU = 16; // MAX_MP_PORT * MP_AXIS_PER_PORT; // physical axis per cpu
+        public const int MAX_MP_AXIS = 64; // MAX_MP_CPU * MAX_MP_PORT * MP_AXIS_PER_PORT;
 
         public const int UNIT_REF = 1000;// 0.001 Reference Unit( 1mm )
 
@@ -136,7 +137,7 @@ namespace LWDicer.Control
 
         public class CServoStatus
         {
-            public double EncoderValue;
+            public double EncoderPos;
             public double Velocity;     //Servo 현재 속도
             public bool Ready;
             public bool Alarm;
@@ -196,7 +197,7 @@ namespace LWDicer.Control
             public CMPMotionData()
             {
                 // General
-                Name = "Non Use";
+                Name = "NotExist";
                 Exist = false;
                 Tolerance = 0.001;
 
@@ -257,7 +258,7 @@ namespace LWDicer.Control
                 }
             }
             
-            public void GetMotionData_Jog(ref CMotionAPI.MOTION_DATA s, bool bJogFastMove = false)
+            public void GetMotion_JogData(ref CMotionAPI.MOTION_DATA s, bool bJogFastMove = false)
             {
                 GetMotionData(ref s);
 
@@ -273,7 +274,7 @@ namespace LWDicer.Control
                 }
             }
 
-            public void GetMotionData_Home(ref CMotionAPI.MOTION_DATA s, 
+            public void GetMotion_HomeData(ref CMotionAPI.MOTION_DATA s, 
                 out UInt16 Method, out UInt16 Dir, out CMotionAPI.POSITION_DATA Position)
             {
                 GetMotionData(ref s);
@@ -348,23 +349,29 @@ namespace LWDicer.Control
             public CMPRackTable[] SPort = new CMPRackTable[MAX_MP_PORT];
             public CMPRackTable VPort = new CMPRackTable();  // SVR, Virtual Port
 
-            public CMPBoard()
+            public CMPBoard(int CPUIndex = 1, EMPBoard Type = EMPBoard.MP2101TM, CMPMotionData[] motions = null)
             {
-                for(int i = 0; i < MP_AXIS_PER_CPU; i++)
+                this.CPUIndex = CPUIndex;
+                this.Type = Type;
+                if(motions == null)
                 {
-                    MotionData[i] = new CMPMotionData();
+                    for (int i = 0; i < MP_AXIS_PER_CPU; i++)
+                    {
+                        MotionData[i] = new CMPMotionData();
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < motions?.Length; i++)
+                    {
+                        MotionData[i] = ObjectExtensions.Copy(motions[i]);
+                    }
                 }
                 for (int i = 0; i < MAX_MP_PORT; i++)
                 {
                     SPort[i] = new CMPRackTable();
                 }
-            }
 
-            public CMPBoard(int CPUIndex, EMPBoard Type, CMPMotionData[] motions = null)
-                : this()
-            {
-                this.CPUIndex = CPUIndex;
-                this.Type = Type;
                 switch (Type)
                 {
                     case EMPBoard.MP2100:
@@ -398,11 +405,6 @@ namespace LWDicer.Control
                         SlotLength = 2;
                         break;
                 }
-
-                for (int i = 0; i < motions?.Length; i++)
-                {
-                    MotionData[i] = motions[i];
-                }
             }
 
             public string GetMotionRegAddr(int servoNo)
@@ -424,17 +426,17 @@ namespace LWDicer.Control
                 MotionData[servoNo].GetMotionData(ref s, tempSpeed);
             }
 
-            public void GetMotionData_Jog(int servoNo, ref CMotionAPI.MOTION_DATA s, bool bJogFastMove = false)
+            public void GetMotion_JogData(int servoNo, ref CMotionAPI.MOTION_DATA s, bool bJogFastMove = false)
             {
                 servoNo = servoNo % MP_AXIS_PER_CPU;
-                MotionData[servoNo].GetMotionData_Jog(ref s, bJogFastMove);
+                MotionData[servoNo].GetMotion_JogData(ref s, bJogFastMove);
             }
 
-            public void GetMotionData_Home(int servoNo, ref CMotionAPI.MOTION_DATA s,
+            public void GetMotion_HomeData(int servoNo, ref CMotionAPI.MOTION_DATA s,
                 out UInt16 Method, out UInt16 Dir, out CMotionAPI.POSITION_DATA Position)
             {
                 servoNo = servoNo % MP_AXIS_PER_CPU;
-                MotionData[servoNo].GetMotionData_Home(ref s, out Method, out Dir, out Position);
+                MotionData[servoNo].GetMotion_HomeData(ref s, out Method, out Dir, out Position);
             }
 
             public void GetSpeedData(int servoNo, out CMotorSpeedData data)
@@ -464,23 +466,33 @@ namespace LWDicer.Control
             public int CpuNo = 1;       // PCI 모드일때는 보드 숫자라고 생각하면 됨
             public CMPBoard[] MPBoard = new CMPBoard[MAX_MP_CPU];
 
-            public CYaskawaData()
-            {
-                for (int i = 0; i < MAX_MP_CPU; i++)
-                {
-                    MPBoard[i] = new CMPBoard();
-                }
-            }
-
-            public CYaskawaData(int MPComPort, int CpuNo, CMPBoard[] boards = null)
-                : this()
+            public CYaskawaData(int MPComPort = 1, int CpuNo = 1, CMPBoard[] boards = null)
             {
                 this.MPComPort = MPComPort;
                 this.CpuNo = CpuNo;
 
-                for(int i = 0; i < boards?.Length; i++)
+                if (boards == null)
                 {
-                    MPBoard[i] = boards[i];
+                    for (int i = 0; i < MAX_MP_CPU; i++)
+                    {
+                        MPBoard[i] = new CMPBoard();
+                    }
+                } else
+                {
+                    for(int i = 0; i < boards?.Length; i++)
+                    {
+                        MPBoard[i] = ObjectExtensions.Copy(boards[i]);
+                    }
+                }
+            }
+
+            public void SetMPMotionData(CMPMotionData[] motions)
+            {
+                for(int i = 0; i < motions.Length; i++)
+                {
+                    int boardNo = i / MP_AXIS_PER_CPU;
+                    int motionNo = i % MP_AXIS_PER_CPU;
+                    MPBoard[boardNo].MotionData[motionNo] = ObjectExtensions.Copy(motions[i]);
                 }
             }
         }
@@ -560,6 +572,11 @@ namespace LWDicer.Control
             target = ObjectExtensions.Copy(m_Data);
 
             return SUCCESS;
+        }
+
+        public void SetMPMotionData(CMPMotionData[] motions)
+        {
+            m_Data.SetMPMotionData(motions);
         }
 
         public int ThreadStart()
@@ -865,13 +882,19 @@ namespace LWDicer.Control
             hAxis = new UInt32[axisList.Length];
             for(int i = 0; i < axisList.Length; i++)
             {
-                hAxis[i] = m_hAxis[axisList[i]];
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+
+                hAxis[i] = m_hAxis[servoNo];
             }
 
             return SUCCESS;
         }
 
-        public int GetDeviceSpeedData(int deviceNo, out CMotorSpeedData[] speedData)
+        public int GetDevice_SpeedData(int deviceNo, out CMotorSpeedData[] speedData)
         {
             int length = GetDeviceLength(deviceNo);
             int[] axisList;
@@ -881,13 +904,18 @@ namespace LWDicer.Control
 
             for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetSpeedData(axisList[i], out speedData[i]);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+                m_Data.MPBoard[boardNo].GetSpeedData(servoNo, out speedData[i]);
             }
 
             return SUCCESS;
         }
 
-        public int GetDeviceTimeLimitData(int deviceNo, out CMotorTimeLimitData[] timeLimit)
+        public int GetDevice_TimeLimitData(int deviceNo, out CMotorTimeLimitData[] timeLimit)
         {
             int length = GetDeviceLength(deviceNo);
             int[] axisList;
@@ -897,13 +925,18 @@ namespace LWDicer.Control
 
             for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetTimeLimitData(axisList[i], out timeLimit[i]);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+                m_Data.MPBoard[boardNo].GetTimeLimitData(servoNo, out timeLimit[i]);
             }
 
             return SUCCESS;
         }
 
-        private int GetDeviceMotionData(int deviceNo, out CMPMotionData[] MotionData)
+        private int GetDevice_MotionData(int deviceNo, out CMPMotionData[] MotionData)
         {
             int length = GetDeviceLength(deviceNo);
             int[] axisList;
@@ -913,13 +946,18 @@ namespace LWDicer.Control
 
             for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetMotionData(axisList[i], out MotionData[i]);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+                m_Data.MPBoard[boardNo].GetMotionData(servoNo, out MotionData[i]);
             }
 
             return SUCCESS;
         }
 
-        private int GetDeviceMotionData(int deviceNo, out CMotionAPI.MOTION_DATA[] MotionData, CMotorSpeedData[] tempSpeed = null)
+        private int GetDevice_MotionData(int deviceNo, out CMotionAPI.MOTION_DATA[] MotionData, CMotorSpeedData[] tempSpeed = null)
         {
             int length = GetDeviceLength(deviceNo);
             int[] axisList;
@@ -929,7 +967,12 @@ namespace LWDicer.Control
 
             for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetMotionData(axisList[i], ref MotionData[i], tempSpeed?[i]);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+                m_Data.MPBoard[boardNo].GetMotionData(servoNo, ref MotionData[i], tempSpeed?[i]);
             }
 
             return SUCCESS;
@@ -945,7 +988,12 @@ namespace LWDicer.Control
 
             for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetMotionData_Jog(axisList[i], ref MotionData[i], bJogFastMove);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+                m_Data.MPBoard[boardNo].GetMotion_JogData(servoNo, ref MotionData[i], bJogFastMove);
             }
 
             return SUCCESS;
@@ -965,7 +1013,12 @@ namespace LWDicer.Control
 
             for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].GetMotionData_Home(axisList[i], ref MotionData[i], out Method[i], out Dir[i], out Position[i]);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+                m_Data.MPBoard[boardNo].GetMotion_HomeData(servoNo, ref MotionData[i], out Method[i], out Dir[i], out Position[i]);
             }
 
             return SUCCESS;
@@ -979,8 +1032,8 @@ namespace LWDicer.Control
 
             for(int i = 0; i < length; i++)
             {
-                Position[length].DataType = (ushort)type;
-                Position[length].PositionData = (int)(pos[length] * UNIT_REF);
+                Position[i].DataType = (ushort)type;
+                Position[i].PositionData = (int)(pos[i] * UNIT_REF);
             }
 
             int boardNo = GetBoardIndex(deviceNo);
@@ -990,7 +1043,12 @@ namespace LWDicer.Control
 
             for (int i = 0; i < length; i++)
             {
-                m_Data.MPBoard[boardNo].CheckSWLimit(axisList[i], pos[i], out bExceedPlusLimit, out bExceedMinusLimit);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+                m_Data.MPBoard[boardNo].CheckSWLimit(servoNo, pos[i], out bExceedPlusLimit, out bExceedMinusLimit);
                 if (bExceedPlusLimit == true) return GenerateErrorCode(ERR_YASKAWA_TARGET_POS_EXCEED_PLUS_LIMIT);
                 if (bExceedMinusLimit == true) return GenerateErrorCode(ERR_YASKAWA_TARGET_POS_EXCEED_MINUS_LIMIT);
             }
@@ -1118,6 +1176,27 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        private int DeclareTempDevice(int length, int[] axisList, bool[] useAxis, ref UInt32 tDevice)
+        {
+            int iResult;
+            UInt32[] hAxis;
+            iResult = GetAxisHandleList(axisList, out hAxis);
+            if (iResult != SUCCESS) return iResult;
+
+            UInt32[] thAxis = new UInt32[length];
+            for (int i = 0, j = 0; i < axisList.Length; i++)
+            {
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                thAxis[j++] = hAxis[i];
+            }
+
+            iResult = DeclareDevice(length, thAxis, ref tDevice);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+
         private int ClearDevice(UInt32 hDevice)
         {
             UInt32 rc = CMotionAPI.ymcClearDevice(hDevice);
@@ -1145,41 +1224,6 @@ namespace LWDicer.Control
             }
 
             return SUCCESS;
-        }
-
-        public bool IsOriginReturn(int servoNo)
-        {
-            return ServoStatus[servoNo].OriginFlag;
-        }
-
-        public void SetOriginReturn(int servoNo = -1)
-        {
-            if(servoNo != -1)
-            {
-                ServoStatus[servoNo].OriginFlag = true;
-            }
-            else
-            {
-                for(int i = 0; i < ServoStatus.Length; i++)
-                {
-                    ServoStatus[i].OriginFlag = true;
-                }
-            }
-        }
-
-        public void ResetOriginReturn(int servoNo = -1)
-        {
-            if (servoNo != -1)
-            {
-                ServoStatus[servoNo].OriginFlag = false;
-            }
-            else
-            {
-                for (int i = 0; i < ServoStatus.Length; i++)
-                {
-                    ServoStatus[i].OriginFlag = false;
-                }
-            }
         }
 
         /// <summary>
@@ -1250,7 +1294,7 @@ namespace LWDicer.Control
             rc = CMotionAPI.ymcGetMotionParameterValue(m_hAxis[servoNo], (UInt16)CMotionAPI.ApiDefs.MONITOR_PARAMETER,
                     (UInt16)CMotionAPI.ApiDefs_MonPrm.SER_APOS, ref returnValue); //Machine coordinate system feedback position (APOS)
             if (rc == CMotionAPI.MP_SUCCESS)
-                ServoStatus[servoNo].EncoderValue = (double)returnValue / UNIT_REF;
+                ServoStatus[servoNo].EncoderPos = (double)returnValue / UNIT_REF;
 
             //Servo 속도값 Read 
             rc = CMotionAPI.ymcGetMotionParameterValue(m_hAxis[servoNo], (UInt16)CMotionAPI.ApiDefs.MONITOR_PARAMETER,
@@ -1422,12 +1466,18 @@ namespace LWDicer.Control
             GetDeviceAxisList(deviceNo, out axisList);
             for(int i = 0; i < axisList.Length; i++)
             {
-                if(IsServoWarning(axisList[i]) == true)
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
                 {
-                    ServoOff(axisList[i]);
+                    continue;
                 }
 
-                rc = CMotionAPI.ymcClearServoAlarm(m_hAxis[axisList[i]]);
+                if (IsServoWarning(servoNo) == true)
+                {
+                    ServoOff(servoNo);
+                }
+
+                rc = CMotionAPI.ymcClearServoAlarm(m_hAxis[servoNo]);
                 if (rc != CMotionAPI.MP_SUCCESS)
                 {
                     //MessageBox.Show(String.Format("Error ymcClearServoAlarm ErrorCode [ 0x{0} ]", rc.ToString("X"));
@@ -1475,7 +1525,13 @@ namespace LWDicer.Control
             bComplete = new bool[axisList.Length];
             for(int i = 0; i < axisList.Length; i++)
             {
-                int iResult = CheckMoveComplete(axisList[i], out bComplete[i]);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+
+                int iResult = CheckMoveComplete(servoNo, out bComplete[i]);
                 if (iResult != SUCCESS) return iResult;
             }
 
@@ -1485,15 +1541,20 @@ namespace LWDicer.Control
         public int ComparePosition(int[] axisList, double[] dPos, out bool[] bJudge)
         {
             bJudge = new bool[axisList.Length];
-            CMPMotionData[] motionData = new CMPMotionData[axisList.Length];
-            double[] dCurPos = new double[axisList.Length];
+            CMPMotionData[] motionData;
 
             for (int i = 0; i < axisList.Length; i++)
             {
-                GetServoPos(axisList[i], out dCurPos[i]);
-                GetDeviceMotionData(axisList[i], out motionData);
+                int servoNo = axisList[i];
+                if(servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    bJudge[i] = true;
+                    continue;
+                }
+                double dCurPos = ServoStatus[servoNo].EncoderPos;
+                GetDevice_MotionData(servoNo, out motionData);
 
-                if (Math.Abs(dCurPos[i] - dPos[i]) <= motionData[i].Tolerance) bJudge[i] = true;
+                if (Math.Abs(dCurPos - dPos[i]) <= motionData[0].Tolerance) bJudge[i] = true;
                 else bJudge[i] = false;
             }
 
@@ -1592,7 +1653,7 @@ namespace LWDicer.Control
         public int ServoMotionStop(int deviceNo, ushort mode = (ushort)CMotionAPI.ApiDefs.DISTRIBUTION_COMPLETED)
         {
             CMotionAPI.MOTION_DATA[] MotionData;
-            GetDeviceMotionData(deviceNo, out MotionData);
+            GetDevice_MotionData(deviceNo, out MotionData);
             ushort[] WaitForCompletion;
             GetDeviceWaitCompletion(deviceNo, out WaitForCompletion, mode);
 
@@ -1630,7 +1691,7 @@ namespace LWDicer.Control
             ushort[] WaitForCompletion;
             int iResult = GetDevicePositon(deviceNo, out PositionData, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
             if (iResult != SUCCESS) return iResult;
-            GetDeviceMotionData(deviceNo, out MotionData, tempSpeed);
+            GetDevice_MotionData(deviceNo, out MotionData, tempSpeed);
             GetDeviceWaitCompletion(deviceNo, out WaitForCompletion, waitMode);
 
             // 0.8 check axis state for move
@@ -1680,7 +1741,8 @@ namespace LWDicer.Control
             int length = 0;
             for(int i = 0; i < axisList.Length; i++)
             {
-                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
                 length++;
             }
             if (length == 0)
@@ -1689,11 +1751,8 @@ namespace LWDicer.Control
             }
 
             // 0.2 allocate temp device
-            UInt32[] hAxis;
-            iResult = GetAxisHandleList(axisList, out hAxis);
-            if (iResult != SUCCESS) return iResult;
             UInt32 tDevice = 0;
-            iResult = DeclareDevice(length, hAxis, ref tDevice);
+            iResult = DeclareTempDevice(length, axisList, useAxis, ref tDevice);
             if (iResult != SUCCESS) return iResult;
 
             // 0.3 allocate data buffer
@@ -1703,27 +1762,28 @@ namespace LWDicer.Control
             int[] tAxisList = new int[length];
 
             // 0.4 copy motion data to buffer
-            CMotionAPI.MOTION_DATA[] tMotion = new CMotionAPI.MOTION_DATA[1];
-            CMotionAPI.POSITION_DATA[] tPosition = new CMotionAPI.POSITION_DATA[1];
-            ushort[] tWait = new ushort[1];
+            CMotionAPI.MOTION_DATA[] tMotion;
+            CMotionAPI.POSITION_DATA[] tPosition;
+            ushort[] tWait;
             CMotorSpeedData[] tSpeed = new CMotorSpeedData[1];
 
             for (int i = 0, j = 0; i < axisList.Length; i++)
             {
-                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
                 if (tempSpeed != null)
                 {
                     tSpeed[0] = tempSpeed[i];
                 }
-                GetDeviceMotionData(axisList[i], out tMotion, tSpeed);
-                iResult = GetDevicePositon(axisList[i], out tPosition, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
+                GetDevice_MotionData(servoNo, out tMotion, tSpeed);
+                iResult = GetDevicePositon(servoNo, out tPosition, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
                 if (iResult != SUCCESS) return iResult;
-                GetDeviceWaitCompletion(axisList[i], out tWait, waitMode);
+                GetDeviceWaitCompletion(servoNo, out tWait, waitMode);
 
                 MotionData[j] = tMotion[0];
                 PositionData[j] = tPosition[0];
                 WaitForCompletion[j] = tWait[0];
-                tAxisList[j] = axisList[i];
+                tAxisList[j] = servoNo;
                 j++;
             }
 
@@ -1751,12 +1811,14 @@ namespace LWDicer.Control
 
         public int Wait4Done(int[] axisList, bool[] useAxis, bool bWait4Home = false)
         {
+            int iResult;
             // 0. init data
             // 0.1 get device length
             int length = 0;
             for (int i = 0; i < axisList.Length; i++)
             {
-                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
                 length++;
             }
             if (length == 0)
@@ -1765,9 +1827,6 @@ namespace LWDicer.Control
             }
 
             // 0.2 allocate temp device
-            UInt32[] hAxis;
-            int iResult = GetAxisHandleList(axisList, out hAxis);
-            if (iResult != SUCCESS) return iResult;
 
             // 0.3 allocate data buffer
             CMotorTimeLimitData[] timeLimit = new CMotorTimeLimitData[length];
@@ -1775,16 +1834,17 @@ namespace LWDicer.Control
             int[] servoList = new int[length];
 
             // 0.4 copy motion data to buffer
-            CMotorTimeLimitData[] tLimit = new CMotorTimeLimitData[1];
+            CMotorTimeLimitData[] tLimit;
 
             for (int i = 0, j = 0; i < axisList.Length; i++)
             {
-                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
-                GetDeviceTimeLimitData(axisList[i], out tLimit);
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                GetDevice_TimeLimitData(servoNo, out tLimit);
 
                 timeLimit[j] = tLimit[0];
                 bDone[j] = false;
-                servoList[j] = axisList[i];
+                servoList[j] = servoNo;
                 j++;
             }
 
@@ -1800,6 +1860,7 @@ namespace LWDicer.Control
                 // 1.2 check all done
                 if(sum == length)
                 {
+                    m_waitTimer.StopTimer();
                     return SUCCESS;
                 }
 
@@ -1865,7 +1926,8 @@ namespace LWDicer.Control
             int length = 0;
             for (int i = 0; i < axisList.Length; i++)
             {
-                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
                 length++;
             }
             if (length == 0)
@@ -1875,11 +1937,8 @@ namespace LWDicer.Control
 
 
             // 0.2 allocate temp device
-            UInt32[] hAxis;
-            iResult = GetAxisHandleList(axisList, out hAxis);
-            if (iResult != SUCCESS) return iResult;
             UInt32 tDevice = 0;
-            iResult = DeclareDevice(length, hAxis, ref tDevice);
+            iResult = DeclareTempDevice(length, axisList, useAxis, ref tDevice);
             if (iResult != SUCCESS) return iResult;
 
             // 0.3 allocate data buffer
@@ -1890,18 +1949,19 @@ namespace LWDicer.Control
             ushort[] Dir = new ushort[length];
 
             // 0.4 copy motion data to buffer
-            CMotionAPI.MOTION_DATA[] tMotion = new CMotionAPI.MOTION_DATA[1];
-            CMotionAPI.POSITION_DATA[] tPosition = new CMotionAPI.POSITION_DATA[1];
-            ushort[] tWait = new ushort[1];
-            ushort[] tMethod = new ushort[1];
-            ushort[] tDir = new ushort[1];
+            CMotionAPI.MOTION_DATA[] tMotion;
+            CMotionAPI.POSITION_DATA[] tPosition;
+            ushort[] tWait;
+            ushort[] tMethod;
+            ushort[] tDir;
 
             for (int i = 0, j = 0; i < axisList.Length; i++)
             {
-                if (axisList[i] == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL || useAxis[i] == false) continue;
 
-                GetDeviceMotionData_Home(axisList[i], out tMotion, out tMethod, out tDir, out tPosition);
-                GetDeviceWaitCompletion(axisList[i], out tWait, (UInt16)CMotionAPI.ApiDefs.COMMAND_STARTED);
+                GetDeviceMotionData_Home(servoNo, out tMotion, out tMethod, out tDir, out tPosition);
+                GetDeviceWaitCompletion(servoNo, out tWait, (UInt16)CMotionAPI.ApiDefs.COMMAND_STARTED);
 
                 MotionData[j] = tMotion[0];
                 PositionData[j] = tPosition[0];
@@ -1928,7 +1988,27 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        private int HomePosition(int deviceNo)
+        public bool IsOriginReturn(int servoNo)
+        {
+            return ServoStatus[servoNo].OriginFlag;
+        }
+
+        public void SetOriginFlag(int deviceNo, bool bFlag)
+        {
+            int[] axisList;
+            GetDeviceAxisList(deviceNo, out axisList);
+            for (int i = 0; i < axisList.Length; i++)
+            {
+                int servoNo = axisList[i];
+                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
+                {
+                    continue;
+                }
+                ServoStatus[servoNo].OriginFlag = bFlag;
+            }
+        }
+
+        public int OriginReturn(int deviceNo = (int)EYMC_Device.ALL)
         {
             // check safety
             int iResult = IsSafe4Move();
@@ -1942,6 +2022,10 @@ namespace LWDicer.Control
             GetDeviceMotionData_Home(deviceNo, out MotionData, out Method, out Dir, out PositionData);
             GetDeviceWaitCompletion(deviceNo, out WaitForCompletion, (UInt16)CMotionAPI.ApiDefs.COMMAND_STARTED);
 
+            // reset origin flag
+            SetOriginFlag(deviceNo, false);
+
+            // home return
             UInt32 rc = CMotionAPI.ymcMoveHomePosition(m_hDevice[deviceNo], MotionData, PositionData, Method, Dir, 0, null, WaitForCompletion, 0);
             if (rc != CMotionAPI.MP_SUCCESS)
             {
@@ -1951,12 +2035,18 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_MOVE_HOME);
             }
 
+            // set origin flag
+            SetOriginFlag(deviceNo, true);
+
             return SUCCESS;
         }
 
         public int GetServoPos(int servoNo, out double pos)
         {
+            // this is obsolete because servo status is updated by thread
             pos = 0;
+            return GenerateErrorCode(ERR_YASKAWA_OBSOLETE_FUNCTION);
+
             UInt32 servoPosi = 0;
             UInt32 rc = CMotionAPI.ymcGetMotionParameterValue(m_hAxis[servoNo], (UInt16)CMotionAPI.ApiDefs.MONITOR_PARAMETER,
                  (UInt16)CMotionAPI.ApiDefs_MonPrm.SER_APOS, ref servoPosi);

@@ -100,6 +100,7 @@ namespace LWDicer.Control
 
         public class CSystemData
         {
+            // Axis, Cylinder, Vacuum 등의 class array는 별도의 class에서 처리하도록 한다.
             //
             public string ModelName = "Default";
 
@@ -110,8 +111,8 @@ namespace LWDicer.Control
             public CCylinderTime[] CylinderTimer = new CCylinderTime[(int)EObjectCylinder.MAX_OBJ];
             public CVacuumTime[] VacuumTimer = new CVacuumTime[(int)EObjectVacuum.MAX_OBJ];
 
-            // YMC
-            public CYaskawaData YaskawaData = new CYaskawaData();
+            // YMC Motion Axis
+            public CMPMotionData[] MPMotionData = new CMPMotionData[MAX_MP_AXIS];
 
             // Polygon Scanner Configure ini Data
             public CPolygonIni[] Scanner = new CPolygonIni[(int)EObjectScanner.MAX_OBJ];
@@ -247,6 +248,63 @@ namespace LWDicer.Control
                 for (int i = 0; i < (int)EObjectVacuum.MAX_OBJ; i++)
                 {
                     VacuumTimer[i] = new CVacuumTime();
+                }
+            }
+        }
+
+        public class CSystemData_Axis
+        {
+            // YMC Motion Axis
+            public CMPMotionData[] MPMotionData = new CMPMotionData[MAX_MP_AXIS];
+
+            public CSystemData_Axis()
+            {
+                for (int i = 0; i < MPMotionData.Length; i++)
+                {
+                    MPMotionData[i] = new CMPMotionData();
+                }
+            }
+        }
+
+        public class CSystemData_Cylinder
+        {
+
+            // Timer
+            public CCylinderTime[] CylinderTimer = new CCylinderTime[(int)EObjectCylinder.MAX_OBJ];
+
+            public CSystemData_Cylinder()
+            {
+                for (int i = 0; i < CylinderTimer.Length; i++)
+                {
+                    CylinderTimer[i] = new CCylinderTime();
+                }
+            }
+        }
+
+        public class CSystemData_Vacuum
+        {
+            // Timer
+            public CVacuumTime[] VacuumTimer = new CVacuumTime[(int)EObjectVacuum.MAX_OBJ];
+
+            public CSystemData_Vacuum()
+            {
+                for (int i = 0; i < VacuumTimer.Length; i++)
+                {
+                    VacuumTimer[i] = new CVacuumTime();
+                }
+            }
+        }
+
+        public class CSystemData_Scanner
+        {
+            // Polygon Scanner Configure ini Data
+            public CPolygonIni[] Scanner = new CPolygonIni[(int)EObjectScanner.MAX_OBJ];
+
+            public CSystemData_Scanner()
+            {
+                for (int i = 0; i < Scanner.Length; i++)
+                {
+                    Scanner[i] = new CPolygonIni();
                 }
             }
         }
@@ -557,6 +615,10 @@ namespace LWDicer.Control
                 m_SystemData = systemData;
                 WriteLog("success : load system data.", ELogType.SYSTEM, ELogWType.LOAD);
             }
+
+            // system data를 읽어왔는데, db에 이전 데이터가 저장되어 있지 않을 때, 필수적으로 초기화 해주어야 할 데이터들
+            InitMPMotionData();
+
             return SUCCESS;
         }
 
@@ -1140,6 +1202,198 @@ namespace LWDicer.Control
             WriteLog($"success : save para info list", ELogType.Debug);
             return SUCCESS;
         }
+
+        void InitMPMotionData()
+        {
+            // Excel에서 읽어오는 방식도 생각해봤으나, 축 이름과 필수적인것들만 초기화하면 될것 같아서 소스코드 내부에서 처리 
+            int index;
+            CMPMotionData tMotion;
+
+            // null check
+            for(int i = 0; i < m_SystemData.MPMotionData.Length; i++)
+            {
+                if (m_SystemData.MPMotionData[i] == null)
+                {
+                    m_SystemData.MPMotionData[i] = new CMPMotionData();
+                }
+            }
+
+            // LOADER_Z
+            index = (int)EYMC_Axis.LOADER_Z         ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "LOADER_Z";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // PUSHPULL_Y
+            index = (int)EYMC_Axis.PUSHPULL_Y       ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "PUSHPULL_Y";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // C1_CENTERING_T   
+            index = (int)EYMC_Axis.C1_CENTERING_T   ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "C1_CENTERING_T";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // C1_CHUCK_ROTATE_T
+            index = (int)EYMC_Axis.C1_CHUCK_ROTATE_T;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "C1_CHUCK_ROTATE_T";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // C1_CLEAN_NOZZLE_T
+            index = (int)EYMC_Axis.C1_CLEAN_NOZZLE_T;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "C1_CLEAN_NOZZLE_T";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // C1_COAT_NOZZLE_T 
+            index = (int)EYMC_Axis.C1_COAT_NOZZLE_T ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "C1_COAT_NOZZLE_T";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // C2_CENTERING_T   
+            index = (int)EYMC_Axis.C2_CENTERING_T   ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "C2_CENTERING_T";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // C2_CHUCK_ROTATE_T
+            index = (int)EYMC_Axis.C2_CHUCK_ROTATE_T;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "C2_CHUCK_ROTATE_T";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // C2_CLEAN_NOZZLE_T
+            index = (int)EYMC_Axis.C2_CLEAN_NOZZLE_T;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "C2_CLEAN_NOZZLE_T";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // C2_COAT_NOZZLE_T 
+            index = (int)EYMC_Axis.C2_COAT_NOZZLE_T ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "C2_COAT_NOZZLE_T";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // HANDLER1_Y       
+            index = (int)EYMC_Axis.HANDLER1_Y       ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "HANDLER1_Y";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // HANDLER1_Z       
+            index = (int)EYMC_Axis.HANDLER1_Z       ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "HANDLER1_Z";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // HANDLER2_Y       
+            index = (int)EYMC_Axis.HANDLER2_Y       ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "HANDLER2_Y";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // HANDLER2_Z       
+            index = (int)EYMC_Axis.HANDLER2_Z       ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "HANDLER2_Z";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // CAMERA1_Z                                           
+            index = (int)EYMC_Axis.CAMERA1_Z        ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "CAMERA1_Z";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+            // LASER1_Z
+            index = (int)EYMC_Axis.LASER1_Z         ;
+            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            {
+                tMotion = new CMPMotionData();
+                tMotion.Name = "LASER1_Z";
+                tMotion.Exist = true;
+
+                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+            }
+
+        }
     }
 }
-
