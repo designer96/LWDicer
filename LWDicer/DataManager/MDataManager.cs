@@ -109,16 +109,6 @@ namespace LWDicer.Control
             //
             public string PassWord;     // Engineer Password
 
-            // Timer
-            public CCylinderTime[] CylinderTimer = new CCylinderTime[(int)EObjectCylinder.MAX_OBJ];
-            public CVacuumTime[] VacuumTimer = new CVacuumTime[(int)EObjectVacuum.MAX_OBJ];
-
-            // YMC Motion Axis
-            public CMPMotionData[] MPMotionData = new CMPMotionData[MAX_MP_AXIS];
-
-            // Polygon Scanner Configure ini Data
-            public CPolygonIni[] Scanner = new CPolygonIni[(int)EObjectScanner.MAX_OBJ];
-
             // 아래는 아직 미정리 내역들
 
             public int SystemType;      // 작업변
@@ -242,15 +232,6 @@ namespace LWDicer.Control
 
             public CSystemData()
             {
-                for(int i = 0; i < (int)EObjectCylinder.MAX_OBJ; i++)
-                {
-                    CylinderTimer[i] = new CCylinderTime();
-                }
-
-                for (int i = 0; i < (int)EObjectVacuum.MAX_OBJ; i++)
-                {
-                    VacuumTimer[i] = new CVacuumTime();
-                }
             }
         }
 
@@ -441,33 +422,41 @@ namespace LWDicer.Control
 
     public class MDataManager : MObject
     {
-        private CLoginData m_Login = new CLoginData();
-        CDBInfo m_DBInfo;
+        private CLoginData Login = new CLoginData();
+        CDBInfo DBInfo;
 
-        public CSystemData m_SystemData { get; set; } = new CSystemData();
-        public CModelData m_ModelData { get; set; } = new CModelData();
-        public List<CModelHeader> m_ModelList { get; set; } = new List<CModelHeader>();
+        // System Data
+        public CSystemData SystemData { get; set; } = new CSystemData();
+        public CSystemData_Axis SystemData_Axis { get; set; } = new CSystemData_Axis();
+        public CSystemData_Cylinder SystemData_Cylinder { get; set; } = new CSystemData_Cylinder();
+        public CSystemData_Vacuum SystemData_Vacuum { get; set; } = new CSystemData_Vacuum();
+        public CSystemData_Scanner SystemData_Scanner { get; set; } = new CSystemData_Scanner();
 
-        public DEF_IO.CIOInfo[] m_InputArray { get; set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_INPUT];
-        public DEF_IO.CIOInfo[] m_OutputArray { get; set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_OUTPUT];
+        // Model Data
+        public CModelData ModelData { get; set; } = new CModelData();
+        public List<CModelHeader> ModelList { get; set; } = new List<CModelHeader>();
+
+        // Parameter Data
+        public DEF_IO.CIOInfo[] InputArray { get; set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_INPUT];
+        public DEF_IO.CIOInfo[] OutputArray { get; set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_OUTPUT];
 
         // Error Info는 필요할 때, 하나씩 불러와도 될 것 같은데, db test겸 초기화 편의성 때문에 임시로 만들어 둠
-        public List<CErrorInfo> m_ErrorInfoList { get; set; } = new List<CErrorInfo>();
-        public List<CParaInfo> m_ParaInfoList { get; set; } = new List<CParaInfo>();
+        public List<CErrorInfo> ErrorInfoList { get; set; } = new List<CErrorInfo>();
+        public List<CParaInfo> ParaInfoList { get; set; } = new List<CParaInfo>();
 
         public MDataManager(CObjectInfo objInfo, CDBInfo dbInfo)
             : base(objInfo)
         {
-            m_DBInfo = dbInfo;
+            DBInfo = dbInfo;
             SetLogin(new CLoginData(), true);
 
             for(int i = 0; i < DEF_IO.MAX_IO_INPUT; i++)
             {
-                m_InputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.INPUT_ORIGIN, DEF_IO.EIOType.DI);
+                InputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.INPUT_ORIGIN, DEF_IO.EIOType.DI);
             }
             for (int i = 0; i < DEF_IO.MAX_IO_OUTPUT; i++)
             {
-                m_OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.OUTPUT_ORIGIN, DEF_IO.EIOType.DO);
+                OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.OUTPUT_ORIGIN, DEF_IO.EIOType.DO);
             }
 
             //TestFunction();
@@ -475,14 +464,14 @@ namespace LWDicer.Control
             LoadGeneralData();
             LoadSystemData();
             LoadModelList();
-            ChangeModel(m_SystemData.ModelName);
+            ChangeModel(SystemData.ModelName);
         }
 
         public void TestFunction()
         {
             ///////////////////////////////////////
             CModelHeader header = new CModelHeader();
-            m_ModelList.Add(header);
+            ModelList.Add(header);
 
             for(int i = 0; i < 3; i++)
             {
@@ -490,13 +479,13 @@ namespace LWDicer.Control
                 header.Name = $"Model{i}";
                 header.Comment = $"Comment{i}";
                 header.Parent = $"Parent{i}";
-                m_ModelList.Add(header);
+                ModelList.Add(header);
             }
 
-            m_SystemData.CylinderTimer[0].SettlingTime1 = 1;
-            m_SystemData.CylinderTimer[1].SettlingTime2 = 2;
-            m_SystemData.Head_Cyl_AfterOffTime = 3.456;
-            m_SystemData.LineControllerIP = "122,333,444";
+            SystemData_Cylinder.CylinderTimer[0].SettlingTime1 = 1;
+            SystemData_Cylinder.CylinderTimer[1].SettlingTime2 = 2;
+            SystemData.Head_Cyl_AfterOffTime = 3.456;
+            SystemData.LineControllerIP = "122,333,444";
 
             //SaveSystemData();
             //SaveModelList();
@@ -507,14 +496,14 @@ namespace LWDicer.Control
                 CErrorInfo errorInfo = new CErrorInfo(i);
                 errorInfo.Description[(int)DEF_Common.ELanguage.KOREAN] = $"{i}번 에러";
                 errorInfo.Solution[(int)DEF_Common.ELanguage.KOREAN] = $"{i}번 해결책";
-                m_ErrorInfoList.Add(errorInfo);
+                ErrorInfoList.Add(errorInfo);
             }
 
             for (int i = 0; i < 10; i++)
             {
                 CParaInfo paraInfo = new CParaInfo("Test", "Name"+i.ToString());
                 paraInfo.Description[(int)DEF_Common.ELanguage.KOREAN] = $"Name{i} 변수";
-                m_ParaInfoList.Add(paraInfo);
+                ParaInfoList.Add(paraInfo);
             }
 
             SaveGeneralData();
@@ -522,7 +511,7 @@ namespace LWDicer.Control
             ///////////////////////////////////////
 
             Type type = typeof(CSystemData);
-            Dictionary<string, string> fieldBook = ObjectExtensions.ToStringDictionary(m_SystemData, type);
+            Dictionary<string, string> fieldBook = ObjectExtensions.ToStringDictionary(SystemData, type);
 
             CSystemData systemData2 = new CSystemData();
             ObjectExtensions.FromStringDicionary(systemData2, type, fieldBook);
@@ -530,8 +519,8 @@ namespace LWDicer.Control
 
         public int BackupDB()
         {
-            string[] dblist = new string[] { $"{m_DBInfo.DBConn}", $"{m_DBInfo.DBConn_Info}",
-                $"{m_DBInfo.DBConn_DLog}", $"{m_DBInfo.DBConn_ELog}" };
+            string[] dblist = new string[] { $"{DBInfo.DBConn}", $"{DBInfo.DBConn_Info}",
+                $"{DBInfo.DBConn_DLog}", $"{DBInfo.DBConn_ELog}" };
 
             DateTime time = DateTime.Now;
 
@@ -550,8 +539,8 @@ namespace LWDicer.Control
 
         public int DeleteDB()
         {
-            string[] dblist = new string[] { $"{m_DBInfo.DBConn}", $"{m_DBInfo.DBConn_Backup}",
-                $"{m_DBInfo.DBConn_Info}", $"{m_DBInfo.DBConn_DLog}", $"{m_DBInfo.DBConn_ELog}" };
+            string[] dblist = new string[] { $"{DBInfo.DBConn}", $"{DBInfo.DBConn_Backup}",
+                $"{DBInfo.DBConn_Info}", $"{DBInfo.DBConn_DLog}", $"{DBInfo.DBConn_ELog}" };
 
             foreach(string source in dblist)
             {
@@ -566,60 +555,239 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int SaveSystemData()
+        public int SaveSystemData(bool saveSystem = true, bool saveAxis = true, bool saveCylinder = true,
+            bool saveVacuum = true, bool saveScanner = true)
         {
-            try
+            // CSystemData
+            if (saveSystem == true)
             {
-                // SystemData
-                string output = JsonConvert.SerializeObject(m_SystemData);
-
-                if (DBManager.InsertRow(m_DBInfo.DBConn, m_DBInfo.TableSystem, "name", nameof(CSystemData), output,
-                    true, m_DBInfo.DBConn_Backup) != true)
+                try
                 {
+                    string output = JsonConvert.SerializeObject(SystemData);
+
+                    if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData), output,
+                        true, DBInfo.DBConn_Backup) != true)
+                    {
+                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                    }
+                    WriteLog("success : save CSystemData.", ELogType.SYSTEM, ELogWType.SAVE);
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
                 }
             }
-            catch (Exception ex)
+
+            // CSystemData_Axis
+            if (saveAxis == true)
             {
-                WriteExLog(ex.ToString());
-                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                try
+                {
+                    string output = JsonConvert.SerializeObject(SystemData_Axis);
+
+                    if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Axis), output,
+                        true, DBInfo.DBConn_Backup) != true)
+                    {
+                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                    }
+                    WriteLog("success : save CSystemData_Axis.", ELogType.SYSTEM, ELogWType.SAVE);
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                }
             }
 
-            WriteLog("success : save system data.", ELogType.SYSTEM, ELogWType.SAVE);
+            // CSystemData_Cylinder
+            if (saveSystem == true)
+            {
+                try
+                {
+                    string output = JsonConvert.SerializeObject(SystemData_Cylinder);
+
+                    if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Cylinder), output,
+                        true, DBInfo.DBConn_Backup) != true)
+                    {
+                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                    }
+                    WriteLog("success : save CSystemData_Cylinder.", ELogType.SYSTEM, ELogWType.SAVE);
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                }
+            }
+
+            // CSystemData_Vacuum
+            if (saveSystem == true)
+            {
+                try
+                {
+                    string output = JsonConvert.SerializeObject(SystemData_Vacuum);
+
+                    if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Vacuum), output,
+                        true, DBInfo.DBConn_Backup) != true)
+                    {
+                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                    }
+                    WriteLog("success : save CSystemData_Vacuum.", ELogType.SYSTEM, ELogWType.SAVE);
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                }
+            }
+
+            // CSystemData_Scanner
+            if (saveSystem == true)
+            {
+                try
+                {
+                    string output = JsonConvert.SerializeObject(SystemData_Scanner);
+
+                    if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Scanner), output,
+                        true, DBInfo.DBConn_Backup) != true)
+                    {
+                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                    }
+                    WriteLog("success : save CSystemData_Scanner.", ELogType.SYSTEM, ELogWType.SAVE);
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                }
+            }
+
             return SUCCESS;
         }
 
-        public int LoadSystemData()
+        public int LoadSystemData(bool loadSystem = true, bool loadAxis = true, bool loadCylinder = true,
+            bool loadVacuum = true, bool loadScanner = true)
         {
-            CSystemData systemData = null;
-            try
-            {
-                string output;
+            string output;
 
-                // SystemData
-                if (DBManager.SelectRow(m_DBInfo.DBConn, m_DBInfo.TableSystem, "name", nameof(CSystemData), out output) == true)
+            // CSystemData
+            if (loadSystem == true)
+            {
+                try
                 {
-                    systemData = JsonConvert.DeserializeObject<CSystemData>(output);
+                    if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData), out output) == true)
+                    {
+                        CSystemData data = JsonConvert.DeserializeObject<CSystemData>(output);
+                        SystemData = data;
+                        WriteLog("success : load CSystemData.", ELogType.SYSTEM, ELogWType.LOAD);
+                    }
+                    //else // temporarily do not return error for continuous loading
+                    //{
+                    //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                    //}
                 }
-                //else // Load 함수에서는 계속 읽기 위해서 Error 처리는 하지 않는다.
-                //{
-                //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
-                //}
-            }
-            catch (Exception ex)
-            {
-                WriteExLog(ex.ToString());
-                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                }
             }
 
-            if(systemData != null)
+            // CSystemData_Axis
+            if (loadAxis == true)
             {
-                m_SystemData = systemData;
-                WriteLog("success : load system data.", ELogType.SYSTEM, ELogWType.LOAD);
+                try
+                {
+                    if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Axis), out output) == true)
+                    {
+                        CSystemData_Axis data = JsonConvert.DeserializeObject<CSystemData_Axis>(output);
+                        SystemData_Axis = data;
+                        WriteLog("success : load CSystemData_Axis.", ELogType.SYSTEM, ELogWType.LOAD);
+                    }
+                    //else // temporarily do not return error for continuous loading
+                    //{
+                    //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                }
+
+                // system data를 읽어왔는데, db에 이전 데이터가 저장되어 있지 않을 때, 필수적으로 초기화 해주어야 할 데이터들
+                InitMPMotionData();
             }
 
-            // system data를 읽어왔는데, db에 이전 데이터가 저장되어 있지 않을 때, 필수적으로 초기화 해주어야 할 데이터들
-            InitMPMotionData();
+            // CSystemData_Cylinder
+            if (loadCylinder == true)
+            {
+                try
+                {
+                    if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Cylinder), out output) == true)
+                    {
+                        CSystemData_Cylinder data = JsonConvert.DeserializeObject<CSystemData_Cylinder>(output);
+                        SystemData_Cylinder = data;
+                        WriteLog("success : load CSystemData_Cylinder.", ELogType.SYSTEM, ELogWType.LOAD);
+                    }
+                    //else // temporarily do not return error for continuous loading
+                    //{
+                    //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                }
+            }
+
+            // CSystemData_Vacuum
+            if (loadVacuum == true)
+            {
+                try
+                {
+                    if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Vacuum), out output) == true)
+                    {
+                        CSystemData_Vacuum data = JsonConvert.DeserializeObject<CSystemData_Vacuum>(output);
+                        SystemData_Vacuum = data;
+                        WriteLog("success : load CSystemData_Vacuum.", ELogType.SYSTEM, ELogWType.LOAD);
+                    }
+                    //else // temporarily do not return error for continuous loading
+                    //{
+                    //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                }
+            }
+
+            // CSystemData_Scanner
+            if (loadScanner == true)
+            {
+                try
+                {
+                    if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Scanner), out output) == true)
+                    {
+                        CSystemData_Scanner data = JsonConvert.DeserializeObject<CSystemData_Scanner>(output);
+                        SystemData_Scanner = data;
+                        WriteLog("success : load CSystemData_Scanner.", ELogType.SYSTEM, ELogWType.LOAD);
+                    }
+                    //else // temporarily do not return error for continuous loading
+                    //{
+                    //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                }
+            }
 
             return SUCCESS;
         }
@@ -632,24 +800,24 @@ namespace LWDicer.Control
                 string query;
 
                 // 0. create table
-                query = $"CREATE TABLE IF NOT EXISTS {m_DBInfo.TableModelHeader} (name string primary key, data string)";
+                query = $"CREATE TABLE IF NOT EXISTS {DBInfo.TableModelHeader} (name string primary key, data string)";
                 querys.Add(query);
 
                 // 1. delete all
-                query = $"DELETE FROM {m_DBInfo.TableModelHeader}";
+                query = $"DELETE FROM {DBInfo.TableModelHeader}";
                 querys.Add(query);
 
                 // 2. save model list
                 string output;
-                foreach(CModelHeader header in m_ModelList)
+                foreach (CModelHeader header in ModelList)
                 {
                     output = JsonConvert.SerializeObject(header);
-                    query = $"INSERT INTO {m_DBInfo.TableModelHeader} VALUES ('{header.Name}', '{output}')";
+                    query = $"INSERT INTO {DBInfo.TableModelHeader} VALUES ('{header.Name}', '{output}')";
                     querys.Add(query);
                 }
 
                 // 3. execute query
-                if (DBManager.ExecuteNonQuerys(m_DBInfo.DBConn, querys) != true)
+                if (DBManager.ExecuteNonQuerys(DBInfo.DBConn, querys) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_MODEL_LIST);
                 }
@@ -671,24 +839,24 @@ namespace LWDicer.Control
                 string query;
 
                 // 0. select table
-                query = $"SELECT * FROM {m_DBInfo.TableModelHeader}";
+                query = $"SELECT * FROM {DBInfo.TableModelHeader}";
 
                 // 1. get table
                 DataTable datatable;
-                if(DBManager.GetTable(m_DBInfo.DBConn, query, out datatable) != true)
+                if (DBManager.GetTable(DBInfo.DBConn, query, out datatable) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_MODEL_LIST);
                 }
 
                 // 2. delete list
-                m_ModelList.Clear();
+                ModelList.Clear();
 
                 // 3. get list
                 foreach (DataRow row in datatable.Rows)
                 {
                     string output = row["data"].ToString();
                     CModelHeader header = JsonConvert.DeserializeObject<CModelHeader>(output);
-                    m_ModelList.Add(header);
+                    ModelList.Add(header);
                 }
             }
             catch (Exception ex)
@@ -703,7 +871,7 @@ namespace LWDicer.Control
 
         bool IsModelExist(string name)
         {
-            foreach(CModelHeader header in m_ModelList)
+            foreach(CModelHeader header in ModelList)
             {
                 if(header.Name == name)
                 {
@@ -721,8 +889,8 @@ namespace LWDicer.Control
                 string output;
                 if(modelData == null)
                 {
-                    name = m_ModelData.Name;
-                    output = JsonConvert.SerializeObject(m_ModelData);
+                    name = ModelData.Name;
+                    output = JsonConvert.SerializeObject(ModelData);
                 }
                 else
                 {
@@ -730,8 +898,8 @@ namespace LWDicer.Control
                     output = JsonConvert.SerializeObject(modelData);
                 }
 
-                if (DBManager.InsertRow(m_DBInfo.DBConn, m_DBInfo.TableModel, "name", name, output,
-                    true, m_DBInfo.DBConn_Backup) != true)
+                if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableModel, "name", name, output,
+                    true, DBInfo.DBConn_Backup) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_MODEL_DATA);
                 }
@@ -751,7 +919,7 @@ namespace LWDicer.Control
             // 0. check exist
             if(string.IsNullOrEmpty(name))
             {
-                name = m_SystemData.ModelName;
+                name = SystemData.ModelName;
             }
             if(IsModelExist(name) == false)
             {
@@ -763,7 +931,7 @@ namespace LWDicer.Control
             {
                 // 1. load model
                 string output;
-                if (DBManager.SelectRow(m_DBInfo.DBConn, m_DBInfo.TableModel, "name", name, out output) == true)
+                if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableModel, "name", name, out output) == true)
                 {
                     modelData = JsonConvert.DeserializeObject<CModelData>(output);
                 }
@@ -773,12 +941,12 @@ namespace LWDicer.Control
                 }
 
                 // 2. save system data
-                string prev_model = m_SystemData.ModelName;
-                m_SystemData.ModelName = name;
+                string prev_model = SystemData.ModelName;
+                SystemData.ModelName = name;
                 int iResult = SaveSystemData();
                 if(iResult != SUCCESS)
                 {
-                    m_SystemData.ModelName = prev_model;
+                    SystemData.ModelName = prev_model;
                     return iResult;
                 }
                 
@@ -792,8 +960,8 @@ namespace LWDicer.Control
             // finally, set model data
             if(modelData != null)
             {
-                m_ModelData = modelData;
-                WriteLog($"success : change model [{m_ModelData.Name}].", ELogType.SYSTEM, ELogWType.LOAD);
+                ModelData = modelData;
+                WriteLog($"success : change model [{ModelData.Name}].", ELogType.SYSTEM, ELogWType.LOAD);
             }
             return SUCCESS;
         }
@@ -811,7 +979,7 @@ namespace LWDicer.Control
             {
                 // 1. load model
                 string output;
-                if (DBManager.SelectRow(m_DBInfo.DBConn, m_DBInfo.TableModel, "name", name, out output) == true)
+                if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableModel, "name", name, out output) == true)
                 {
                     modelData = JsonConvert.DeserializeObject<CModelData>(output);
                 }
@@ -831,7 +999,7 @@ namespace LWDicer.Control
 
         public CLoginData GetLogin()
         {
-            return m_Login;
+            return Login;
         }
 
         public int SetLogin(CLoginData login, bool IsSystemStart = false)
@@ -839,23 +1007,23 @@ namespace LWDicer.Control
             if(IsSystemStart == false)
             {
                 // Type과 사번이 같다면 동일 인물로 본다.
-                if (login.Type == m_Login.Type && login.Number == m_Login.Number)
+                if (login.Type == Login.Type && login.Number == Login.Number)
                 {
                     return SUCCESS;
                 }
             }
 
             // write login history
-            string create_query = $"CREATE TABLE IF NOT EXISTS {m_DBInfo.TableLoginHistory} (logintime datetime, type string, number string, name string)";
-            string query = $"INSERT INTO {m_DBInfo.TableLoginHistory} VALUES ('{DBManager.DateTimeSQLite(login.LoginTime)}', '{login.Type}', '{login.Number}', '{login.Name}')";
+            string create_query = $"CREATE TABLE IF NOT EXISTS {DBInfo.TableLoginHistory} (logintime datetime, type string, number string, name string)";
+            string query = $"INSERT INTO {DBInfo.TableLoginHistory} VALUES ('{DBManager.DateTimeSQLite(login.LoginTime)}', '{login.Type}', '{login.Number}', '{login.Name}')";
 
-            if (DBManager.ExecuteNonQuerys(m_DBInfo.DBConn_ELog, create_query, query) == false)
+            if (DBManager.ExecuteNonQuerys(DBInfo.DBConn_ELog, create_query, query) == false)
             {
                 return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_LOGIN_HISTORY);
             }
 
-            m_Login = login;
-            DBManager.SetOperator(m_Login.Number, m_Login.Type.ToString());
+            Login = login;
+            DBManager.SetOperator(Login.Number, Login.Type.ToString());
             WriteLog($"login : {login}", ELogType.LOGIN, ELogWType.LOGIN);
 
             return SUCCESS;
@@ -884,11 +1052,11 @@ namespace LWDicer.Control
                 string query;
 
                 // 0. select table
-                query = $"SELECT * FROM {m_DBInfo.TableIO}";
+                query = $"SELECT * FROM {DBInfo.TableIO}";
 
                 // 1. get table
                 DataTable datatable;
-                if (DBManager.GetTable(m_DBInfo.DBConn_Info, query, out datatable) != true)
+                if (DBManager.GetTable(DBInfo.DBConn_Info, query, out datatable) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
                 }
@@ -906,10 +1074,10 @@ namespace LWDicer.Control
                         
                         if(index >= DEF_IO.INPUT_ORIGIN && index < DEF_IO.INPUT_ORIGIN)
                         {
-                            m_InputArray[index - DEF_IO.INPUT_ORIGIN] = ioInfo;
+                            InputArray[index - DEF_IO.INPUT_ORIGIN] = ioInfo;
                         } else if (index >= DEF_IO.OUTPUT_ORIGIN && index < DEF_IO.OUTPUT_END)
                         {
-                            m_OutputArray[index - DEF_IO.OUTPUT_ORIGIN] = ioInfo;
+                            OutputArray[index - DEF_IO.OUTPUT_ORIGIN] = ioInfo;
                         }
                     }
                 }
@@ -931,17 +1099,17 @@ namespace LWDicer.Control
                 string query;
 
                 // 0. select table
-                query = $"SELECT * FROM {m_DBInfo.TableError}";
+                query = $"SELECT * FROM {DBInfo.TableError}";
 
                 // 1. get table
                 DataTable datatable;
-                if (DBManager.GetTable(m_DBInfo.DBConn_Info, query, out datatable) != true)
+                if (DBManager.GetTable(DBInfo.DBConn_Info, query, out datatable) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
                 }
 
                 // 2. delete list
-                m_ErrorInfoList.Clear();
+                ErrorInfoList.Clear();
 
                 // 3. get list
                 foreach (DataRow row in datatable.Rows)
@@ -952,7 +1120,7 @@ namespace LWDicer.Control
                         string output = row["data"].ToString();
                         DEF_Error.CErrorInfo errorInfo = JsonConvert.DeserializeObject<DEF_Error.CErrorInfo>(output);
 
-                        m_ErrorInfoList.Add(errorInfo);
+                        ErrorInfoList.Add(errorInfo);
                     }
                 }
             }
@@ -974,7 +1142,7 @@ namespace LWDicer.Control
                 string output;
 
                 // select row
-                if (DBManager.SelectRow(m_DBInfo.DBConn_Info, m_DBInfo.TableError, "name", index.ToString(), out output) == true)
+                if (DBManager.SelectRow(DBInfo.DBConn_Info, DBInfo.TableError, "name", index.ToString(), out output) == true)
                 {
                     errorInfo = JsonConvert.DeserializeObject<CErrorInfo>(output);
                 }
@@ -1001,17 +1169,17 @@ namespace LWDicer.Control
                 string query;
 
                 // 0. select table
-                query = $"SELECT * FROM {m_DBInfo.TableParameter}";
+                query = $"SELECT * FROM {DBInfo.TableParameter}";
 
                 // 1. get table
                 DataTable datatable;
-                if (DBManager.GetTable(m_DBInfo.DBConn_Info, query, out datatable) != true)
+                if (DBManager.GetTable(DBInfo.DBConn_Info, query, out datatable) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA);
                 }
 
                 // 2. delete list
-                m_ParaInfoList.Clear();
+                ParaInfoList.Clear();
 
                 // 3. get list
                 foreach (DataRow row in datatable.Rows)
@@ -1025,7 +1193,7 @@ namespace LWDicer.Control
                         paraInfo.Name = paraInfo.Name.Remove(0, 2);
                     }
 
-                    m_ParaInfoList.Add(paraInfo);
+                    ParaInfoList.Add(paraInfo);
                 }
             }
             catch (Exception ex)
@@ -1046,7 +1214,7 @@ namespace LWDicer.Control
                 string output;
 
                 // select row
-                if (DBManager.SelectRow(m_DBInfo.DBConn_Info, m_DBInfo.TableError, "name", paraInfo.Name, out output) == true)
+                if (DBManager.SelectRow(DBInfo.DBConn_Info, DBInfo.TableError, "name", paraInfo.Name, out output) == true)
                 {
                     paraInfo = JsonConvert.DeserializeObject<CParaInfo>(output);
                 }
@@ -1089,30 +1257,30 @@ namespace LWDicer.Control
                 string query;
 
                 // 0. create table
-                query = $"CREATE TABLE IF NOT EXISTS {m_DBInfo.TableIO} (name string primary key, data string)";
+                query = $"CREATE TABLE IF NOT EXISTS {DBInfo.TableIO} (name string primary key, data string)";
                 querys.Add(query);
 
                 // 1. delete all
-                query = $"DELETE FROM {m_DBInfo.TableIO}";
+                query = $"DELETE FROM {DBInfo.TableIO}";
                 querys.Add(query);
 
                 // 2. save list
                 string output;
                 for (int i = 0; i < DEF_IO.MAX_IO_INPUT; i++)
                 {
-                    output = JsonConvert.SerializeObject(m_InputArray[i]);
-                    query = $"INSERT INTO {m_DBInfo.TableIO} VALUES ('{i+DEF_IO.INPUT_ORIGIN}', '{output}')";
+                    output = JsonConvert.SerializeObject(InputArray[i]);
+                    query = $"INSERT INTO {DBInfo.TableIO} VALUES ('{i+DEF_IO.INPUT_ORIGIN}', '{output}')";
                     querys.Add(query);
                 }
                 for (int i = 0; i < DEF_IO.MAX_IO_OUTPUT; i++)
                 {
-                    output = JsonConvert.SerializeObject(m_OutputArray[i]);
-                    query = $"INSERT INTO {m_DBInfo.TableIO} VALUES ('{i + DEF_IO.OUTPUT_ORIGIN}', '{output}')";
+                    output = JsonConvert.SerializeObject(OutputArray[i]);
+                    query = $"INSERT INTO {DBInfo.TableIO} VALUES ('{i + DEF_IO.OUTPUT_ORIGIN}', '{output}')";
                     querys.Add(query);
                 }
 
                 // 3. execute query
-                if (DBManager.ExecuteNonQuerys(m_DBInfo.DBConn_Info, querys) != true)
+                if (DBManager.ExecuteNonQuerys(DBInfo.DBConn_Info, querys) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA);
                 }
@@ -1135,24 +1303,24 @@ namespace LWDicer.Control
                 string query;
 
                 // 0. create table
-                query = $"CREATE TABLE IF NOT EXISTS {m_DBInfo.TableError} (name string primary key, data string)";
+                query = $"CREATE TABLE IF NOT EXISTS {DBInfo.TableError} (name string primary key, data string)";
                 querys.Add(query);
 
                 // 1. delete all
-                query = $"DELETE FROM {m_DBInfo.TableError}";
+                query = $"DELETE FROM {DBInfo.TableError}";
                 querys.Add(query);
 
                 // 2. save list
                 string output;
-                foreach (CErrorInfo errorInfo in m_ErrorInfoList)
+                foreach (CErrorInfo errorInfo in ErrorInfoList)
                 {
                     output = JsonConvert.SerializeObject(errorInfo);
-                    query = $"INSERT INTO {m_DBInfo.TableError} VALUES ('{errorInfo.Index}', '{output}')";
+                    query = $"INSERT INTO {DBInfo.TableError} VALUES ('{errorInfo.Index}', '{output}')";
                     querys.Add(query);
                 }
 
                 // 3. execute query
-                if (DBManager.ExecuteNonQuerys(m_DBInfo.DBConn_Info, querys) != true)
+                if (DBManager.ExecuteNonQuerys(DBInfo.DBConn_Info, querys) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA);
                 }
@@ -1175,24 +1343,24 @@ namespace LWDicer.Control
                 string query;
 
                 // 0. create table
-                query = $"CREATE TABLE IF NOT EXISTS {m_DBInfo.TableParameter} (name string primary key, data string)";
+                query = $"CREATE TABLE IF NOT EXISTS {DBInfo.TableParameter} (name string primary key, data string)";
                 querys.Add(query);
 
                 // 1. delete all
-                query = $"DELETE FROM {m_DBInfo.TableParameter}";
+                query = $"DELETE FROM {DBInfo.TableParameter}";
                 querys.Add(query);
 
                 // 2. save list
                 string output;
-                foreach (CParaInfo paraInfo in m_ParaInfoList)
+                foreach (CParaInfo paraInfo in ParaInfoList)
                 {
                     output = JsonConvert.SerializeObject(paraInfo);
-                    query = $"INSERT INTO {m_DBInfo.TableParameter} VALUES ('{paraInfo.Name}', '{output}')";
+                    query = $"INSERT INTO {DBInfo.TableParameter} VALUES ('{paraInfo.Name}', '{output}')";
                     querys.Add(query);
                 }
 
                 // 3. execute query
-                if (DBManager.ExecuteNonQuerys(m_DBInfo.DBConn_Info, querys) != true)
+                if (DBManager.ExecuteNonQuerys(DBInfo.DBConn_Info, querys) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA);
                 }
@@ -1211,7 +1379,7 @@ namespace LWDicer.Control
         {
             int i = 0, j = 0, nSheetCount = 0, nCount = 0;
 
-            string strPath = m_DBInfo.SystemDir + m_DBInfo.ExcelIOList;
+            string strPath = DBInfo.SystemDir + DBInfo.ExcelIOList;
 
             Excel.Application ExcelApp = new Microsoft.Office.Interop.Excel.Application();
             Excel.Workbook WorkBook = ExcelApp.Workbooks.Open(strPath);
@@ -1233,8 +1401,8 @@ namespace LWDicer.Control
 
                 for (j = 0; j < 16; j++)
                 {
-                    m_InputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 2] as Excel.Range).Value2;
-                    m_OutputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 4] as Excel.Range).Value2;
+                    InputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 2] as Excel.Range).Value2;
+                    OutputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 4] as Excel.Range).Value2;
 
                     nCount++;
                 }
@@ -1254,188 +1422,188 @@ namespace LWDicer.Control
             CMPMotionData tMotion;
 
             // null check
-            for(int i = 0; i < m_SystemData.MPMotionData.Length; i++)
+            for(int i = 0; i < SystemData_Axis.MPMotionData.Length; i++)
             {
-                if (m_SystemData.MPMotionData[i] == null)
+                if (SystemData_Axis.MPMotionData[i] == null)
                 {
-                    m_SystemData.MPMotionData[i] = new CMPMotionData();
+                    SystemData_Axis.MPMotionData[i] = new CMPMotionData();
                 }
             }
 
             // LOADER_Z
             index = (int)EYMC_Axis.LOADER_Z         ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "LOADER_Z";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // PUSHPULL_Y
             index = (int)EYMC_Axis.PUSHPULL_Y       ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "PUSHPULL_Y";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // C1_CENTERING_T   
             index = (int)EYMC_Axis.C1_CENTERING_T   ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "C1_CENTERING_T";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // C1_CHUCK_ROTATE_T
             index = (int)EYMC_Axis.C1_CHUCK_ROTATE_T;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "C1_CHUCK_ROTATE_T";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // C1_CLEAN_NOZZLE_T
             index = (int)EYMC_Axis.C1_CLEAN_NOZZLE_T;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "C1_CLEAN_NOZZLE_T";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // C1_COAT_NOZZLE_T 
             index = (int)EYMC_Axis.C1_COAT_NOZZLE_T ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "C1_COAT_NOZZLE_T";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // C2_CENTERING_T   
             index = (int)EYMC_Axis.C2_CENTERING_T   ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "C2_CENTERING_T";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // C2_CHUCK_ROTATE_T
             index = (int)EYMC_Axis.C2_CHUCK_ROTATE_T;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "C2_CHUCK_ROTATE_T";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // C2_CLEAN_NOZZLE_T
             index = (int)EYMC_Axis.C2_CLEAN_NOZZLE_T;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "C2_CLEAN_NOZZLE_T";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // C2_COAT_NOZZLE_T 
             index = (int)EYMC_Axis.C2_COAT_NOZZLE_T ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "C2_COAT_NOZZLE_T";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // HANDLER1_Y       
             index = (int)EYMC_Axis.HANDLER1_Y       ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "HANDLER1_Y";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // HANDLER1_Z       
             index = (int)EYMC_Axis.HANDLER1_Z       ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "HANDLER1_Z";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // HANDLER2_Y       
             index = (int)EYMC_Axis.HANDLER2_Y;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "HANDLER2_Y";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // HANDLER2_Z       
             index = (int)EYMC_Axis.HANDLER2_Z       ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "HANDLER2_Z";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // CAMERA1_Z                                           
             index = (int)EYMC_Axis.CAMERA1_Z        ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "CAMERA1_Z";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
             // LASER1_Z
             index = (int)EYMC_Axis.LASER1_Z         ;
-            if (m_SystemData.MPMotionData[index].Name == "NotExist")
+            if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
                 tMotion.Name = "LASER1_Z";
                 tMotion.Exist = true;
 
-                m_SystemData.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
+                SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
         }

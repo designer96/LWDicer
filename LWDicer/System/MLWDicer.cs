@@ -311,7 +311,7 @@ namespace LWDicer.Control
             CYaskawaData data = new CYaskawaData();
 
             m_YMC = new MYaskawa(objInfo, refComp, data);
-            m_YMC.SetMPMotionData(m_DataManager.m_SystemData.MPMotionData);
+            m_YMC.SetMPMotionData(m_DataManager.SystemData_Axis.MPMotionData);
 
 #if !SIMULATION_MOTION
             int iResult = m_YMC.OpenController();
@@ -471,7 +471,7 @@ namespace LWDicer.Control
         {
             int iResult = SUCCESS;
 
-            data.Time = m_DataManager.m_SystemData.CylinderTimer[objIndex];
+            data.Time = m_DataManager.SystemData_Cylinder.CylinderTimer[objIndex];
             pCylinder = new MCylinder(objInfo, m_IO, data);
 
             return iResult;
@@ -481,7 +481,7 @@ namespace LWDicer.Control
         {
             int iResult = SUCCESS;
 
-            data.Time = m_DataManager.m_SystemData.VacuumTimer[objIndex];
+            data.Time = m_DataManager.SystemData_Vacuum.VacuumTimer[objIndex];
             pVacuum = new MVacuum(objInfo, m_IO, data);
 
             return iResult;
@@ -561,12 +561,12 @@ namespace LWDicer.Control
 
         void CreatePolygonScanner(CObjectInfo objInfo, CPolygonIni PolygonIni, int objIndex, ISerialPort m_ComPort)
         {
-            m_DataManager.m_SystemData.Scanner[objIndex] = PolygonIni;
+            m_DataManager.SystemData_Scanner.Scanner[objIndex] = PolygonIni;
 
-            m_DataManager.m_SystemData.Scanner[objIndex].strIP = "192.168.1.161";
-            m_DataManager.m_SystemData.Scanner[objIndex].strPort = "70";
+            m_DataManager.SystemData_Scanner.Scanner[objIndex].strIP = "192.168.1.161";
+            m_DataManager.SystemData_Scanner.Scanner[objIndex].strPort = "70";
 
-            m_Scanner[objIndex] = new MPolygonScanner(objInfo, m_DataManager.m_SystemData.Scanner[objIndex], objIndex, m_ComPort);
+            m_Scanner[objIndex] = new MPolygonScanner(objInfo, m_DataManager.SystemData_Scanner.Scanner[objIndex], objIndex, m_ComPort);
         }
 
         void CreatePolygonSerialPort(CObjectInfo objInfo, out ISerialPort pComport)
@@ -632,10 +632,10 @@ namespace LWDicer.Control
         {
             m_DataManager.LoadSystemData();
             m_DataManager.LoadModelList();
-            m_DataManager.ChangeModel(m_DataManager.m_SystemData.ModelName);
+            m_DataManager.ChangeModel(m_DataManager.SystemData.ModelName);
 
-            MLWDicer.bInSfaTest = m_DataManager.m_SystemData.UseInSfaTest;
-            MLWDicer.bUseOnline = m_DataManager.m_SystemData.UseOnLineUse;
+            MLWDicer.bInSfaTest = m_DataManager.SystemData.UseInSfaTest;
+            MLWDicer.bUseOnline = m_DataManager.SystemData.UseOnLineUse;
         }
 
         void SetModelDataToComponent()
@@ -720,32 +720,6 @@ namespace LWDicer.Control
             data.VacuumType = EHandlerVacuumType.NORMAL;
 
             m_MeUpperHandler = new MMeHandler(objInfo, refComp, data);
-
-            // test
-            bool[] vccUseFlag = new bool[(int)EHandlerVacuum.MAX];
-            vccUseFlag[(int)EHandlerVacuum.SELF] = true;
-            m_MeUpperHandler.SetVccUseFlag(vccUseFlag);
-
-            bool bStatus;
-            m_MeUpperHandler.IsAbsorbed(out bStatus);
-
-            bool bResult;
-            m_MeUpperHandler.IsHandlerOrignReturn(out bResult);
-
-            m_MeUpperHandler.CompareHandlerPos((int)EHandlerPos.LOAD, out bResult, true, true);
-
-            m_MeUpperHandler.MoveHandlerPos((int)EHandlerPos.UNLOAD);
-
-            m_AxUpperHandler.Wait4Done();
-
-            m_AxUpperHandler.Wait4Done();
-
-            m_YMC.OriginReturn();
-
-            m_YMC.OriginReturn((int)EYMC_Device.HANDLER2);
-
-            m_MeUpperHandler.InitAlignOffset();
-
         }
 
         void CreateMeLowerHandler(CObjectInfo objInfo)

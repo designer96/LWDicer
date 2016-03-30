@@ -79,6 +79,13 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 2. 1을 진행하면서 MultiAxes_YMC, MYaskawa debugging하면서 수정작업
 3. MLWDicer의 create handler, multiaxes 추가 및 MPMotionData를 db와 연결작업
 
+// Version : 0.0.9
+// Grade : ★
+// Date : 2016-03-30
+// Context
+1. DataManager의 멤버들에서 m_ 접두어 제거, CSystemData에서 class array 형태의 멤버들은 별도의
+클래스로 분리하여 load/save 루틴 추가
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LJJ
 // Version : 0.0.1
@@ -92,7 +99,7 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LHS
-// Version : 0.0.5
+// Version : 0.0.1
 // Grade : ★
 // Date : 2016-03-07
 // Context
@@ -101,9 +108,7 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 3. UI - FormMessageBox 추가
 4. UI - FormLaserMaint Scanner IP, Port 입력 추가
 
-////////////////////////////////////////////////////////////////////////////////////////////
-// LHS
-// Version : 0.0.5
+// Version : 0.0.2
 // Grade : ★
 // Date : 2016-03-21
 // Context
@@ -118,9 +123,7 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 //   - FormLaserMaint 
 // 4. ImageSave 1빈트 단색 Bitmap 형식으로 저장하도록 수정
 
-////////////////////////////////////////////////////////////////////////////////////////////
-// LHS
-// Version : 0.0.5
+// Version : 0.0.3
 // Grade : ★
 // Date : 2016-03-28
 // Context

@@ -317,9 +317,9 @@ namespace LWDicer.UI
             CMainFrame.LWDicer.m_Scanner[scannerIndex].SetScannerIP(scannerIndex, LabelIP.Text);
             CMainFrame.LWDicer.m_Scanner[scannerIndex].SetScannerPort(scannerIndex, LabelPort.Text);
             
-            CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[scannerIndex] = GetPolygonPara(scannerIndex);
+            CMainFrame.LWDicer.m_DataManager.SystemData_Scanner.Scanner[scannerIndex] = GetPolygonPara(scannerIndex);
 
-            CMainFrame.LWDicer.m_Scanner[scannerIndex].SavePolygonPara(CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[scannerIndex], "config");
+            CMainFrame.LWDicer.m_Scanner[scannerIndex].SavePolygonPara(CMainFrame.LWDicer.m_DataManager.SystemData_Scanner.Scanner[scannerIndex], "config");
 
             UpdateScreen(m_Polygon);
         }
@@ -366,7 +366,7 @@ namespace LWDicer.UI
 
             LabelIP.Text = strModify;
 
-            CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[scannerIndex].strIP = LabelIP.Text;
+            CMainFrame.LWDicer.m_DataManager.SystemData_Scanner.Scanner[scannerIndex].strIP = LabelIP.Text;
 
         }
 
@@ -383,7 +383,7 @@ namespace LWDicer.UI
 
             LabelPort.Text = strModify;
 
-            CMainFrame.LWDicer.m_DataManager.m_SystemData.Scanner[scannerIndex].strPort = LabelPort.Text;
+            CMainFrame.LWDicer.m_DataManager.SystemData_Scanner.Scanner[scannerIndex].strPort = LabelPort.Text;
         }
 
         private void TabCtlLaserMaint_Click(object sender, EventArgs e)
