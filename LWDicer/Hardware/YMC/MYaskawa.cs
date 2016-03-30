@@ -89,49 +89,77 @@ namespace LWDicer.Control
             MP2101TM,   // cpu 1, port 2
         }
 
+        public enum EMotorSpeed // Motor speed type
+        {
+            MANUAL_SLOW,
+            MANUAL_FAST,
+            AUTO_SLOW,
+            AUTO_FAST,
+            JOG_SLOW,
+            JOG_FAST,
+            MAX,
+        }
+
         /// <summary>
         /// Motor 이동 시에 사용할 속도 및 가감속 셋
         /// </summary>
         public class CMotorSpeedData
         {
-            public double Velocity;             // Feeding speed [reference unit/s], Offset speed
-            public double MaxVelocity;          // Maximum feeding speed [reference unit/s]
-            public double Acceleration;         // Acceleration [reference unit/s2], acceleration time constant [ms]
-            public double Deceleration;         // Deceleration [reference unit/s2], deceleration time constant [ms]
+            public double Vel;  // Feeding speed [reference unit/s], Offset speed
+            public double Acc;  // Acceleration [reference unit/s2], acceleration time constant [ms]
+            public double Dec;  // Deceleration [reference unit/s2], deceleration time constant [ms]
 
-            public CMotorSpeedData(double Velocity = 0, double MaxVelocity = 0, double Acceleration = 0, double Deceleration = 0)
+            public CMotorSpeedData(double Vel = 0, double Acc= 0, double Dec= 0)
             {
-                this.Velocity = Velocity;
-                this.MaxVelocity = MaxVelocity;
-                this.Acceleration = Acceleration;
-                this.Deceleration = Deceleration;
+                this.Vel = Vel;
+                this.Acc = Acc;
+                this.Dec = Dec;
             }
         }
 
         public class CMotorTimeLimitData
         {
-            public double TimeMoveLimit;        // Time Limit for Moving           
-            public double TimeAfterMove;        // Sleep Time after Moving
-            public double TimeOriginLimit;      // Time Limit for Origin Return
+            public double tMoveLimit;        // Time Limit for Moving           
+            public double tSleepAfterMove;   // Sleep Time after Moving
+            public double tOriginLimit;      // Time Limit for Origin Return
 
-            public CMotorTimeLimitData(double TimeMoveLimit = 0, double TimeAfterMove = 0, double TimeOriginLimit = 0)
+            public CMotorTimeLimitData(double tMoveLimit = 0, double tSleepAfterMove = 0, double tOriginLimit = 0)
             {
-                this.TimeMoveLimit = TimeMoveLimit;
-                this.TimeAfterMove = TimeAfterMove;
-                this.TimeOriginLimit = TimeOriginLimit;
+                this.tMoveLimit = tMoveLimit;
+                this.tSleepAfterMove = tSleepAfterMove;
+                this.tOriginLimit = tOriginLimit;
             }
         }
 
-        public class CPosLimit
+        public class CMotorSWLimit
         {
             // PosLimit
-            public double Limit_P;              // software + Limit
-            public double Limit_N;              // software - Limit
+            public double Plus;              // software + Limit
+            public double Minus;              // software - Limit
 
-            public CPosLimit(double Limit_P = 100, double Limit_N = -100)
+            public CMotorSWLimit(double Plus = 100, double Minus = -100)
             {
-                this.Limit_P = Limit_P;
-                this.Limit_N = Limit_N;
+                this.Plus = Plus;
+                this.Minus = Minus;
+            }
+        }
+
+        public class CMotorOriginData
+        {
+            public int Method;       // = (UInt16)CMotionAPI.ApiDefs.HMETHOD_INPUT_C;
+            public int Dir;          // = (UInt16)CMotionAPI.ApiDefs.DIRECTION_NEGATIVE; // Home Direction
+            public double FastSpeed;    // Approach speed [reference unit/s], 원점복귀 접근 속도
+            public double SlowSpeed;    // Creep speed [reference unit/s], C상 pulse rising -> falling 이동 속도
+            public double HomeOffset;   // C상 pulse falling후의 원점 복귀 offset
+
+            public CMotorOriginData(double FastSpeed = 5, double SlowSpeed = 1, double HomeOffset = 10,
+                int Dir = (int)CMotionAPI.ApiDefs.DIRECTION_NEGATIVE, int Method = (int)CMotionAPI.ApiDefs.HMETHOD_INPUT_C)
+            {
+                this.Method     = Method;
+                this.Dir        = Dir;
+                this.FastSpeed  = FastSpeed;
+                this.SlowSpeed  = SlowSpeed;
+                this.HomeOffset = HomeOffset;
             }
         }
 
@@ -158,26 +186,17 @@ namespace LWDicer.Control
             public double Tolerance;            // Position Tolerance
 
             // Software Limit
-            public CPosLimit PosLimit;
+            public CMotorSWLimit PosLimit;
 
             // Speed
-            public CMotorSpeedData SpeedData;
+            public double MaxVelocity;          // Maximum feeding speed [reference unit/s]
+            public CMotorSpeedData[] Speed = new CMotorSpeedData[(int)EMotorSpeed.MAX];
 
             // Time Limit
             public CMotorTimeLimitData TimeLimit;
 
             // Home
-            public UInt16 HomeMethod = (UInt16)CMotionAPI.ApiDefs.HMETHOD_INPUT_C;
-            public UInt16 HomeDir = (UInt16)CMotionAPI.ApiDefs.DIRECTION_NEGATIVE; // Home Direction
-            public double ApproachVelocity;     // Approach speed [reference unit/s], 원점복귀 접근 속도
-            public double CreepVelocity;        // Creep speed [reference unit/s], C상 pulse rising -> falling 이동 속도
-            public double HomeOffset;           // C상 pulse falling후의 원점 복귀 offset
-
-            // Jog Speed
-            public double Jog_Acceleration;     // Acceleration [reference unit/s2], acceleration time constant [ms]
-            public double Jog_Deceleration;     // Deceleration [reference unit/s2], deceleration time constant [ms]
-            public double Jog_Fast_Velocity;
-            public double Jog_Slow_Velocity;
+            public CMotorOriginData OriginData;
 
             // below list is defined in MOTION_DATA of YMCMotion
             public Int16 CoordinateSystem;      // Coordinate system specified
@@ -202,22 +221,20 @@ namespace LWDicer.Control
                 Tolerance = 0.001;
 
                 // Software Limit
-                PosLimit = new CPosLimit();
+                PosLimit = new CMotorSWLimit();
 
                 // Speed
-                SpeedData = new CMotorSpeedData(10, 100, 100, 100);
+                MaxVelocity = 100;
+                for(int i = 0; i < Speed.Length; i++)
+                {
+                    Speed[i] = new CMotorSpeedData(10, 100, 100);
+                }
 
                 // Time Limit
                 TimeLimit = new CMotorTimeLimitData(10, 0.01, 20);
 
                 // Home
-                ApproachVelocity = 5;
-                CreepVelocity = 1;
-                HomeOffset = 10;
-
-                Jog_Acceleration = SpeedData.Acceleration;
-                Jog_Deceleration = SpeedData.Deceleration;
-                Jog_Fast_Velocity = Jog_Slow_Velocity = SpeedData.Velocity;				
+                OriginData = new CMotorOriginData();
 
                 // MOTION_DATA
                 CoordinateSystem = (Int16)CMotionAPI.ApiDefs.WORK_SYSTEM;
@@ -230,7 +247,7 @@ namespace LWDicer.Control
                 DataType = 0;                                           // All parameters directly specified
             }
             
-            public void GetMotionData(ref CMotionAPI.MOTION_DATA s, CMotorSpeedData tempSpeed = null)
+            public void GetMotionData(ref CMotionAPI.MOTION_DATA s, int speedType = (int)EMotorSpeed.MANUAL_SLOW, CMotorSpeedData tempSpeed = null)
             {
                 // speed value를 UNIT_REF 적용해서 MOTION_DATA로 변환 
                 s.CoordinateSystem = CoordinateSystem;
@@ -240,72 +257,43 @@ namespace LWDicer.Control
                 s.FilterType       = FilterType;
                 s.DataType         = DataType;
                 s.FilterTime       = FilterTime;
-                s.MaxVelocity      = (int)SpeedData.MaxVelocity * UNIT_REF;
-                s.Velocity         = (int)SpeedData.Velocity * UNIT_REF;
-                s.Acceleration     = (int)SpeedData.Acceleration * UNIT_REF;
-                s.Deceleration     = (int)SpeedData.Deceleration * UNIT_REF;
-                s.ApproachVelocity = (int)ApproachVelocity * UNIT_REF;
-                s.CreepVelocity    = (int)CreepVelocity * UNIT_REF;
+                s.MaxVelocity      = (int)MaxVelocity * UNIT_REF;
+                s.Velocity         = (int)Speed[speedType].Vel * UNIT_REF;
+                s.Acceleration     = (int)Speed[speedType].Acc * UNIT_REF;
+                s.Deceleration     = (int)Speed[speedType].Dec * UNIT_REF;
+                s.ApproachVelocity = (int)OriginData.FastSpeed * UNIT_REF;
+                s.CreepVelocity    = (int)OriginData.SlowSpeed * UNIT_REF;
 
-                if(tempSpeed != null)
+                if (tempSpeed != null)
                 {
-                    if(tempSpeed.Velocity != 0)
-                        s.Velocity = (int)tempSpeed.Velocity * UNIT_REF;
-                    if(tempSpeed.Acceleration != 0)
-                        s.Acceleration = (int)tempSpeed.Acceleration * UNIT_REF;
-                    if(tempSpeed.Deceleration != 0)
-                        s.Deceleration = (int)tempSpeed.Deceleration * UNIT_REF;
+                    if (tempSpeed.Vel != 0)
+                        s.Velocity = (int)tempSpeed.Vel * UNIT_REF;
+                    if (tempSpeed.Acc != 0)
+                        s.Acceleration = (int)tempSpeed.Acc * UNIT_REF;
+                    if (tempSpeed.Dec != 0)
+                        s.Deceleration = (int)tempSpeed.Dec * UNIT_REF;
                 }
             }
             
-            public void GetMotion_JogData(ref CMotionAPI.MOTION_DATA s, bool bJogFastMove = false)
-            {
-                GetMotionData(ref s);
-
-                s.Acceleration = (int)Jog_Acceleration * UNIT_REF;
-                s.Deceleration = (int)Jog_Deceleration * UNIT_REF;
-                if (bJogFastMove == true)
-                {
-                    s.Velocity = (int)Jog_Fast_Velocity * UNIT_REF;
-                }
-                else
-                {
-                    s.Velocity = (int)Jog_Slow_Velocity * UNIT_REF;
-                }
-            }
-
             public void GetMotion_HomeData(ref CMotionAPI.MOTION_DATA s, 
                 out UInt16 Method, out UInt16 Dir, out CMotionAPI.POSITION_DATA Position)
             {
                 GetMotionData(ref s);
 
-                Method = this.HomeMethod;
-                Dir = this.HomeDir;
-                Position.PositionData = (int)HomeOffset * UNIT_REF;
+                Method = (UInt16)OriginData.Method;
+                Dir = (UInt16)OriginData.Dir;
+                Position.PositionData = (int)OriginData.HomeOffset * UNIT_REF;
                 Position.DataType = (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE;
             }
 
-            public void SetMotionData(CMotionAPI.MOTION_DATA s)
+            public void GetSpeedData(out CMotorSpeedData data, int speedType = (int)EMotorSpeed.MANUAL_SLOW)
             {
-                // speed value를 UNIT_REF 적용해서 data로 변환 
-                CoordinateSystem           = s.CoordinateSystem;
-                MoveType                   = s.MoveType;
-                VelocityType               = s.VelocityType;
-                AccDecType                 = s.AccDecType;
-                FilterType                 = s.FilterType;
-                DataType                   = s.DataType;
-                FilterTime                 = s.FilterTime;
-                SpeedData.MaxVelocity      = s.MaxVelocity / UNIT_REF;
-                SpeedData.Acceleration     = s.Acceleration / UNIT_REF;
-                SpeedData.Deceleration     = s.Deceleration / UNIT_REF;
-                SpeedData.Velocity         = s.Velocity / UNIT_REF;
-                ApproachVelocity           = s.ApproachVelocity / UNIT_REF;
-                CreepVelocity              = s.CreepVelocity / UNIT_REF;
+                data = ObjectExtensions.Copy(Speed[speedType]);
             }
 
-            public void GetSpeedData(out CMotorSpeedData data)
+            public void SetSpeedData(CMotorSpeedData data, int speedType = (int)EMotorSpeed.MANUAL_SLOW)
             {
-                data = ObjectExtensions.Copy(SpeedData);
+                Speed[speedType] = ObjectExtensions.Copy(data);
             }
 
             public void GetTimeLimitData(out CMotorTimeLimitData data)
@@ -315,10 +303,10 @@ namespace LWDicer.Control
 
             public void CheckSWLimit(double targetPos, out bool bExceedPlusLimit, out bool bExceedMinusLimit)
             {
-                if (targetPos >= PosLimit.Limit_P) bExceedPlusLimit = true;
+                if (targetPos >= PosLimit.Plus) bExceedPlusLimit = true;
                 else bExceedPlusLimit = false;
 
-                if (targetPos <= PosLimit.Limit_N) bExceedMinusLimit = true;
+                if (targetPos <= PosLimit.Minus) bExceedMinusLimit = true;
                 else bExceedMinusLimit = false;
             }
 
@@ -330,7 +318,6 @@ namespace LWDicer.Control
             public int SlotNo = 0;
             public int SubSlotNo = 3;
         }
-
 
         public class CYaskawaRefComp
         {
@@ -420,16 +407,10 @@ namespace LWDicer.Control
                 s = ObjectExtensions.Copy(MotionData[servoNo]);
             }
 
-            public void GetMotionData(int servoNo, ref CMotionAPI.MOTION_DATA s, CMotorSpeedData tempSpeed = null)
+            public void GetMotionData(int servoNo, ref CMotionAPI.MOTION_DATA s, int speedType = (int)EMotorSpeed.MANUAL_SLOW, CMotorSpeedData tempSpeed = null)
             {
                 servoNo = servoNo % MP_AXIS_PER_CPU;
-                MotionData[servoNo].GetMotionData(ref s, tempSpeed);
-            }
-
-            public void GetMotion_JogData(int servoNo, ref CMotionAPI.MOTION_DATA s, bool bJogFastMove = false)
-            {
-                servoNo = servoNo % MP_AXIS_PER_CPU;
-                MotionData[servoNo].GetMotion_JogData(ref s, bJogFastMove);
+                MotionData[servoNo].GetMotionData(ref s, speedType, tempSpeed);
             }
 
             public void GetMotion_HomeData(int servoNo, ref CMotionAPI.MOTION_DATA s,
@@ -439,10 +420,16 @@ namespace LWDicer.Control
                 MotionData[servoNo].GetMotion_HomeData(ref s, out Method, out Dir, out Position);
             }
 
-            public void GetSpeedData(int servoNo, out CMotorSpeedData data)
+            public void GetSpeedData(int servoNo, out CMotorSpeedData data, int speedType = (int)EMotorSpeed.MANUAL_SLOW)
             {
                 servoNo = servoNo % MP_AXIS_PER_CPU;
                 MotionData[servoNo].GetSpeedData(out data);
+            }
+
+            public void SetSpeedData(int servoNo, CMotorSpeedData data, int speedType = (int)EMotorSpeed.MANUAL_SLOW)
+            {
+                servoNo = servoNo % MP_AXIS_PER_CPU;
+                MotionData[servoNo].SetSpeedData(data, speedType);
             }
 
             public void GetTimeLimitData(int servoNo, out CMotorTimeLimitData data)
@@ -513,6 +500,9 @@ namespace LWDicer.Control
         private CYaskawaRefComp m_RefComp;
         private CYaskawaData m_Data;
         public int InstalledAxisNo; // System에 Install된 max axis
+
+        // remember speed type in this class for easy controlling
+        public int SpeedType { get; set; } = (int)EMotorSpeed.MANUAL_SLOW;
 
         public string LastHWMessage { get; private set; }
 
@@ -894,7 +884,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int GetDevice_SpeedData(int deviceNo, out CMotorSpeedData[] speedData)
+        public int GetDevice_SpeedData(int deviceNo, out CMotorSpeedData[] speedData, int speedType = (int)EMotorSpeed.MANUAL_SLOW)
         {
             int length = GetDeviceLength(deviceNo);
             int[] axisList;
@@ -909,7 +899,7 @@ namespace LWDicer.Control
                 {
                     continue;
                 }
-                m_Data.MPBoard[boardNo].GetSpeedData(servoNo, out speedData[i]);
+                m_Data.MPBoard[boardNo].GetSpeedData(servoNo, out speedData[i], speedType);
             }
 
             return SUCCESS;
@@ -957,7 +947,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        private int GetDevice_MotionData(int deviceNo, out CMotionAPI.MOTION_DATA[] MotionData, CMotorSpeedData[] tempSpeed = null)
+        private int GetDevice_MotionData(int deviceNo, out CMotionAPI.MOTION_DATA[] MotionData, int speedType = (int)EMotorSpeed.MANUAL_SLOW, CMotorSpeedData[] tempSpeed = null)
         {
             int length = GetDeviceLength(deviceNo);
             int[] axisList;
@@ -972,28 +962,7 @@ namespace LWDicer.Control
                 {
                     continue;
                 }
-                m_Data.MPBoard[boardNo].GetMotionData(servoNo, ref MotionData[i], tempSpeed?[i]);
-            }
-
-            return SUCCESS;
-        }
-
-        private int GetDeviceMotionData_Jog(int deviceNo, out CMotionAPI.MOTION_DATA[] MotionData, bool bJogFastMove = false)
-        {
-            int length = GetDeviceLength(deviceNo);
-            int[] axisList;
-            GetDeviceAxisList(deviceNo, out axisList);
-            MotionData = new CMotionAPI.MOTION_DATA[length];
-            int boardNo = GetBoardIndex(deviceNo);
-
-            for (int i = 0; i < length; i++)
-            {
-                int servoNo = axisList[i];
-                if (servoNo == (int)EYMC_Axis.NULL) // skip if axis not exist.
-                {
-                    continue;
-                }
-                m_Data.MPBoard[boardNo].GetMotion_JogData(servoNo, ref MotionData[i], bJogFastMove);
+                m_Data.MPBoard[boardNo].GetMotionData(servoNo, ref MotionData[i], speedType, tempSpeed?[i]);
             }
 
             return SUCCESS;
@@ -1351,9 +1320,9 @@ namespace LWDicer.Control
             //if (rc == CMotionAPI.MP_SUCCESS)
             //{
             //    //Servo - Limit Sensor
-            //    ServoStatus[servoNo].Limit_P = Convert.ToBoolean((returnValue >> 6) & 0x1);
+            //    ServoStatus[servoNo].Plus = Convert.ToBoolean((returnValue >> 6) & 0x1);
             //    //Servo + Limit Sensor
-            //    ServoStatus[servoNo].Limit_N = Convert.ToBoolean((returnValue >> 7) & 0x1);
+            //    ServoStatus[servoNo].Minus = Convert.ToBoolean((returnValue >> 7) & 0x1);
             //}
 
             //rc = CMotionAPI.ymcGetMotionParameterValue(m_hAxis[servoNo], (UInt16)CMotionAPI.ApiDefs.MONITOR_PARAMETER,    //110208
@@ -1381,9 +1350,9 @@ namespace LWDicer.Control
             //    ////Servo Alarm
             //    //ServoStatus[servoNo].Alarm = Convert.ToBoolean((servoValue >> 0) & 0x1);
             //    ////Servo - Limit Sensor
-            //    //ServoStatus[servoNo].Limit_N = Convert.ToBoolean((servoValue >> 13) & 0x1);
+            //    //ServoStatus[servoNo].Minus = Convert.ToBoolean((servoValue >> 13) & 0x1);
             //    ////Servo + Limit Sensor
-            //    //ServoStatus[servoNo].Limit_P = Convert.ToBoolean((servoValue >> 12) & 0x1);
+            //    //ServoStatus[servoNo].Plus = Convert.ToBoolean((servoValue >> 12) & 0x1);
             //    ////Servo Origin
             //    //ServoStatus[servoNo].Origin = Convert.ToBoolean((servoValue >> 6) & 0x1);
             //    ////Servo On/Off
@@ -1638,7 +1607,8 @@ namespace LWDicer.Control
 
             ushort TimeOut1 = 0;
             CMotionAPI.MOTION_DATA[] MotionData;
-            GetDeviceMotionData_Jog(deviceNo, out MotionData, bJogFastMove);
+            int speedType = (bJogFastMove == true) ? (int)EMotorSpeed.JOG_FAST : (int)EMotorSpeed.JOG_SLOW;
+            GetDevice_MotionData(deviceNo, out MotionData, speedType);
             UInt32 rc = CMotionAPI.ymcMoveJOG(m_hDevice[deviceNo], MotionData, Direction, TimeOut, 0, "JOG", 0);
             if (rc != CMotionAPI.MP_SUCCESS)
             {
@@ -1691,7 +1661,7 @@ namespace LWDicer.Control
             ushort[] WaitForCompletion;
             int iResult = GetDevicePositon(deviceNo, out PositionData, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
             if (iResult != SUCCESS) return iResult;
-            GetDevice_MotionData(deviceNo, out MotionData, tempSpeed);
+            GetDevice_MotionData(deviceNo, out MotionData, SpeedType, tempSpeed);
             GetDeviceWaitCompletion(deviceNo, out WaitForCompletion, waitMode);
 
             // 0.8 check axis state for move
@@ -1775,7 +1745,7 @@ namespace LWDicer.Control
                 {
                     tSpeed[0] = tempSpeed[i];
                 }
-                GetDevice_MotionData(servoNo, out tMotion, tSpeed);
+                GetDevice_MotionData(servoNo, out tMotion, SpeedType, (tempSpeed != null) ? tSpeed : null);
                 iResult = GetDevicePositon(servoNo, out tPosition, pos, (UInt16)CMotionAPI.ApiDefs.DATATYPE_IMMEDIATE);
                 if (iResult != SUCCESS) return iResult;
                 GetDeviceWaitCompletion(servoNo, out tWait, waitMode);
@@ -1877,11 +1847,11 @@ namespace LWDicer.Control
                         if (bDone[i] == true)
                         {
                             sum++;
-                            Sleep(timeLimit[i].TimeAfterMove * 1000);
+                            Sleep(timeLimit[i].tSleepAfterMove * 1000);
                         }
 
                         // 1.3.2 check time limit
-                        if (m_waitTimer.MoreThan(timeLimit[i].TimeMoveLimit * 1000))
+                        if (m_waitTimer.MoreThan(timeLimit[i].tMoveLimit * 1000))
                         {
                             return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_MOVE_IN_LIMIT_TIME);
                         }
@@ -1893,11 +1863,11 @@ namespace LWDicer.Control
                         if (bDone[i] == true)
                         {
                             sum++;
-                            Sleep(timeLimit[i].TimeAfterMove * 1000);
+                            Sleep(timeLimit[i].tSleepAfterMove * 1000);
                         }
 
                         // 1.3.2 check time limit
-                        if (m_waitTimer.MoreThan(timeLimit[i].TimeOriginLimit * 1000))
+                        if (m_waitTimer.MoreThan(timeLimit[i].tOriginLimit * 1000))
                         {
                             return GenerateErrorCode(ERR_YASKAWA_FAIL_SERVO_HOME_IN_LIMIT_TIME);
                         }
