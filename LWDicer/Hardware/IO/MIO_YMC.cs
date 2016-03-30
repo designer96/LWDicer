@@ -94,7 +94,7 @@ namespace LWDicer.Control
 
         int GetRegisterDataHandle(int addr, EYMCDataType type, out uint hDataHandle)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
             hDataHandle = 0;
 #if SIMULATION_IO
             return SUCCESS;
@@ -125,7 +125,7 @@ namespace LWDicer.Control
 
         int GetRegisterData(int addr, EYMCDataType type, uint RegisterDataNumber, out Int16[] Reg_ShortData, out Int32[] Reg_LongData)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
             Reg_ShortData = new Int16[RegisterDataNumber];
             Reg_LongData = new Int32[RegisterDataNumber];
 #if SIMULATION_IO
@@ -163,7 +163,7 @@ namespace LWDicer.Control
 
         int SetRegisterData(int addr, EYMCDataType type, uint RegisterDataNumber, Int16[] Reg_ShortData, Int32[] Reg_LongData)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
 #if SIMULATION_IO
             return SUCCESS;
 #endif
@@ -201,7 +201,7 @@ namespace LWDicer.Control
         // Get & Set Bit
         public int GetBit(int addr, out bool bStatus)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
             bStatus = false;
 
             Int16[] Reg_ShortData;      // W or B size register data storage variable
@@ -242,7 +242,7 @@ namespace LWDicer.Control
 
         public int SetBit(int addr, bool bStatus)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
 
             UInt32 RegisterDataNumber = 1;             // Number of read-in registers
             Int16[] Reg_ShortData = new Int16[RegisterDataNumber];  // W or B size register data storage variable
@@ -319,7 +319,7 @@ namespace LWDicer.Control
         // Get & Put value
         public int GetInt16(int addr, out Int16 value)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
             value = 0;
 
             Int16[] Reg_ShortData;      // W or B size register data storage variable
@@ -334,7 +334,7 @@ namespace LWDicer.Control
 
         public int GetInt32(int addr, out Int32 value)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
             value = 0;
 
             Int16[] Reg_ShortData;      // W or B size register data storage variable
@@ -358,7 +358,7 @@ namespace LWDicer.Control
 
         public int SetInt16(int addr, Int16 value)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
 
             UInt32 RegisterDataNumber = 1;             // Number of read-in registers
             Int16[] Reg_ShortData = new Int16[RegisterDataNumber];  // W or B size register data storage variable
@@ -374,7 +374,7 @@ namespace LWDicer.Control
 
         public int SetInt32(int addr, Int32 value)
         {
-            Debug.Assert(addr >= INPUT_ORIGIN && addr <= OUTPUT_END);
+            Debug.Assert(INPUT_ORIGIN <= addr && addr <= OUTPUT_END);
 
             UInt32 RegisterDataNumber = 1;             // Number of read-in registers
             Int16[] Reg_ShortData = new Int16[RegisterDataNumber];  // W or B size register data storage variable

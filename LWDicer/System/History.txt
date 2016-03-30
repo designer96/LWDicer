@@ -71,6 +71,14 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 // Context
 1. CParaInfo class : Parameter 정보를 담는 클래스 및 관련 DB 작업 완료
 
+// Version : 0.0.8
+// Grade : ★
+// Date : 2016-03-30
+// Context
+1. MMeHandler : Mechanical Layer 의 Handler class 1차 작업
+2. 1을 진행하면서 MultiAxes_YMC, MYaskawa debugging하면서 수정작업
+3. MLWDicer의 create handler, multiaxes 추가 및 MPMotionData를 db와 연결작업
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LJJ
 // Version : 0.0.1

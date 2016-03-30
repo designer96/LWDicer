@@ -27,8 +27,6 @@ namespace LWDicer.Control
 
     public class CTrsLoaderData
     {
-        public bool bUseOnline;
-        public bool bInSfaTest;
     }
 
     public class MTrsLoader : MWorkerThread

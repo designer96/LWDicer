@@ -6,6 +6,41 @@ using System.Diagnostics;
 
 namespace LWDicer.Control
 {
+    public class CPosition
+    {
+        public CPos_XYTZ Fixed;     // 고정 좌표
+        public CPos_XYTZ Model;     // 모델 (패널, 웨이퍼의 크기)에 따라 자동으로 구성되는 좌표
+        public CPos_XYTZ Offset;    // 옵셋 좌표
+        public CPos_XYTZ AlignOffset;     // Align 보정값
+
+        public CPosition(CPos_XYTZ Fixed = null, CPos_XYTZ Model = null, CPos_XYTZ Offset = null, CPos_XYTZ Align = null)
+        {
+            this.Fixed = Fixed ?? new CPos_XYTZ();
+            this.Model = Model ?? new CPos_XYTZ();
+            this.Offset = Offset ?? new CPos_XYTZ();
+            this.AlignOffset = Align ?? new CPos_XYTZ();
+        }
+
+        public void InitAll()
+        {
+            Fixed.Init();
+            Model.Init();
+            Offset.Init();
+            InitAlign();
+        }
+
+        public void InitAlign()
+        {
+            AlignOffset.Init();
+        }
+
+        public CPos_XYTZ GetTargetPos()
+        {
+            CPos_XYTZ target = Fixed + Model + Offset + AlignOffset;
+            return target;
+        }
+    }
+
     public class CPos_XY
     {
         public double dX;
@@ -17,6 +52,16 @@ namespace LWDicer.Control
         {
             this.dX = dX;
             this.dY = dY;
+        }
+
+        public override string ToString()
+        {
+            return $"X:{dX}, Y:{dY}";
+        }
+
+        public void Init()
+        {
+            dX = dY = 0.0;
         }
 
         public void Init<T>(T x, T y)
@@ -85,12 +130,12 @@ namespace LWDicer.Control
             return s;
         }
 
-        public static CPos_XY operator +(CPos_XY s1, double dAdd)
+        public static CPos_XY operator +(CPos_XY s1, double[] dAdd)
         {
             CPos_XY s = new CPos_XY();
 
-            s.dX = s1.dX + dAdd;
-            s.dY = s1.dY + dAdd;
+            s.dX = s1.dX + dAdd[0];
+            s.dY = s1.dY + dAdd[1];
 
             return s;
         }
@@ -105,34 +150,33 @@ namespace LWDicer.Control
             return s;
         }
 
-        public static CPos_XY operator -(CPos_XY s1, double dSub)
+        public static CPos_XY operator -(CPos_XY s1, double[] dSub)
         {
             CPos_XY s = new CPos_XY();
 
-            s.dX = s1.dX - dSub;
-            s.dY = s1.dY - dSub;
+            s.dX = s1.dX - dSub[0];
+            s.dY = s1.dY - dSub[1];
 
             return s;
         }
 
-        public static CPos_XY operator *(CPos_XY s1, double dMul)
+        public static CPos_XY operator *(CPos_XY s1, double[] dMul)
         {
             CPos_XY s = new CPos_XY();
 
-            s.dX = s1.dX * dMul;
-            s.dY = s1.dY * dMul;
+            s.dX = s1.dX * dMul[0];
+            s.dY = s1.dY * dMul[1];
 
             return s;
         }
 
-        public static CPos_XY operator /(CPos_XY s1, double dDiv)
+        public static CPos_XY operator /(CPos_XY s1, double[] dDiv)
         {
             CPos_XY s = new CPos_XY();
-            if (dDiv == 0) return s;
 
-            s.dX = s1.dX / dDiv;
-            s.dY = s1.dY / dDiv;
-
+            if (dDiv[0] != 0) s.dX = s1.dX / dDiv[0];
+            if (dDiv[1] != 0) s.dY = s1.dY / dDiv[1];
+                              
             return s;
         }
     }
@@ -148,8 +192,18 @@ namespace LWDicer.Control
         public CPos_XYT(double dX, double dY, double dT)
         {
             this.dX = dX;
-            this.dY = dT;
+            this.dY = dY;
             this.dT = dT;
+        }
+
+        public override string ToString()
+        {
+            return $"X:{dX}, Y:{dY}, T:{dT}";
+        }
+
+        public void Init()
+        {
+            dX = dY = dT = 0.0;
         }
 
         public void Init<T>(T x, T y, T t)
@@ -224,13 +278,13 @@ namespace LWDicer.Control
             return s;
         }
 
-        public static CPos_XYT operator +(CPos_XYT s1, double dAdd)
+        public static CPos_XYT operator +(CPos_XYT s1, double[] dAdd)
         {
             CPos_XYT s = new CPos_XYT();
 
-            s.dX = s1.dX + dAdd;
-            s.dY = s1.dY + dAdd;
-            s.dT = s1.dT + dAdd;
+            s.dX = s1.dX + dAdd[0];
+            s.dY = s1.dY + dAdd[1];
+            s.dT = s1.dT + dAdd[2];
 
             return s;
         }
@@ -246,37 +300,36 @@ namespace LWDicer.Control
             return s;
         }
 
-        public static CPos_XYT operator -(CPos_XYT s1, double dSub)
+        public static CPos_XYT operator -(CPos_XYT s1, double[] dSub)
         {
             CPos_XYT s = new CPos_XYT();
 
-            s.dX = s1.dX - dSub;
-            s.dY = s1.dY - dSub;
-            s.dT = s1.dT - dSub;
+            s.dX = s1.dX - dSub[0];
+            s.dY = s1.dY - dSub[1];
+            s.dT = s1.dT - dSub[2];
 
             return s;
         }
 
-        public static CPos_XYT operator *(CPos_XYT s1, double dMul)
+        public static CPos_XYT operator *(CPos_XYT s1, double[] dMul)
         {
             CPos_XYT s = new CPos_XYT();
 
-            s.dX = s1.dX * dMul;
-            s.dY = s1.dY * dMul;
-            s.dT = s1.dT * dMul;
+            s.dX = s1.dX * dMul[0];
+            s.dY = s1.dY * dMul[1];
+            s.dT = s1.dT * dMul[2];
 
             return s;
         }
 
-        public static CPos_XYT operator /(CPos_XYT s1, double dDiv)
+        public static CPos_XYT operator /(CPos_XYT s1, double[] dDiv)
         {
             CPos_XYT s = new CPos_XYT();
-            if (dDiv == 0) return s;
 
-            s.dX = s1.dX / dDiv;
-            s.dY = s1.dY / dDiv;
-            s.dT = s1.dT / dDiv;
-
+            if (dDiv[0] != 0) s.dX = s1.dX / dDiv[0];
+            if (dDiv[1] != 0) s.dY = s1.dY / dDiv[1];
+            if (dDiv[2] != 0) s.dT = s1.dT / dDiv[2];
+                               
             return s;
         }
     }
@@ -293,9 +346,19 @@ namespace LWDicer.Control
         public CPos_XYTZ(double dX, double dY, double dT, double dZ)
         {
             this.dX = dX;
-            this.dY = dT;
+            this.dY = dY;
             this.dT = dT;
             this.dZ = dZ;
+        }
+
+        public override string ToString()
+        {
+            return $"X:{dX}, Y:{dY}, T:{dT}, Z:{dZ}";
+        }
+
+        public void Init()
+        {
+            dX = dY = dT = dZ = 0.0;
         }
 
         public void Init<T>(T x, T y, T t, T z)
@@ -331,6 +394,25 @@ namespace LWDicer.Control
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+            }
+        }
+
+        public void SetPosition<T>(int iCoordID, T pos)
+        {
+            switch(iCoordID)
+            {
+                case 0:
+                    dX = Convert.ToDouble(pos);
+                    break;
+                case 1:
+                    dY = Convert.ToDouble(pos);
+                    break;
+                case 2:
+                    dT = Convert.ToDouble(pos);
+                    break;
+                case 3:
+                    dZ = Convert.ToDouble(pos);
+                    break;
             }
         }
 
@@ -372,14 +454,14 @@ namespace LWDicer.Control
             return s;
         }
 
-        public static CPos_XYTZ operator +(CPos_XYTZ s1, double dAdd)
+        public static CPos_XYTZ operator +(CPos_XYTZ s1, double[] dAdd)
         {
             CPos_XYTZ s = new CPos_XYTZ();
 
-            s.dX = s1.dX + dAdd;
-            s.dY = s1.dY + dAdd;
-            s.dT = s1.dT + dAdd;
-            s.dZ = s1.dZ + dAdd;
+            s.dX = s1.dX + dAdd[0];
+            s.dY = s1.dY + dAdd[1];
+            s.dT = s1.dT + dAdd[2];
+            s.dZ = s1.dZ + dAdd[3];
 
             return s;
         }
@@ -396,39 +478,38 @@ namespace LWDicer.Control
             return s;
         }
 
-        public static CPos_XYTZ operator -(CPos_XYTZ s1, double dSub)
+        public static CPos_XYTZ operator -(CPos_XYTZ s1, double[] dSub)
         {
             CPos_XYTZ s = new CPos_XYTZ();
 
-            s.dX = s1.dX - dSub;
-            s.dY = s1.dY - dSub;
-            s.dT = s1.dT - dSub;
-            s.dZ = s1.dZ - dSub;
+            s.dX = s1.dX - dSub[0];
+            s.dY = s1.dY - dSub[1];
+            s.dT = s1.dT - dSub[2];
+            s.dZ = s1.dZ - dSub[3];
 
             return s;
         }
 
-        public static CPos_XYTZ operator *(CPos_XYTZ s1, double dMul)
+        public static CPos_XYTZ operator *(CPos_XYTZ s1, double[] dMul)
         {
             CPos_XYTZ s = new CPos_XYTZ();
 
-            s.dX = s1.dX * dMul;
-            s.dY = s1.dY * dMul;
-            s.dT = s1.dT * dMul;
-            s.dZ = s1.dZ * dMul;
+            s.dX = s1.dX * dMul[0];
+            s.dY = s1.dY * dMul[1];
+            s.dT = s1.dT * dMul[2];
+            s.dZ = s1.dZ * dMul[3];
 
             return s;
         }
 
-        public static CPos_XYTZ operator /(CPos_XYTZ s1, double dDiv)
+        public static CPos_XYTZ operator /(CPos_XYTZ s1, double[] dDiv)
         {
             CPos_XYTZ s = new CPos_XYTZ();
-            if (dDiv == 0) return s;
 
-            s.dX = s1.dX / dDiv;
-            s.dY = s1.dY / dDiv;
-            s.dT = s1.dT / dDiv;
-            s.dZ = s1.dZ / dDiv;
+            if (dDiv[0] != 0) s.dX = s1.dX / dDiv[0];
+            if (dDiv[1] != 0) s.dY = s1.dY / dDiv[1];
+            if (dDiv[2] != 0) s.dT = s1.dT / dDiv[2];
+            if (dDiv[3] != 0) s.dZ = s1.dZ / dDiv[3];
 
             return s;
         }

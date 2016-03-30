@@ -50,12 +50,12 @@ namespace LWDicer.Control
         public const int DEF_MAX_COORDINATE     = DEF_XYTZ; // Multi Axes의 축 Max.
         public const int DEF_ALL_COORDINATE     = -1; // Multi Axes의 모든 축 선택
 
-        public const int DEF_AXIS_USE           = 1;  // 축 사  용
-        public const int DEF_AXIS_NON           = 0;  // 축 미사용
+        //public const int DEF_AXIS_USE           = 1;  // 축 사  용
+        //public const int DEF_AXIS_NON           = 0;  // 축 미사용
 
-        public const int DEF_AXIS_NON_NO        = 0;  // 축 0개
-        public const int DEF_AXIS_NON_ID        = -1; // 축 ID 미할당 (축 미구성)
-        public const int DEF_AXIS_ALL_ID        = -1; // 축 전체 선택
+        //public const int DEF_AXIS_NON_NO        = 0;  // 축 0개
+        //public const int DEF_AXIS_ALL_ID        = -1; // 축 전체 선택
+        public const int DEF_AXIS_NONE_ID        = -1; // 축 ID 미할당 (축 미구성)
 
         // X,Y,T 코드 정의
         public const int DEF_X = 0;

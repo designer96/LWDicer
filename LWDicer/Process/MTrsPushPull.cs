@@ -27,8 +27,6 @@ namespace LWDicer.Control
 
     public class CTrsPushPullData
     {
-        public bool bUseOnline;
-        public bool bInSfaTest;
     }
 
     public class MTrsPushPull : MWorkerThread

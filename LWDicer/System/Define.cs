@@ -189,9 +189,8 @@ namespace LWDicer.Control
         public enum EObjectVacuum
         {
             STAGE1,
-            STAGE2,
-            UHANDLER_INNER,
-            UHANDLER_OUTER,
+            UHANDLER_SELF,  // Upper Handler
+            LHANDLER_SELF,  // Lower Handler
             MAX_OBJ,
         }
 
@@ -288,15 +287,19 @@ namespace LWDicer.Control
     public class DEF_Common
     {
         //
-        public const int WhileSleepTime        = 10; // while interval time
+        public const int WhileSleepTime         = 10; // while interval time
 
         //
-        public const int TRUE                  = 1;
-        public const int FALSE                 = 0;
+        public const int TRUE                   = 1;
+        public const int FALSE                  = 0;
 
         //
-        public const int BIT_ON                = 1;
-        public const int BIT_OFF               = 0;
+        public const int BIT_ON                 = 1;
+        public const int BIT_OFF                = 0;
+
+        //
+        public const bool NOT_USE               = false;
+        public const bool SET_USE               = true;
 
         // Jog
         public const bool JOG_DIR_POS = true;
@@ -1103,6 +1106,8 @@ namespace LWDicer.Control
         public const int INPUT_ORIGIN = 1000;
         public const int OUTPUT_ORIGIN = 2000;
         public const int OUTPUT_END = 3000;
+
+        public const int IO_ADDR_NOT_DEFINED = -1;
 
         // Input X000 
         public const int iStart_SWFront              = 1000;
