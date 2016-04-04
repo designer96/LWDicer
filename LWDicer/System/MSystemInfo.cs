@@ -21,13 +21,8 @@ namespace LWDicer.Control
                 // 0-39 : Common & Hardware
                 new CObjectInfo( (int)OBJ_SYSTEM, "System", 0, "MLWDicer", 0, "System", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_DATAMANAGER, "DataManger", 1, "DataManager", 500, "DataManager", LOG_ALL, LOG_DAY ),
-
-	            new CObjectInfo( (int)OBJ_HL_IO, "IO", 2, "Device Net", 1000, "IO", LOG_ALL, LOG_DAY ),	
-		
+	            new CObjectInfo( (int)OBJ_HL_IO, "IO", 2, "Device Net", 1000, "IO", LOG_ALL, LOG_DAY ),
 	            new CObjectInfo( (int)OBJ_HL_MOTION_LIB, "MotionLib", 3, "MMC Board", 2000, "MotionLib", LOG_ALL, LOG_DAY ),
-		
-	            new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 4, "Vision", 3000, "Vision", LOG_ALL, LOG_DAY ),
-		
 	            new CObjectInfo( (int)OBJ_HL_MELSEC, "Melsec", 5, "Melsec", 7000, "Melsec", LOG_ALL, LOG_DAY ),
 		
 	            // 30-39 : Serial ------------------------------------------------------------------------
@@ -35,6 +30,13 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 11, "RS232 SHead2", 5000, "RS232_SHead2", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 12, "RS232 GHead1", 5000, "RS232_GHead1", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 13, "RS232 GHead2", 5000, "RS232_GHead2", LOG_ALL, LOG_DAY ),
+
+                // 40-59 : Vision ------------------------------------------------------------------------
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 40, "HardWare : Vision System", 3000, "System", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 41, "HardWare : Vision Camera1", 3200, "Camera1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 42, "HardWare : Vision Camera2", 3200, "Camera2", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 43, "HardWare : Vision Display1", 3600, "Display1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 44, "HardWare : Vision Display2", 3600, "Display2", LOG_ALL, LOG_DAY ),
 		
 	            // 40-49 : Dummy Reserved
 	            // 50-59 : Ethernet Reserved
@@ -113,6 +115,7 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_ML_DISPENSER , "GHead1",     316, "Mechanical : GHead1", 22000, "GHead1", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_ML_DISPENSER , "GHead2",     317, "Mechanical : GHead2", 22000, "GHead2", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_ML_HANDLER   , "UHandler",   318, "Mechanical : UHandler", 19000, "UHandler", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_ML_VISION    , "Vision",     320, "Mechanical : Vision", 25000, "Vison", LOG_ALL, LOG_DAY ),
 		
 	            // 350-399 : Control Layer --------------------------------------------------------------------
 	            new CObjectInfo( (int)OBJ_CL_MANAGE_OP_PANEL   , "ManageOpPanel",     350, "Control : Manage OP Panel", 32200, "C_ManageOpPanel", LOG_ALL, LOG_DAY ),

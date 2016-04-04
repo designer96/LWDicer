@@ -164,6 +164,7 @@ namespace LWDicer.Control
             OBJ_ML_DISPENSER,
             OBJ_ML_UVLAMP,
             OBJ_ML_POLYGON,
+            OBJ_ML_VISION,
 
             // Control Layer - Common
             OBJ_CL_LOADER = 70,

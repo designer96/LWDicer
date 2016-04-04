@@ -32,11 +32,14 @@ namespace LWDicer.Control
         public int m_iMarkROIWidth { get; set; }
         public int m_iMarkROIHeight { get; set; }
 
+        private CVisionRefComp m_RefComp;
+        private CVisionData m_Data;
+
         private MVisionSystem m_pSystem;
         private MVisionCamera[] m_pCamera;
         private MVisionDisplay[] m_pView;
 
-        private CVisionData m_Data;
+        
 
         public MVision(CObjectInfo objInfo, CVisionData data)
             : base(objInfo)

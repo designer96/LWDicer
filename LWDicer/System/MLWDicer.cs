@@ -199,23 +199,11 @@ namespace LWDicer.Control
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
 
-            m_SystemInfo.GetObjectInfo(20, out objInfo);
-            CreateVision(objInfo);
-
-            CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
-           
-
-            CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
-            CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
-
-            CModelData pModelData;
-            CMainFrame.LWDicer.m_DataManager.ViewModel("Default", out pModelData);
-            CMainFrame.LWDicer.m_DataManager.m_ModelData = pModelData;
+            // Vision 
+            m_SystemInfo.GetObjectInfo(320, out objInfo);
+            CreateVision(objInfo);            
             
-            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternA);
-            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternB);
-            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternA);
-            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternB);
+            
 
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
@@ -340,6 +328,19 @@ namespace LWDicer.Control
             CVisionData data = new CVisionData();
 
             m_Vision = new MVision(objInfo, data);
+
+            CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
+            CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
+            CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
+
+            CModelData pModelData;
+            CMainFrame.LWDicer.m_DataManager.ViewModel("Default", out pModelData);
+            CMainFrame.LWDicer.m_DataManager.m_ModelData = pModelData;
+
+            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternA);
+            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternB);
+            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternA);
+            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternB);
         }
 
         void CreateCtrlStage1(CObjectInfo objInfo)
