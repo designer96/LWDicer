@@ -426,21 +426,21 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(260, out objInfo);
             m_AxCoatNozzle2 = new MMultiAxes_YMC(objInfo, refComp, data);
 
-            // HANDLER1
-            deviceNo = (int)EYMC_Device.HANDLER1;
+            // UHANDLER
+            deviceNo = (int)EYMC_Device.UHANDLER;
             Array.Copy(initArray, axisList, initArray.Length);
-            axisList[DEF_Y] = (int)EYMC_Axis.HANDLER1_Y;
-            axisList[DEF_Z] = (int)EYMC_Axis.HANDLER1_Z;
+            axisList[DEF_X] = (int)EYMC_Axis.UHANDLER_X;
+            axisList[DEF_Z] = (int)EYMC_Axis.UHANDLER_Z;
             data = new CMultiAxesYMCData(deviceNo, axisList);
 
             m_SystemInfo.GetObjectInfo(261, out objInfo);
             m_AxUpperHandler = new MMultiAxes_YMC(objInfo, refComp, data);
 
-            // HANDLER2
-            deviceNo = (int)EYMC_Device.HANDLER2;
+            // LHANDLER
+            deviceNo = (int)EYMC_Device.LHANDLER;
             Array.Copy(initArray, axisList, initArray.Length);
-            axisList[DEF_Y] = (int)EYMC_Axis.HANDLER2_Y;
-            axisList[DEF_Z] = (int)EYMC_Axis.HANDLER2_Z;
+            axisList[DEF_X] = (int)EYMC_Axis.LHANDLER_X;
+            axisList[DEF_Z] = (int)EYMC_Axis.LHANDLER_Z;
             data = new CMultiAxesYMCData(deviceNo, axisList);
 
             m_SystemInfo.GetObjectInfo(262, out objInfo);
@@ -636,9 +636,27 @@ namespace LWDicer.Control
 
             MLWDicer.bInSfaTest = m_DataManager.SystemData.UseInSfaTest;
             MLWDicer.bUseOnline = m_DataManager.SystemData.UseOnLineUse;
+
+            SetSystemDataToComponent();
+            SetModelDataToComponent();
+            SetPositionDataToComponent();
+        }
+
+        void SetSystemDataToComponent()
+        {
+
         }
 
         void SetModelDataToComponent()
+        {
+            // MMeHandler
+            m_MeUpperHandler.SetCylUseFlag(m_DataManager.ModelData.MeUH_UseMainCylFlag,
+                m_DataManager.ModelData.MeUH_UseSubCylFlag, m_DataManager.ModelData.MeUH_UseGuideCylFlag);
+            m_MeUpperHandler.SetVccUseFlag(m_DataManager.ModelData.MeUH_UseVccFlag);
+
+        }
+
+        void SetPositionDataToComponent()
         {
 
         }
@@ -716,8 +734,10 @@ namespace LWDicer.Control
             refComp.AxHandler = m_AxUpperHandler;
             refComp.Vacuum[(int)EHandlerVacuum.SELF] = m_UHandlerSelfVac;
 
-            data.HandlerType = EHandlerType.AXIS_ALL;
-            data.VacuumType = EHandlerVacuumType.NORMAL;
+            data.HandlerType[DEF_X] = EHandlerType.AXIS;
+            data.HandlerType[DEF_Z] = EHandlerType.AXIS;
+
+            data.InDetectObject = iUHandler_PanelDetect;
 
             m_MeUpperHandler = new MMeHandler(objInfo, refComp, data);
         }

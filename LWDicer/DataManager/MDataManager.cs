@@ -21,9 +21,11 @@ using static LWDicer.Control.DEF_Thread;
 using static LWDicer.Control.DEF_DataManager;
 
 using static LWDicer.Control.DEF_Yaskawa;
+using static LWDicer.Control.DEF_Motion;
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 
+using static LWDicer.Control.DEF_MeHandler;
 using static LWDicer.Control.DEF_PolygonScanner;
 
 namespace LWDicer.Control
@@ -37,12 +39,14 @@ namespace LWDicer.Control
         public const int ERR_DATA_MANAGER_FAIL_SAVE_LOGIN_HISTORY    = 5;
         public const int ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA      = 6;
         public const int ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA      = 7;
-        public const int ERR_DATA_MANAGER_FAIL_SAVE_MODEL_DATA       = 8;
-        public const int ERR_DATA_MANAGER_FAIL_LOAD_MODEL_DATA       = 9;
-        public const int ERR_DATA_MANAGER_FAIL_SAVE_MODEL_LIST       = 10;
-        public const int ERR_DATA_MANAGER_FAIL_LOAD_MODEL_LIST       = 11;
-        public const int ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA     = 12;
-        public const int ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA     = 13;
+        public const int ERR_DATA_MANAGER_FAIL_SAVE_POSITION_DATA    = 8;
+        public const int ERR_DATA_MANAGER_FAIL_LOAD_POSITION_DATA    = 9;
+        public const int ERR_DATA_MANAGER_FAIL_SAVE_MODEL_DATA       = 10;
+        public const int ERR_DATA_MANAGER_FAIL_LOAD_MODEL_DATA       = 11;
+        public const int ERR_DATA_MANAGER_FAIL_SAVE_MODEL_LIST       = 12;
+        public const int ERR_DATA_MANAGER_FAIL_LOAD_MODEL_LIST       = 13;
+        public const int ERR_DATA_MANAGER_FAIL_SAVE_GENERAL_DATA     = 14;
+        public const int ERR_DATA_MANAGER_FAIL_LOAD_GENERAL_DATA     = 15;
 
         public const int ERR_DATA_MANAGER_IO_DATA_FILE_NOT_EXIST = 1;
         public const int ERR_DATA_MANAGER_IO_DATA_FILE_CLOSE_FAILURE = 2;
@@ -292,6 +296,17 @@ namespace LWDicer.Control
             }
         }
 
+        public class CPositionData
+        {
+            // MeHandler
+            public CHandlerPos MeUHandlerPos = new CHandlerPos();
+            public CHandlerPos MeLHandlerPos = new CHandlerPos();
+
+            public CPositionData()
+            {
+            }
+        }
+
         public class CProductData
         {
             public string Day_ModelName;
@@ -405,6 +420,18 @@ namespace LWDicer.Control
 
             ///////////////////////////////////////////////////////////
             // Function Parameter
+
+            // Mechanical Layer
+            // MMeUpperHandler
+            public bool[] MeUH_UseMainCylFlag = new bool[DEF_MAX_COORDINATE];
+            public bool[] MeUH_UseSubCylFlag = new bool[DEF_MAX_COORDINATE];
+            public bool[] MeUH_UseGuideCylFlag = new bool[DEF_MAX_COORDINATE];
+            public bool[] MeUH_UseVccFlag = new bool[(int)EHandlerVacuum.MAX];
+
+
+            // Control Layer
+
+
             public bool Use2Step_Use;
 
             // Dispenser
@@ -431,6 +458,9 @@ namespace LWDicer.Control
         public CSystemData_Cylinder SystemData_Cylinder { get; set; } = new CSystemData_Cylinder();
         public CSystemData_Vacuum SystemData_Vacuum { get; set; } = new CSystemData_Vacuum();
         public CSystemData_Scanner SystemData_Scanner { get; set; } = new CSystemData_Scanner();
+
+        // Position Data
+        public CPositionData PositionData { get; set; } = new CPositionData();
 
         // Model Data
         public CModelData ModelData { get; set; } = new CModelData();
@@ -662,7 +692,6 @@ namespace LWDicer.Control
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
                 }
             }
-
             return SUCCESS;
         }
 
@@ -787,6 +816,76 @@ namespace LWDicer.Control
                     WriteExLog(ex.ToString());
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
                 }
+            }
+
+            return SUCCESS;
+        }
+
+        public int SavePositionData(EUnitPos unit = EUnitPos.ALL)
+        {
+            EUnitPos tUnit;
+            if (unit == EUnitPos.ALL || unit == EUnitPos.LOADER)
+            {
+
+            }
+
+            if (unit == EUnitPos.ALL || unit == EUnitPos.UHANDLER)
+            {
+                try
+                {
+                    tUnit = EUnitPos.UHANDLER;
+                    string output = JsonConvert.SerializeObject(PositionData.MeUHandlerPos);
+
+                    if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", tUnit.ToString(), output,
+                        true, DBInfo.DBConn_Backup) != true)
+                    {
+                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                    }
+                    WriteLog($"success : save {tUnit.ToString()} Position.", ELogType.SYSTEM, ELogWType.SAVE);
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                }
+            }
+
+
+            return SUCCESS;
+        }
+
+        public int LoadPositionData(EUnitPos unit = EUnitPos.ALL)
+        {
+            string output;
+            EUnitPos tUnit;
+
+            if (unit == EUnitPos.ALL || unit == EUnitPos.LOADER)
+            {
+
+            }
+
+            if (unit == EUnitPos.ALL || unit == EUnitPos.UHANDLER)
+            {
+                try
+                {
+                    tUnit = EUnitPos.UHANDLER;
+                    if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TablePos, "name", tUnit.ToString(), out output) == true)
+                    {
+                        CSystemData data = JsonConvert.DeserializeObject<CSystemData>(output);
+                        SystemData = data;
+                        WriteLog($"success : load {tUnit.ToString()} Position.", ELogType.SYSTEM, ELogWType.LOAD);
+                    }
+                    //else // temporarily do not return error for continuous loading
+                    //{
+                    //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_POSITION_DATA);
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    WriteExLog(ex.ToString());
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_POSITION_DATA);
+                }
+
             }
 
             return SUCCESS;
@@ -1540,45 +1639,45 @@ namespace LWDicer.Control
                 SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
-            // HANDLER1_Y       
-            index = (int)EYMC_Axis.HANDLER1_Y       ;
+            // UHANDLER_X       
+            index = (int)EYMC_Axis.UHANDLER_X       ;
             if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
-                tMotion.Name = "HANDLER1_Y";
+                tMotion.Name = "UHANDLER_X";
                 tMotion.Exist = true;
 
                 SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
-            // HANDLER1_Z       
-            index = (int)EYMC_Axis.HANDLER1_Z       ;
+            // UHANDLER_Z       
+            index = (int)EYMC_Axis.UHANDLER_Z       ;
             if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
-                tMotion.Name = "HANDLER1_Z";
+                tMotion.Name = "UHANDLER_Z";
                 tMotion.Exist = true;
 
                 SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
-            // HANDLER2_Y       
-            index = (int)EYMC_Axis.HANDLER2_Y;
+            // LHANDLER_X       
+            index = (int)EYMC_Axis.LHANDLER_X;
             if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
-                tMotion.Name = "HANDLER2_Y";
+                tMotion.Name = "LHANDLER_X";
                 tMotion.Exist = true;
 
                 SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);
             }
 
-            // HANDLER2_Z       
-            index = (int)EYMC_Axis.HANDLER2_Z       ;
+            // LHANDLER_Z       
+            index = (int)EYMC_Axis.LHANDLER_Z       ;
             if (SystemData_Axis.MPMotionData[index].Name == "NotExist")
             {
                 tMotion = new CMPMotionData();
-                tMotion.Name = "HANDLER2_Z";
+                tMotion.Name = "LHANDLER_Z";
                 tMotion.Exist = true;
 
                 SystemData_Axis.MPMotionData[index] = ObjectExtensions.Copy(tMotion);

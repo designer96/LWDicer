@@ -59,10 +59,10 @@ namespace LWDicer.Control
             C2_CHUCK_ROTATE_T,
             C2_CLEAN_NOZZLE_T,
             C2_COAT_NOZZLE_T ,
-            HANDLER1_Y       ,
-            HANDLER1_Z       ,
-            HANDLER2_Y       ,
-            HANDLER2_Z       ,
+            UHANDLER_X       ,
+            UHANDLER_Z       ,
+            LHANDLER_X       ,
+            LHANDLER_Z       ,
             CAMERA1_Z        ,
             LASER1_Z         ,
             // Stage는 ACS 모션으로 설정할 것 같아서 일단 주석 처리
@@ -85,10 +85,10 @@ namespace LWDicer.Control
             C2_ROTATE_T,
             C2_CLEAN_NOZZLE_T,
             C2_COAT_NOZZLE_T,
-            HANDLER1_Y,
-            HANDLER1_Z,
-            HANDLER2_Y,
-            HANDLER2_Z,
+            UHANDLER_X,
+            UHANDLER_Z,
+            LHANDLER_X,
+            LHANDLER_Z,
             CAMERA1_Z,
             LASER1_Z,
             // Stage는 ACS 모션으로 사용하기로 해서 우선 주석 처리
@@ -108,8 +108,8 @@ namespace LWDicer.Control
             C2_ROTATE,
             C2_CLEAN_NOZZLE,
             C2_COAT_NOZZLE,
-            HANDLER1,
-            HANDLER2,
+            UHANDLER,
+            LHANDLER,
             CAMERA1,
             LASER1,
             //STAGE1,
@@ -281,6 +281,25 @@ namespace LWDicer.Control
             LCNET_MAX_UNIT, // MAX UNIT
         }
 
+        public enum EUnitPos // 좌표셋을 저장할 수 있는 단위
+        {
+            ALL = -1,
+            LOADER,
+            PUSHPULL,
+            C1_CENTERING,     // Spinner & Coater 1
+            C1_ROTATE,
+            C1_CLEAN_NOZZLE,
+            C1_COAT_NOZZLE,
+            C2_CENTERING,     // Spinner & Coater 2
+            C2_ROTATE,
+            C2_CLEAN_NOZZLE,
+            C2_COAT_NOZZLE,
+            UHANDLER,
+            LHANDLER,
+            CAMERA1,
+            LASER1,
+            STAGE1,
+        }
 
     }
 
@@ -457,6 +476,7 @@ namespace LWDicer.Control
             public string TableSystem       ; // System Data
             public string TableModel        ; // Model Data
             public string TableModelHeader  ; // Model and Parent directory Header
+            public string TablePos          ; // Position Data
 
             // Information Database
             public string TableIO           ; // IO Information
@@ -498,6 +518,7 @@ namespace LWDicer.Control
                 TableSystem       = "SystemDB";
                 TableModel        = "ModelDB";
                 TableModelHeader  = "ModelHeader";
+                TablePos          = "PositionDB";
 
                 TableIO           = "IO";
                 TableError        = "Error";
