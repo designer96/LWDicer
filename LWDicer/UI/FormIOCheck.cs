@@ -18,9 +18,9 @@ namespace LWDicer.UI
         private PageInfo NextPage = null;
 
         private GradientLabel[] X_Title = new GradientLabel[16];
-        private GradientLabel[] X_Name  = new GradientLabel[16];
+        private GradientLabel[] X_Name = new GradientLabel[16];
         private GradientLabel[] Y_Title = new GradientLabel[16];
-        private GradientLabel[] Y_Name  = new GradientLabel[16];
+        private GradientLabel[] Y_Name = new GradientLabel[16];
 
         private int nIOPage = 0;
 
@@ -29,10 +29,12 @@ namespace LWDicer.UI
             PrevPage = page;
         }
 
-       
+
         public FormIOCheck()
         {
             InitializeComponent();
+
+            InitializeForm();
         }
 
         protected virtual void InitializeForm()
@@ -41,12 +43,14 @@ namespace LWDicer.UI
             this.DesktopLocation = new Point(DEF_UI.MAIN_POS_X, DEF_UI.MAIN_POS_Y);
             this.Size = new Size(DEF_UI.MAIN_SIZE_WIDTH, DEF_UI.MAIN_SIZE_HEIGHT);
             this.FormBorderStyle = FormBorderStyle.None;
-            
+
             TmrIO.Enabled = true;
             TmrIO.Interval = 100;
             TmrIO.Stop();
 
             ResouceMapping();
+
+            UpdateIO(0);
         }
 
         private void BtnExit_Click(object sender, EventArgs e)
@@ -76,7 +80,7 @@ namespace LWDicer.UI
 
         private void BtnPrev_Click(object sender, EventArgs e)
         {
-            if(nIOPage != 0)
+            if (nIOPage != 0)
             {
                 nIOPage--;
             }
@@ -85,7 +89,7 @@ namespace LWDicer.UI
 
         private void BtnNext_Click(object sender, EventArgs e)
         {
-            if(nIOPage < 15)
+            if (nIOPage < 15)
             {
                 nIOPage++;
             }
@@ -101,12 +105,13 @@ namespace LWDicer.UI
 
         private void UpdateIO(int nBoardNo)
         {
-            int i = 0, nNo=0;
+            int i = 0, nNo = 0;
             string hex = string.Empty;
+            string LabelX = string.Empty, LabelY = string.Empty;
 
-            for (i=0;i<16;i++)
+            for (i = 0; i < 16; i++)
             {
-                if(nBoardNo > 0)
+                if (nBoardNo > 0)
                 {
                     nNo = i + (nBoardNo * 16);
                 }
@@ -124,6 +129,12 @@ namespace LWDicer.UI
                 Y_Name[i].Text = CMainFrame.LWDicer.m_DataManager.OutputArray[nNo].Name[0];
 
             }
+
+            LabelX = string.Format("I/O : Input {0:S} ~ {1:S}", X_Title[0].Text, X_Title[15].Text);
+            LabelY = string.Format("I/O : Output {0:S} ~ {1:S}", Y_Title[0].Text, Y_Title[15].Text);
+
+            LabelTitleX.Text = LabelX;
+            LabelTitleY.Text = LabelY;
         }
 
         private void ResouceMapping()
@@ -179,23 +190,6 @@ namespace LWDicer.UI
             Y_Title[14] = Title_IO_Y15;
             Y_Title[15] = Title_IO_Y16;
 
-            Y_Title[0].Tag = 0;
-            Y_Title[1].Tag = 1;
-            Y_Title[2].Tag = 2;
-            Y_Title[3].Tag = 3;
-            Y_Title[4].Tag = 4;
-            Y_Title[5].Tag = 5;
-            Y_Title[6].Tag = 6;
-            Y_Title[7].Tag = 7;
-            Y_Title[8].Tag = 8;
-            Y_Title[9].Tag = 9;
-            Y_Title[10].Tag = 10;
-            Y_Title[11].Tag = 11;
-            Y_Title[12].Tag = 12;
-            Y_Title[13].Tag = 13;
-            Y_Title[14].Tag = 14;
-            Y_Title[15].Tag = 15;
-
             Y_Name[0] = IO_Y1_Name;
             Y_Name[1] = IO_Y2_Name;
             Y_Name[2] = IO_Y3_Name;
@@ -218,20 +212,20 @@ namespace LWDicer.UI
         {
             string strText = string.Empty;
             int nNo = 0;
-          
+
             GradientLabel OutPut = sender as GradientLabel;
 
-            nNo = (int)OutPut.Tag;
+            nNo = Convert.ToInt16(OutPut.Tag);
 
-            strText = string.Format("{0:s} 강제 출력하시겠습니까?",OutPut.Text);
+            strText = string.Format("{0:s} 강제 출력하시겠습니까?", OutPut.Text);
 
-            if(!CMainFrame.LWDicer.DisplayMsg(strText))
+            if (!CMainFrame.LWDicer.DisplayMsg(strText))
             {
                 return;
             }
-            
+
             // Output 출력
-            
+
 
         }
     }

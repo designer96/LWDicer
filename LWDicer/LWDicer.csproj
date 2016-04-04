@@ -260,11 +260,11 @@
     <Compile Include="UI\FormIOCheck.Designer.cs">
       <DependentUpon>FormIOCheck.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\FormEngineerMaint_3.cs">
+    <Compile Include="UI\FormAxisParameter.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\FormEngineerMaint_3.Designer.cs">
-      <DependentUpon>FormEngineerMaint_3.cs</DependentUpon>
+    <Compile Include="UI\FormAxisParameter.Designer.cs">
+      <DependentUpon>FormAxisParameter.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\FormFullAuto.cs">
       <SubType>Form</SubType>
@@ -504,8 +504,8 @@
     <EmbeddedResource Include="UI\FormIOCheck.resx">
       <DependentUpon>FormIOCheck.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormEngineerMaint_3.resx">
-      <DependentUpon>FormEngineerMaint_3.cs</DependentUpon>
+    <EmbeddedResource Include="UI\FormAxisParameter.resx">
+      <DependentUpon>FormAxisParameter.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\FormFullAuto.resx">
       <DependentUpon>FormFullAuto.cs</DependentUpon>
