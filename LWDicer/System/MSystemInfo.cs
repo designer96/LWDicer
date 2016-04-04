@@ -33,10 +33,10 @@ namespace LWDicer.Control
 
                 // 40-59 : Vision ------------------------------------------------------------------------
                 new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 40, "HardWare : Vision System", 3000, "System", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 41, "HardWare : Vision Camera1", 3200, "Camera1", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 42, "HardWare : Vision Camera2", 3200, "Camera2", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 43, "HardWare : Vision Display1", 3600, "Display1", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 44, "HardWare : Vision Display2", 3600, "Display2", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 42, "HardWare : Vision Camera1", 3200, "Camera1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 43, "HardWare : Vision Camera2", 3200, "Camera2", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 46, "HardWare : Vision Display1", 3600, "Display1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 47, "HardWare : Vision Display2", 3600, "Display2", LOG_ALL, LOG_DAY ),
 		
 	            // 40-49 : Dummy Reserved
 	            // 50-59 : Ethernet Reserved

@@ -17,7 +17,7 @@ using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {
-    class MVisionCamera
+    public class MVisionCamera
     {
         private int m_iCamID;
         private int m_iResult;               

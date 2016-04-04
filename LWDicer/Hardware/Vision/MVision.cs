@@ -16,10 +16,9 @@ namespace LWDicer.Control
 {
     public class CVisionRefComp
     {
-        private MVisionSystem m_pSystem;
-        private MVisionCamera[] m_pCamera;
-        private MVisionDisplay[] m_pView;
-
+        public MVisionSystem System;
+        public MVisionCamera[] Camera = new MVisionCamera[DEF_MAX_CAMERA_NO];
+        public MVisionDisplay[] View  = new MVisionDisplay[DEF_MAX_CAMERA_NO];
     }
     public class MVision : MObject,IVision,IDisposable
     {
@@ -34,17 +33,12 @@ namespace LWDicer.Control
 
         private CVisionRefComp m_RefComp;
         private CVisionData m_Data;
-
-        private MVisionSystem m_pSystem;
-        private MVisionCamera[] m_pCamera;
-        private MVisionDisplay[] m_pView;
-
         
-
-        public MVision(CObjectInfo objInfo, CVisionData data)
+        public MVision(CObjectInfo objInfo, CVisionRefComp refComp,CVisionData data)
             : base(objInfo)
         {
-
+            m_RefComp = refComp;
+            
             SetData(data);
 
             m_bSystemInit = false;
@@ -77,92 +71,8 @@ namespace LWDicer.Control
 
 #if SIMULATION_VISION
                 return SUCCESS;
-#endif
-            int iResult = 0;
-
-            if (m_bSystemInit)
-            {
-                Debug.Write("\n====================================\n");
-                Debug.Write("System 이미 초기화 되었습니다.");
-                return ERR_VISION_ERROR;
-            }
-
-            Debug.Write("\n====================================\n");
-            Debug.Write("System 초기화\n");
-            m_pSystem = new MVisionSystem();
-
-            // GigE Cam초기화 & MIL 초기화
-            iResult=  m_pSystem.Initialize();
-
-            if (iResult != SUCCESS) return ERR_VISION_ERROR;
-
-            // MIL 의 Err Print하는 기능 Enable
-            if (!m_bErrorPrint)
-            {
-                MIL.MappControl(MIL.M_ERROR, MIL.M_PRINT_DISABLE);
-                MIL.MappControl(MIL.M_TRACE, MIL.M_PRINT_DISABLE);
-                MIL.MappControl(MIL.M_PARAMETER, MIL.M_CHECK_DISABLE);
-            }
-
-            Debug.Write("\n====================================\n");
-            Debug.Write("Camera 개수 확인\n");
-            int iGetCamNum = m_pSystem.GetCamNum();
-
-            if(iGetCamNum < iCameraNum)
-            {
-                Debug.Write("\n====================================\n");
-                Debug.Write("연결된 카메라 수량이 맞지 않습니다.\n");
-
-                // System을 해제한다.
-                m_pSystem.freeSystems();
-
-                return ERR_VISION_ERROR;
-            }
-
+#endif            
             m_bSystemInit = true;
-
-            m_pCamera = new MVisionCamera[iCameraNum];
-            m_pView = new MVisionDisplay[iCameraNum];
-            Debug.Write("\n====================================\n");
-            Debug.Write("Camera & View초기화\n");
-
-            // Camera & View 를 생성함.
-            for (int iIndex = 0; iIndex < iCameraNum; iIndex++) 
-            {
-                // Camera를 생성함.
-                m_pCamera[iIndex] = new MVisionCamera();
-                // Vision Library MIL
-                m_pCamera[iIndex].SetMil_ID(m_pSystem.GetMilSystem());
-                // Camera 초기화
-                iResult = m_pCamera[iIndex].Initialize(iIndex, m_pSystem.GetSystem());
-
-                if (iResult != SUCCESS)
-                {
-                    m_bSystemInit = false;
-                    return ERR_VISION_ERROR;
-                }
-
-                // Display View 생성함.
-                m_pView[iIndex] = new MVisionDisplay();
-                // Vision Library MIL
-                m_pView[iIndex].SetMil_ID(m_pSystem.GetMilSystem());
-                // Display 초기화
-                iResult = m_pView[iIndex].Initialize(iIndex, m_pCamera[iIndex]);
-
-                if (iResult != SUCCESS)
-                {
-                    m_bSystemInit = false;
-                    return ERR_VISION_ERROR;
-                }
-
-                // Display를 Camera와 System 연결
-                ConnectCam(iIndex);
-            }      
-            
-            Debug.Write("\n====================================\n");
-            Debug.Write("System & Camera & View 생성 완료\n");
-            
-            
             return SUCCESS;
         }
 
@@ -178,12 +88,13 @@ namespace LWDicer.Control
             for (int iIndex = 0; iIndex < DEF_MAX_CAMERA_NO; iIndex++)
             {
                 HaltVideo(iIndex);
-                m_pView[iIndex].FreeDisplay();
-                m_pCamera[iIndex].FreeCamera();
+                
+                m_RefComp.View[iIndex].FreeDisplay();
+                m_RefComp.Camera[iIndex].FreeCamera();
             }
             
             // System Distroy
-            m_pSystem.freeSystems();
+            m_RefComp.System.freeSystems();
 
             m_bSystemInit = false;
         }
@@ -210,11 +121,11 @@ namespace LWDicer.Control
             int iResult;
             int i = 0;
 
-            if (m_pSystem == null)
+            if (m_RefComp.System == null)
                 // 104003 = Vision System Allocation 에 실패했습니다.
                 return ERR_VISION_ERROR;
 
-            if (m_pCamera == null)
+            if (m_RefComp.Camera == null)
                 // 104006 = DCF File 을 찾을 수 없습니다.
                 return ERR_VISION_ERROR;
 
@@ -222,7 +133,7 @@ namespace LWDicer.Control
             {
                 if (isValidCameraNo(i))
                 {
-                    iResult = m_pCamera[i].LoadCameraData(strModelFilePath);
+                    iResult = m_RefComp.Camera[i].LoadCameraData(strModelFilePath);
                     if (iResult > 0) return iResult;
                 }
                 else
@@ -231,7 +142,7 @@ namespace LWDicer.Control
                 }
 
                 // Model Mark Read
-                m_pCamera[i].LoadSearchData(strModelFilePath);
+                m_RefComp.Camera[i].LoadSearchData(strModelFilePath);
             }
 
             return SUCCESS;
@@ -246,7 +157,7 @@ namespace LWDicer.Control
             int i = 0;
             for (i = 0; i < DEF_MAX_CAMERA_NO; i++)
             {
-                if (m_pCamera[i].GetCamID() == iCamNo)
+                if (m_RefComp.Camera[i].GetCamID() == iCamNo)
                     return true;
             }
             
@@ -269,9 +180,9 @@ namespace LWDicer.Control
             // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
-            if (m_pView[iCamNo].IsLocalView())
+            if (m_RefComp.View[iCamNo].IsLocalView())
             {
-                m_pView[iCamNo].DestroyLocalView();
+                m_RefComp.View[iCamNo].DestroyLocalView();
             }
 
             return SUCCESS;
@@ -292,7 +203,7 @@ namespace LWDicer.Control
             for (int iIndex=0;iIndex < DEF_MAX_CAMERA_NO; iIndex++)
             {
                 // 바꿀 View와 현재 View를 비교함.
-                if (m_pView[iIndex].GetViewHandle()== pObject)
+                if (m_RefComp.View[iIndex].GetViewHandle()== pObject)
                 {
                     return ERR_VISION_ERROR;
                 }
@@ -300,7 +211,7 @@ namespace LWDicer.Control
             // View 를 Display로 등록한다.
             // View에 맞쳐 Zoom 설정을 한다
             // Mil의 SelectDisplayWindow 함수로 등록한다. 
-            m_pView[iCamNo].SetDisplayWindow(pObject);
+            m_RefComp.View[iCamNo].SetDisplayWindow(pObject);
             m_iCurrentViewNum = iCamNo;
 
             return SUCCESS;
@@ -319,7 +230,7 @@ namespace LWDicer.Control
             if (m_bSystemInit == false) return;
 
             int iCamNo = 0;
-            m_pView[iCamNo].DisplayImage(image, handle);
+            m_RefComp.View[iCamNo].DisplayImage(image, handle);
         }
         
         /// <summary>
@@ -334,7 +245,7 @@ namespace LWDicer.Control
             // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return;
 
-            m_pCamera[iCamNo].SetTrigger();
+            m_RefComp.Camera[iCamNo].SetTrigger();
         }
 
         /// <summary>
@@ -350,7 +261,7 @@ namespace LWDicer.Control
             // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return new Size();
 
-            return m_pCamera[iCamNo].GetCameraPixelSize();
+            return m_RefComp.Camera[iCamNo].GetCameraPixelSize();
         }
 
         /// <summary>
@@ -365,7 +276,7 @@ namespace LWDicer.Control
             // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return MIL.M_NULL;
 
-            return m_pView[iViewNo].GetImage();
+            return m_RefComp.View[iViewNo].GetImage();
         }
         public void DisplayMarkImage(int iViewNo, IntPtr pDisplayHandle )
         {
@@ -375,7 +286,7 @@ namespace LWDicer.Control
             // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return;
 
-            m_pView[iViewNo].GetMarkModelImage();
+            m_RefComp.View[iViewNo].GetMarkModelImage();
         }
 
         // Camera 와 View Window 를 연결한다.
@@ -390,10 +301,10 @@ namespace LWDicer.Control
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
             // Callback에 Display View함수를 등록한다
-            m_pCamera[iCamNo].SelectView(m_pView[iCamNo]);
+            m_RefComp.Camera[iCamNo].SelectView(m_RefComp.View[iCamNo]);
             // System 에 Display를 연결한다.
-            m_pSystem.SelectCamera(m_pCamera[iCamNo]);
-            m_pSystem.SelectView(m_pView[iCamNo]);
+            m_RefComp.System.SelectCamera(m_RefComp.Camera[iCamNo]);
+            m_RefComp.System.SelectView(m_RefComp.View[iCamNo]);
 
         }
 
@@ -408,8 +319,8 @@ namespace LWDicer.Control
 
             if (isValidPatternMarkNo(iModelNo))
             {
-                if (m_pCamera[iCamNo].GetSearchData(iModelNo).m_bIsModel)
-                    return m_pCamera[iCamNo].WriteSearchData(iModelNo);
+                if (m_RefComp.Camera[iCamNo].GetSearchData(iModelNo).m_bIsModel)
+                    return m_RefComp.Camera[iCamNo].WriteSearchData(iModelNo);
                 else
                     return ERR_VISION_ERROR;
             }
@@ -425,7 +336,7 @@ namespace LWDicer.Control
             // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
-            m_pView[iViewNo].SelectCamera(m_pCamera[iCamNo]);
+            m_RefComp.View[iViewNo].SelectCamera(m_RefComp.Camera[iCamNo]);
             return SUCCESS;
         }
 
@@ -440,7 +351,7 @@ namespace LWDicer.Control
 
             if (isValidPatternMarkNo(iModelNo))
             {
-                if (m_pCamera[iCamNo].GetSearchData(iModelNo).m_bIsModel)
+                if (m_RefComp.Camera[iCamNo].GetSearchData(iModelNo).m_bIsModel)
                     return SUCCESS;
                 else
                     return ERR_VISION_ERROR;
@@ -460,7 +371,7 @@ namespace LWDicer.Control
 
             if (isValidPatternMarkNo(iModelNo))
             {
-                m_pCamera[iCamNo].DeleteSearchModel(iModelNo);
+                m_RefComp.Camera[iCamNo].DeleteSearchModel(iModelNo);
             }
         }
         
@@ -494,7 +405,7 @@ namespace LWDicer.Control
             string strFileName = String.Format("LogImage {0:HH.mm.ss.fff} [Cam{1:0}_Mark{2:0} Score_{3:0.00}].bmp",
                                                time, iCamNo + 1, iModelNo, dScore);
 
-            m_pView[iCamNo].SaveImage(strDirName+"\\"+strFileName);
+            m_RefComp.View[iCamNo].SaveImage(strDirName+"\\"+strFileName);
 
             return SUCCESS;
 
@@ -524,7 +435,7 @@ namespace LWDicer.Control
             string strFileName = String.Format("LogImage {0:HH.mm.ss.fff} [Cam{1:0}_Mark{2:0} Score_{3:0.00}].bmp",
                                                time, m_iCurrentViewNum + 1, iModelNo, dScore);
 
-            m_pView[m_iCurrentViewNum].SaveImage(strDirName + "\\" + strFileName);
+            m_RefComp.View[m_iCurrentViewNum].SaveImage(strDirName + "\\" + strFileName);
 
             return SUCCESS;
 
@@ -548,7 +459,7 @@ namespace LWDicer.Control
                 }
             }
 
-            m_pView[iCamNo].SaveImage(strPath + strName);
+            m_RefComp.View[iCamNo].SaveImage(strPath + strName);
 
             return SUCCESS;
 
@@ -616,12 +527,12 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
-            if (m_pCamera == null) return ERR_VISION_ERROR;
+            if (m_RefComp.Camera == null) return ERR_VISION_ERROR;
             // Pattern Data Load
-            m_pCamera[iCamNo].SetSearchData(iTypeNo, pSData);
+            m_RefComp.Camera[iCamNo].SetSearchData(iTypeNo, pSData);
             // Mark Register
-            CVisionPatternData CurData = m_pCamera[iCamNo].GetSearchData(iTypeNo);
-            m_pSystem.ReloadModel(iCamNo, ref CurData);
+            CVisionPatternData CurData = m_RefComp.Camera[iCamNo].GetSearchData(iTypeNo);
+            m_RefComp.System.ReloadModel(iCamNo, ref CurData);
 
             return SUCCESS;
         }
@@ -653,14 +564,14 @@ namespace LWDicer.Control
             // Search Size 확인 
             if (SearchArea.Width <= DEF_SEARCH_MIN_WIDTH ||
                SearchArea.Height <= DEF_SEARCH_MIN_HEIGHT ||
-               SearchArea.Width > m_pCamera[iCamNo].m_CamPixelSize.Width ||
-               SearchArea.Height > m_pCamera[iCamNo].m_CamPixelSize.Height)
+               SearchArea.Width > m_RefComp.Camera[iCamNo].m_CamPixelSize.Width ||
+               SearchArea.Height > m_RefComp.Camera[iCamNo].m_CamPixelSize.Height)
             {
                 return ERR_VISION_ERROR;
             }
 
             // 기존의 Mark 모델 Data를 연결함 (주소값으로 연결됨).
-            CVisionPatternData pSData = m_pCamera[iCamNo].GetSearchData(iTypeNo);
+            CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iTypeNo);
 
             // 등록할 Mark의 Size 및 위치를 설정함.
             pSData.m_rectModel = ModelArea;
@@ -676,7 +587,7 @@ namespace LWDicer.Control
             }
 
             // 설정한 Data로 Mark 모델을 등록한다.
-            if(m_pSystem.RegisterMarkModel(iCamNo, ref pSData)==true)
+            if(m_RefComp.System.RegisterMarkModel(iCamNo, ref pSData)==true)
             {
                 pSData.m_bIsModel = true;
                 // Model Register Grab Image Save
@@ -716,13 +627,13 @@ namespace LWDicer.Control
             if (isValidPatternMarkNo(iModelNo)==false) return ERR_VISION_ERROR;
 
             // 저장된 Pattern 정보를 읽어옴
-            CVisionPatternData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
+            CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
 
             // Data에 MIL 정보를 확인함.
             if (pSData.m_milModel ==MIL.M_NULL) return ERR_VISION_ERROR;
 
             // Image Display 호출
-            m_pView[iCamNo].DisplayImage(pSData.m_ModelImage, pHandle);
+            m_RefComp.View[iCamNo].DisplayImage(pSData.m_ModelImage, pHandle);
             
             return SUCCESS;
         }
@@ -743,11 +654,11 @@ namespace LWDicer.Control
             if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
             if (SArea.Width <= DEF_SEARCH_MIN_WIDTH || SArea.Height <= DEF_SEARCH_MIN_HEIGHT ||
-                SArea.Width > m_pCamera[iCamNo].m_CamPixelSize.Width || SArea.Height > m_pCamera[iCamNo].m_CamPixelSize.Height)
+                SArea.Width > m_RefComp.Camera[iCamNo].m_CamPixelSize.Width || SArea.Height > m_RefComp.Camera[iCamNo].m_CamPixelSize.Height)
                 // 104040 = Search Area Size 가 부적절합니다.
                 return ERR_VISION_ERROR;
 
-            CVisionPatternData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
+            CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
             pSData.m_rectSearch = SArea;
 
             MIL.MpatSetPosition(pSData.m_milModel,
@@ -775,14 +686,14 @@ namespace LWDicer.Control
             if (m_bSystemInit == false) goto ERR_VISION_ERROR;
             
             int iResult = 0;
-            CVisionPatternData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
+            CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
             CResultData pSResult; 
 
             // 모델 생성 여부 확인
             if (pSData.m_bIsModel == false) goto ERR_VISION_ERROR;
 
             // Mark Search 실행
-            iResult = m_pSystem.SearchByNGC(iCamNo, pSData, out pSResult);
+            iResult = m_RefComp.System.SearchByNGC(iCamNo, pSData, out pSResult);
 
             if(iResult == SUCCESS)
             {
@@ -832,20 +743,20 @@ namespace LWDicer.Control
 
         public bool SetSearchData(int iCamNo, int iModelNo, CSearchData pSearchData)
         {
-            return m_pCamera[iCamNo].SetSearchData(iModelNo,pSearchData);
+            return m_RefComp.Camera[iCamNo].SetSearchData(iModelNo,pSearchData);
         }
 
         public CSearchData GetSearchData(int iCamNo, int iModelNo)
         {
-            if (m_pCamera == null) return new CSearchData();
-            return m_pCamera[iCamNo].GetSearchData(iModelNo);
+            if (m_RefComp.Camera == null) return new CSearchData();
+            return m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
         }
 
         public MIL_ID GetPatternImage(int iCamNo, int iModelNo)
         {
             // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return ERR_VISION_ERROR;
-            CVisionPatternData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
+            CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
             
             return pSData.m_milModel;
         }
@@ -891,7 +802,7 @@ namespace LWDicer.Control
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
 
-            return m_pCamera[iCamNo].GetResultData(iModelNo).m_dPixelX;
+            return m_RefComp.Camera[iCamNo].GetResultData(iModelNo).m_dPixelX;
         }
 
 
@@ -915,7 +826,7 @@ namespace LWDicer.Control
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
 
-            return m_pCamera[iCamNo].GetResultData(iModelNo).m_dPixelY;
+            return m_RefComp.Camera[iCamNo].GetResultData(iModelNo).m_dPixelY;
         }
 
         /// <summary>
@@ -935,7 +846,7 @@ namespace LWDicer.Control
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
 
-            return m_pCamera[iCamNo].GetResultData(iModelNo).m_dScore;
+            return m_RefComp.Camera[iCamNo].GetResultData(iModelNo).m_dScore;
         }                
 
         /// <summary>
@@ -955,7 +866,7 @@ namespace LWDicer.Control
             if (!isValidPatternMarkNo(iModelNo))
                 return new Rectangle(0, 0, 0, 0);
 
-            return m_pCamera[iCamNo].GetResultData(iModelNo).m_rectFindedModel;
+            return m_RefComp.Camera[iCamNo].GetResultData(iModelNo).m_rectFindedModel;
         }
 
         /// <summary>
@@ -975,7 +886,7 @@ namespace LWDicer.Control
             if (!isValidPatternMarkNo(iModelNo))
                 return new Rectangle(0, 0, 0, 0);
 
-            return m_pCamera[iCamNo].GetSearchData(iModelNo).m_rectSearch;
+            return m_RefComp.Camera[iCamNo].GetSearchData(iModelNo).m_rectSearch;
         }
 
         /// <summary>
@@ -995,7 +906,7 @@ namespace LWDicer.Control
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
 
-            return m_pCamera[iCamNo].GetSearchData(iModelNo).m_dAcceptanceThreshold;
+            return m_RefComp.Camera[iCamNo].GetSearchData(iModelNo).m_dAcceptanceThreshold;
         }
 
         /// <summary>
@@ -1019,14 +930,14 @@ namespace LWDicer.Control
             if (dValue < 0.0 || dValue > 100.0)
                 return ERR_VISION_ERROR;
 
-            CVisionPatternData pSData = m_pCamera[iCamNo].GetSearchData(iModelNo);
+            CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
             if (pSData.m_milModel == MIL.M_NULL)
                 return ERR_VISION_ERROR;
 
             pSData.m_dAcceptanceThreshold = dValue;
             MIL.MpatSetAcceptance(pSData.m_milModel, dValue);
 
-            MIL_ID SourceImage = m_pView[iCamNo].GetImage();
+            MIL_ID SourceImage = m_RefComp.View[iCamNo].GetImage();
 
             MIL.MpatPreprocModel(SourceImage, pSData.m_milModel, MIL.M_DEFAULT);
 
@@ -1050,7 +961,7 @@ namespace LWDicer.Control
             if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
             // Edge Find 지령
-            m_pSystem.FindEdge(iCamNo,ref pEdgeData);
+            m_RefComp.System.FindEdge(iCamNo,ref pEdgeData);
 
             if(pEdgeData.m_bSuccess)
             {
@@ -1093,7 +1004,7 @@ namespace LWDicer.Control
             // Vision System이 초기화 된지를 확인함
             if (m_bSystemInit == false) return ERR_VISION_ERROR;
 
-            m_pSystem.SetEdgeFindParameter(mPos, dWidth, dHeight,dAng);
+            m_RefComp.System.SetEdgeFindParameter(mPos, dWidth, dHeight,dAng);
 
             return SUCCESS;
         }
@@ -1107,10 +1018,10 @@ namespace LWDicer.Control
 
             Point mPos = new Point();
             // 위치는 영상의 가운데를 기준으로 한다.
-            mPos.X = m_pView[iCamNo].GetImageWidth() / 2;
-            mPos.Y = m_pView[iCamNo].GetImageHeight() / 2;
+            mPos.X = m_RefComp.View[iCamNo].GetImageWidth() / 2;
+            mPos.Y = m_RefComp.View[iCamNo].GetImageHeight() / 2;
 
-            m_pSystem.SetEdgeFindParameter(mPos, dWidth, dHeight, dAng);
+            m_RefComp.System.SetEdgeFindParameter(mPos, dWidth, dHeight, dAng);
 
             return SUCCESS;
         }
@@ -1223,7 +1134,7 @@ namespace LWDicer.Control
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
-            m_pCamera[iCamNo].SetLive(false);            
+            m_RefComp.Camera[iCamNo].SetLive(false);            
         }
 
 
@@ -1241,7 +1152,7 @@ namespace LWDicer.Control
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
-            m_pCamera[iCamNo].SetLive(true);
+            m_RefComp.Camera[iCamNo].SetLive(true);
             
         }
 
@@ -1260,7 +1171,7 @@ namespace LWDicer.Control
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
-            m_pView[iCamNo].ClearOverlay();
+            m_RefComp.View[iCamNo].ClearOverlay();
             
         }
         public void ClearOverlay()
@@ -1273,7 +1184,7 @@ namespace LWDicer.Control
 
             if (m_iCurrentViewNum > DEF_MAX_CAMERA_NO) return;
 
-            m_pView[m_iCurrentViewNum].ClearOverlay();
+            m_RefComp.View[m_iCurrentViewNum].ClearOverlay();
             
         }
         /// <summary>
@@ -1292,7 +1203,7 @@ namespace LWDicer.Control
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
-            m_pView[iCamNo].DrawBox(rect);
+            m_RefComp.View[iCamNo].DrawBox(rect);
             //return 0;
         }
 
@@ -1306,7 +1217,7 @@ namespace LWDicer.Control
 
             if (m_iCurrentViewNum > DEF_MAX_CAMERA_NO) return;
 
-            m_pView[m_iCurrentViewNum].DrawBox(rect);
+            m_RefComp.View[m_iCurrentViewNum].DrawBox(rect);
             //return 0;
         }
 
@@ -1353,7 +1264,7 @@ namespace LWDicer.Control
 
             if (iCamNo > DEF_MAX_CAMERA_NO) return;
 
-            m_pView[iCamNo].DrawCrossMark(center,iWidth,iHeight);   
+            m_RefComp.View[iCamNo].DrawCrossMark(center,iWidth,iHeight);   
                     
         }
 
@@ -1367,7 +1278,7 @@ namespace LWDicer.Control
 
             if (m_iCurrentViewNum > DEF_MAX_CAMERA_NO) return;
 
-            m_pView[m_iCurrentViewNum].DrawCrossMark(center, iWidth, iHeight);
+            m_RefComp.View[m_iCurrentViewNum].DrawCrossMark(center, iWidth, iHeight);
 
         }
 
@@ -1405,10 +1316,10 @@ namespace LWDicer.Control
             m_iHairLineWidth = Width;
 
             // Display할 객체가 연결되어 있는지 확인
-            if (m_pView[iCamNo].IsLocalView())
+            if (m_RefComp.View[iCamNo].IsLocalView())
             {
-                m_pView[iCamNo].ClearOverlay();
-                m_pView[iCamNo].DrawHairLine(Width);
+                m_RefComp.View[iCamNo].ClearOverlay();
+                m_RefComp.View[iCamNo].DrawHairLine(Width);
             }
             
         }
@@ -1427,10 +1338,10 @@ namespace LWDicer.Control
             m_iHairLineWidth = Width;
 
             // Display할 객체가 연결되어 있는지 확인
-            if (m_pView[m_iCurrentViewNum].IsLocalView())
+            if (m_RefComp.View[m_iCurrentViewNum].IsLocalView())
             {
-                m_pView[m_iCurrentViewNum].ClearOverlay();
-                m_pView[m_iCurrentViewNum].DrawHairLine(Width);
+                m_RefComp.View[m_iCurrentViewNum].ClearOverlay();
+                m_RefComp.View[m_iCurrentViewNum].DrawHairLine(Width);
             }
         }
 

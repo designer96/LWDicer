@@ -52,6 +52,12 @@ namespace LWDicer.Control
 
         public IPolygonScanner[] m_Scanner = new IPolygonScanner[(int)EObjectScanner.MAX_OBJ];
 
+        public MVisionSystem m_VisionSystem;
+        public MVisionCamera[] m_VisionCamera;
+        public MVisionDisplay[] m_VisionView;
+
+
+
         // Mechanical Layer
 
         public MVision m_Vision { get; set; }
@@ -195,6 +201,16 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(200, out objInfo);
             CreatePolygonScanner(objInfo, PolygonIni, (int)EObjectScanner.SCANNER1, m_PolygonComPort);
 
+            // Vision System
+            m_SystemInfo.GetObjectInfo(40, out objInfo);
+            CreateVisionSystem(objInfo);
+            // Vision Camera
+            m_SystemInfo.GetObjectInfo(42, out objInfo);
+            CreateVisionCamera(objInfo);
+            // Vision Display
+            m_SystemInfo.GetObjectInfo(46, out objInfo);
+            CreateVisionDisplay(objInfo);
+
             ////////////////////////////////////////////////////////////////////////
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
@@ -323,16 +339,97 @@ namespace LWDicer.Control
             return iResult;
         }
 
+        int CreateVisionSystem(CObjectInfo objInfo)
+        {
+#if SIMULATION_VISION
+                return SUCCESS;
+#endif
+
+            int iResult = 0;
+            // Vision System 생성
+            m_VisionSystem = new MVisionSystem();
+            // GigE Cam초기화 & MIL 초기화
+            iResult = m_VisionSystem.Initialize();
+
+            if (iResult != SUCCESS) return iResult;
+
+            // GigE Camera 개수 확인
+            int iGetCamNum = m_VisionSystem.GetCamNum();
+            if (iGetCamNum != DEF_MAX_CAMERA_NO) return ERR_VISION_ERROR;
+
+            return SUCCESS;
+        }
+
+        int CreateVisionCamera(CObjectInfo objInfo)
+        {
+#if SIMULATION_VISION
+                return SUCCESS;
+#endif
+            m_VisionCamera = new MVisionCamera[DEF_MAX_CAMERA_NO];
+
+            // Camera & View 를 생성함.
+            for (int iIndex = 0; iIndex < DEF_MAX_CAMERA_NO; iIndex++)
+            {
+                // Camera를 생성함.
+                m_VisionCamera[iIndex] = new MVisionCamera();
+                // Vision Library MIL
+                m_VisionCamera[iIndex].SetMil_ID(m_VisionSystem.GetMilSystem());
+                // Camera 초기화
+                m_VisionCamera[iIndex].Initialize(iIndex, m_VisionSystem.GetSystem());
+                
+            }
+
+            return SUCCESS;
+        }
+        int CreateVisionDisplay(CObjectInfo objInfo)
+        {
+#if SIMULATION_VISION
+                return SUCCESS;
+#endif
+            m_VisionView = new MVisionDisplay[DEF_MAX_CAMERA_NO];
+
+            // Camera & View 를 생성함.
+            for (int iIndex = 0; iIndex < DEF_MAX_CAMERA_NO; iIndex++)
+            {
+                // Display View 생성함.
+                m_VisionView[iIndex] = new MVisionDisplay();
+                // Vision Library MIL
+                m_VisionView[iIndex].SetMil_ID(m_VisionSystem.GetMilSystem());
+                // Display 초기화
+                m_VisionView[iIndex].Initialize(iIndex, m_VisionCamera[iIndex]);
+
+            }
+            return SUCCESS;
+        }
+
         void CreateVision(CObjectInfo objInfo)
         {
             CVisionData data = new CVisionData();
+            CVisionRefComp refComp = new CVisionRefComp();
 
-            m_Vision = new MVision(objInfo, data);
+            // 생성된 Vision System,Camera, View 를 RefComp로 연결
+            refComp.System = m_VisionSystem;
 
+            for (int iIndex = 0; iIndex < DEF_MAX_CAMERA_NO; iIndex++)
+            {
+                refComp.Camera[iIndex] = m_VisionCamera[iIndex];
+                refComp.View[iIndex]   = m_VisionView[iIndex];
+
+                // Display와 Camera와 System을 연결
+                refComp.Camera[iIndex].SelectView(refComp.View[iIndex]);
+                refComp.System.SelectCamera(refComp.Camera[iIndex]);
+                refComp.System.SelectView(refComp.View[iIndex]);
+            }
+
+            m_Vision = new MVision(objInfo, refComp, data);
+
+#if !SIMULATION_VISION
+            // View Object select & Cam Live Set
             CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
             CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
             CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
 
+            // Pattern Model Data Read & Apply
             CModelData pModelData;
             CMainFrame.LWDicer.m_DataManager.ViewModel("Default", out pModelData);
             CMainFrame.LWDicer.m_DataManager.m_ModelData = pModelData;
@@ -341,6 +438,8 @@ namespace LWDicer.Control
             CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternB);
             CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternA);
             CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternB);
+#endif
+
         }
 
         void CreateCtrlStage1(CObjectInfo objInfo)

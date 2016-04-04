@@ -15,7 +15,7 @@ using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {
-    class MVisionSystem
+    public class MVisionSystem
     {        
         private int m_iSystemNo;
         private int m_iSystemIndex;
