@@ -303,22 +303,6 @@ namespace LWDicer.Control
             return m_rgsCResultData[iModelNo];
         }
 
-        public int WriteSearchData(int iModelNo)
-        {
-            string strFileName;
-            CSearchData pSData = m_rgsCSearchData[iModelNo];
-
-            //strFileName= string.Format(DEF_NGC_MARK_NAME_TEMPLATE, pSData.m_strFilePath, m_iCamID, iModelNo);
-            //MIL.MpatSave(strFileName, pSData.m_milModel);
-
-            //MVisionModelData modelData = new MVisionModelData(m_pMilSystemID,
-            //                                                  pSData.m_strFileName,
-            //                                                  pSData.m_strFilePath);
-            //modelData.WriteSearchData(iModelNo, ref pSData);
-
-            return SUCCESS;
-        }
-
 
         public void DeleteSearchModel(int iModelNo)
         {
@@ -335,9 +319,7 @@ namespace LWDicer.Control
             pSData.m_rectSearch = new Rectangle(3, 3, DEF_IMAGE_SIZE_X - 3, DEF_IMAGE_SIZE_Y - 3);
             pSData.m_dAcceptanceThreshold = 70.0;
             pSData.m_dCertaintyThreshold = 90.0;
-
-            // $$$ DB에 저장 기능 추가
-
+            
         }
 
         public void RemoveModel()

@@ -85,4 +85,4 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 // Context
 1. Hardware Layer에서 System,Camera,Display 객체 생성
 2. MVision의 System,Camera,Display를 RefComp로 연결
-3. Err 생성기능을 적용함. 
+3. GenerateErrorCode 생성기능을 적용함. 

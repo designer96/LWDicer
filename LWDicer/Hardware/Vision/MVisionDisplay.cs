@@ -65,7 +65,6 @@ namespace LWDicer.Control
 
             m_MilImage = MIL.M_NULL;
             m_MilDisplay = MIL.M_NULL;
-
             m_DrawPen = new Pen(Color.LightGreen);
             m_DrawPen.DashStyle = System.Drawing.Drawing2D.DashStyle.DashDot;
             m_ptDrawStart = new Point(0, 0);
@@ -85,7 +84,6 @@ namespace LWDicer.Control
             if(SelectCamera(pCamera)==SUCCESS) return SUCCESS;
             else return GenerateErrorCode(ERR_VISION_CAMERA_CREATE_FAIL);
 
-
         }
         
         public int GetIdNum()
@@ -96,6 +94,12 @@ namespace LWDicer.Control
         {
             m_pMilSystemID  = MilSystem;
         }
+        /// <summary>
+        /// SelectCamera: 카메라의 영상의 크기로 Byte array 크기를 할당하고,
+        /// Mil 변수에 영상을 할당한다.
+        /// </summary>
+        /// <param name="pCamera"></param>
+        /// <returns></returns>
         public int SelectCamera(MVisionCamera pCamera)
         {
             if (pCamera == null)  return GenerateErrorCode(ERR_VISION_CAMERA_NON_USEFUL);
@@ -107,6 +111,7 @@ namespace LWDicer.Control
 
             // Camera Pixel Size 대입
             CameraPixelSize = m_pCamera.GetCameraPixelSize();
+
             m_CameraWidth = CameraPixelSize.Width;
             m_CameraHeight = CameraPixelSize.Height;
 
@@ -163,6 +168,9 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        /// <summary>
+        /// Pattern Search한 결과를 View의 화면에 String으로 표시한다.
+        /// </summary>
         private void DisplaySearchResult()
         {
             double XOrg = 0.0;              // Original model position.
@@ -189,21 +197,11 @@ namespace LWDicer.Control
             DrawString(strResult, new PointF(100, 800));
 
         }
-
-        public static long GrabEnd()
-        {
-            return 0;
-        }
-
-        public void FreeGraphicsContext()
-        {
-
-        }
-        public void AllocGraphicsContext()
-        {
-
-        }
-
+        /// <summary>
+        ///  현재 Grab하는 Image를 저장함.
+        /// </summary>
+        /// <param name="strPath"></param>
+        /// <returns></returns>
         public bool SaveImage(MIL_ID pImage , string strPath)
         {
             MIL_ID pSaveImage = MIL.M_NULL;
@@ -534,14 +532,6 @@ namespace LWDicer.Control
             m_bLocal = true;
 
         }
-
-        
-        public void DisplayView()
-        {               
-            //if (m_Bitmap == null) return;
-            if (m_ImageHandle == IntPtr.Zero) return;
-       
-        }
         
         public bool IsLocalView()
         {
@@ -551,10 +541,7 @@ namespace LWDicer.Control
             else
                 return true;
         }
-        public void GetLocalOverlay()
-        {
 
-        }
         public MIL_ID GetLocalView()
         {
             return m_MilImage;
@@ -575,18 +562,7 @@ namespace LWDicer.Control
 
             return true;
         }
-        public int FreeModelImage()
-        {
-            return 0;
-        }
-        public void SetModelViewFlag(bool bModelView)
-        {
 
-        }
-        public bool IsModelView()
-        {
-            return true;
-        }
         public void ClearOverlay()
         {
             // Clear the overlay to transparent.
@@ -679,15 +655,7 @@ namespace LWDicer.Control
         public IntPtr GetViewHandle()
         {
             return m_ImageHandle;
-        }
-        public void GetDisplay(int iCamNo)
-        {
-
-        }
-        public int CreatViews(long lZoomFactor)
-        {
-            return 0;
-        }
+        }       
 
         public void FreeDisplay()
         {

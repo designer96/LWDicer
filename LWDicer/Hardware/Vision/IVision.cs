@@ -40,8 +40,6 @@ namespace LWDicer.Control
 
         // Write Vision Model Data
 
-        int WriteModelData(int iCamNo, int iModelNo);
-
 
 	     int SelectCamera(int iCamNo,int iViewNo);
 

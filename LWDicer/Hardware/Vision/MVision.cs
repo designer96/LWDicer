@@ -32,17 +32,16 @@ namespace LWDicer.Control
         public MVision(CObjectInfo objInfo, CVisionRefComp refComp,CVisionData data)
             : base(objInfo)
         {
-            m_RefComp = refComp;
-            
+            m_RefComp           = refComp;            
             SetData(data);
 
-            m_bSystemInit = false;
+            m_bSystemInit       = false;
             m_bErrorPrint       = false;
             m_bSaveErrorImage   = false;
 
-            m_iHairLineWidth = DEF_HAIRLINE_NOR;
-            m_iMarkROIWidth = DEF_MARK_WIDTH_NOR;
-            m_iMarkROIHeight = DEF_MARK_HEIGHT_NOR;            
+            m_iHairLineWidth    = DEF_HAIRLINE_NOR;
+            m_iMarkROIWidth     = DEF_MARK_WIDTH_NOR;
+            m_iMarkROIHeight    = DEF_MARK_HEIGHT_NOR;            
 
             Initialize(DEF_MAX_CAMERA_NO);
         }
@@ -324,25 +323,6 @@ namespace LWDicer.Control
 
         }
 
-        // 인터페이스에만 존재
-        // DB 연결로 삭제 예정
-        public int WriteModelData(int iCamNo, int iModelNo)
-        {
-#if SIMULATION_VISION
-            return SUCCESS;
-#endif
-            // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
-
-            if (isValidPatternMarkNo(iModelNo))
-            {
-                if (m_RefComp.Camera[iCamNo].GetSearchData(iModelNo).m_bIsModel)
-                    return m_RefComp.Camera[iCamNo].WriteSearchData(iModelNo);
-                else
-                    return ERR_VISION_ERROR;
-            }
-            return SUCCESS;
-        }
 
         /// <summary>
         /// SelectCamera : Camera와 View와 연결함
@@ -718,14 +698,14 @@ namespace LWDicer.Control
         public int RecognitionPatternMark(int iCamNo, int iModelNo, out CResultData pPatResult, bool bUseGMF = false)
         {
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) goto ERR_VISION_ERROR;
+            if (m_bSystemInit == false) goto VISION_ERROR_GO;
             
             int iResult = 0;
             CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
             CResultData pSResult; 
 
             // 모델 생성 여부 확인
-            if (pSData.m_bIsModel == false) goto ERR_VISION_ERROR;
+            if (pSData.m_bIsModel == false) goto VISION_ERROR_GO;
 
             // Mark Search 실행
             iResult = m_RefComp.System.SearchByNGC(iCamNo, pSData, out pSResult);
@@ -770,11 +750,12 @@ namespace LWDicer.Control
            
             return SUCCESS;
         // Vision Error 처리
-        ERR_VISION_ERROR:
+        VISION_ERROR_GO:
 
             pPatResult = new CResultData();
             return GenerateErrorCode(ERR_VISION_PATTERN_SEARCH_FAIL);
         }
+
         /// <summary>
         /// SetSearchData : Search Data를 설정한다.
         /// </summary>
