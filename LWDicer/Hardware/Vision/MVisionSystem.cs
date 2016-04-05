@@ -9,13 +9,14 @@ using System.Runtime.InteropServices;
 
 using static LWDicer.Control.DEF_Vision;
 using static LWDicer.Control.DEF_Error;
+using static LWDicer.Control.DEF_Common;
 using BGAPI;
 using Matrox.MatroxImagingLibrary;
 
 
 namespace LWDicer.Control
 {
-    public class MVisionSystem
+    public class MVisionSystem: MObject
     {        
         private int m_iSystemNo;
         private int m_iSystemIndex;
@@ -27,7 +28,7 @@ namespace LWDicer.Control
         private MIL_ID m_MilApp;            // Application identifier.
         private MIL_ID m_MilSystem;          // System identifier.
         private MVisionCamera[] m_pCamera;
-        private MVisionDisplay[] m_pDisplay;
+        private MVisionView[] m_pDisplay;
 
         private BGAPI.System m_System;
         private BGAPI_FeatureState m_State;
@@ -44,18 +45,16 @@ namespace LWDicer.Control
         // Edge Find 
         private MIL_ID m_EdgeMaker = MIL.M_NULL;
 
+        
 
-        //static const MIL_DOUBLE ERROR_TEXT_POS_Y = 30.0;
-
-
-        public MVisionSystem()
+        public MVisionSystem(CObjectInfo objInfo) : base(objInfo)
         {
             m_iSystemNo     =   0;
             m_iSystemIndex  =   0;
             m_iCheckCamNo   =   0;
             m_iResult       =   0;
             m_pCamera = new MVisionCamera[DEF_MAX_CAMERA_NO];
-            m_pDisplay = new MVisionDisplay[DEF_MAX_CAMERA_NO];
+            m_pDisplay = new MVisionView[DEF_MAX_CAMERA_NO];
             m_MilApp = MIL.M_NULL;
             m_MilSystem = MIL.M_NULL;            
         }
@@ -72,26 +71,26 @@ namespace LWDicer.Control
             m_iResult = BGAPI.EntryPoint.countSystems(ref m_iSystemNo);
             if (m_iResult != BGAPI.Result.OK)
             {   // BGAPI.EntryPoint.CountSystems failed
-                return ERR_VISION_BOARD_NOT_INSTALLED;
+                return GenerateErrorCode(ERR_VISION_SYSTEM_CHECK_FAIL);
             }
             // create system.  
             m_iResult = BGAPI.EntryPoint.createSystem(m_iSystemIndex, ref m_System);
             if (m_iResult != BGAPI.Result.OK)
             {   // BGAPI.EntryPoint.createSystems failed
-                return ERR_VISION_BOARD_NOT_INSTALLED;
+                return GenerateErrorCode(ERR_VISION_SYSTEM_CREATE_FAIL);
             }
             // open system     
             m_iResult = m_System.open();
             if (m_iResult != BGAPI.Result.OK)
             {   // System open failed
-                return ERR_VISION_BOARD_NOT_INSTALLED;
+                return GenerateErrorCode(ERR_VISION_SYSTEM_OPEN_FAIL);
             }
 
             // get camera num  
             m_iResult = m_System.countCameras(ref m_iCheckCamNo);
             if (m_iResult != BGAPI.Result.OK)           
             {   // System count cameras failed!
-                return ERR_VISION_BOARD_NOT_INSTALLED;
+                return GenerateErrorCode(ERR_VISION_SYSTEM_CHECK_CAM_FAIL);
             }
 
             //====================================================================
@@ -103,9 +102,7 @@ namespace LWDicer.Control
 
             // Allocate a MIL system.
             MIL.MsysAlloc(MIL.M_DEFAULT, "M_DEFAULT", MIL.M_DEFAULT, MIL.M_DEFAULT, ref m_MilSystem);
-
             
-
             return SUCCESS;
         }
 
@@ -119,7 +116,7 @@ namespace LWDicer.Control
             return m_MilSystem;
         }
 
-        public void SelectView(MVisionDisplay m_Display)
+        public void SelectView(MVisionView m_Display)
         {
             m_pDisplay[m_Display.GetIdNum()] = m_Display;
         }
@@ -146,7 +143,7 @@ namespace LWDicer.Control
 
         public int ReloadModel(int iCamNo, ref CVisionPatternData pSData)
         {
-            if (pSData.m_bIsModel == false) return ERR_VISION_ERROR;
+            if (pSData.m_bIsModel == false) return GenerateErrorCode(ERR_VISION_PATTERN_NONE);
 
             MIL_ID m_MilImage = MIL.M_NULL;
             // Image Load...
@@ -168,7 +165,7 @@ namespace LWDicer.Control
             MIL.MbufCopyColor2d(m_MilImage, pSData.m_ModelImage, MIL.M_ALL_BANDS, pRec.X, pRec.Y,
                                MIL.M_ALL_BANDS, 0, 0, pRec.Width, pRec.Height);
 
-            if (pSData.m_milModel == MIL.M_NULL) return ERR_VISION_ERROR;
+            if (pSData.m_milModel == MIL.M_NULL) return GenerateErrorCode(ERR_VISION_PATTERN_NONE);
 
             MIL.MpatAllocResult(m_MilSystem, MIL.M_DEFAULT, ref m_SearchResult);
 
@@ -343,7 +340,7 @@ namespace LWDicer.Control
                 //pEdgeData.m_dPosX = 0.0;
                 //pEdgeData.m_dPosY = 0.0;
                 pEdgeData.m_iEdgeNum = 0;
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_EDGE_SEARCH_FAIL);
             }
                 
         }
@@ -410,7 +407,7 @@ namespace LWDicer.Control
             // Result Data 전달
             pRData = pResult;
 
-            return ERR_VISION_SEARCH_FAILURE;
+            return GenerateErrorCode(ERR_VISION_PATTERN_SEARCH_FAIL);
         }
 
     }

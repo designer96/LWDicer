@@ -54,7 +54,7 @@ namespace LWDicer.Control
 
         public MVisionSystem m_VisionSystem;
         public MVisionCamera[] m_VisionCamera;
-        public MVisionDisplay[] m_VisionView;
+        public MVisionView[] m_VisionView;
 
 
 
@@ -209,7 +209,7 @@ namespace LWDicer.Control
             CreateVisionCamera(objInfo);
             // Vision Display
             m_SystemInfo.GetObjectInfo(46, out objInfo);
-            CreateVisionDisplay(objInfo);
+            MVisionView(objInfo);
 
             ////////////////////////////////////////////////////////////////////////
             // 2. Mechanical Layer
@@ -347,7 +347,7 @@ namespace LWDicer.Control
 
             int iResult = 0;
             // Vision System 생성
-            m_VisionSystem = new MVisionSystem();
+            m_VisionSystem = new MVisionSystem(objInfo);
             // GigE Cam초기화 & MIL 초기화
             iResult = m_VisionSystem.Initialize();
 
@@ -371,7 +371,7 @@ namespace LWDicer.Control
             for (int iIndex = 0; iIndex < DEF_MAX_CAMERA_NO; iIndex++)
             {
                 // Camera를 생성함.
-                m_VisionCamera[iIndex] = new MVisionCamera();
+                m_VisionCamera[iIndex] = new MVisionCamera(objInfo);
                 // Vision Library MIL
                 m_VisionCamera[iIndex].SetMil_ID(m_VisionSystem.GetMilSystem());
                 // Camera 초기화
@@ -381,18 +381,18 @@ namespace LWDicer.Control
 
             return SUCCESS;
         }
-        int CreateVisionDisplay(CObjectInfo objInfo)
+        int MVisionView(CObjectInfo objInfo)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
-            m_VisionView = new MVisionDisplay[DEF_MAX_CAMERA_NO];
+            m_VisionView = new MVisionView[DEF_MAX_CAMERA_NO];
 
             // Camera & View 를 생성함.
             for (int iIndex = 0; iIndex < DEF_MAX_CAMERA_NO; iIndex++)
             {
                 // Display View 생성함.
-                m_VisionView[iIndex] = new MVisionDisplay();
+                m_VisionView[iIndex] = new MVisionView(objInfo);
                 // Vision Library MIL
                 m_VisionView[iIndex].SetMil_ID(m_VisionSystem.GetMilSystem());
                 // Display 초기화

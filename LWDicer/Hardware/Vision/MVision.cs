@@ -14,12 +14,7 @@ using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {
-    public class CVisionRefComp
-    {
-        public MVisionSystem System;
-        public MVisionCamera[] Camera = new MVisionCamera[DEF_MAX_CAMERA_NO];
-        public MVisionDisplay[] View  = new MVisionDisplay[DEF_MAX_CAMERA_NO];
-    }
+        
     public class MVision : MObject,IVision,IDisposable
     {
         public bool m_bSystemInit { get; private set; }
@@ -66,6 +61,11 @@ namespace LWDicer.Control
             m_Data = ObjectExtensions.Copy(source);
             return SUCCESS;
         }
+        /// <summary>
+        /// Initialize: Mechanical Layer Vision을 초기화 한다.
+        /// </summary>
+        /// <param name="iCameraNum"></param>
+        /// <returns></returns>
         public int Initialize(int iCameraNum)
         {
 
@@ -75,7 +75,9 @@ namespace LWDicer.Control
             m_bSystemInit = true;
             return SUCCESS;
         }
-
+        /// <summary>
+        /// CloseVisionSystem : 비전 시스템을 해제한다.
+        /// </summary>
         public void CloseVisionSystem()
         {
 #if SIMULATION_VISION
@@ -109,45 +111,48 @@ namespace LWDicer.Control
             return LoadParameter(strModelFilePath);
         }
 
-        //  파일에서 데이타를 로드 한다.	     
+        //  파일에서 데이타를 로드 한다.	  
+        //  DB를 사용하기 때문에 필요 없음 삭제 예정   
         public int LoadParameter(string strModelFilePath)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             int iResult;
             int i = 0;
 
             if (m_RefComp.System == null)
-                // 104003 = Vision System Allocation 에 실패했습니다.
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (m_RefComp.Camera == null)
-                // 104006 = DCF File 을 찾을 수 없습니다.
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_CAMERA_FAIL);
 
-            for (i = 0; i < DEF_MAX_CAMERA_NO; i++)
-            {
-                if (isValidCameraNo(i))
-                {
-                    iResult = m_RefComp.Camera[i].LoadCameraData(strModelFilePath);
-                    if (iResult > 0) return iResult;
-                }
-                else
-                {
-                    continue;
-                }
+            //for (i = 0; i < DEF_MAX_CAMERA_NO; i++)
+            //{
+            //    if (isValidCameraNo(i))
+            //    {
+            //        iResult = m_RefComp.Camera[i].LoadCameraData(strModelFilePath);
+            //        if (iResult > 0) return iResult;
+            //    }
+            //    else
+            //    {
+            //        continue;
+            //    }
 
-                // Model Mark Read
-                m_RefComp.Camera[i].LoadSearchData(strModelFilePath);
-            }
+            //    // Model Mark Read
+            //    m_RefComp.Camera[i].LoadSearchData(strModelFilePath);
+            //}
 
             return SUCCESS;
         }
-
+        /// <summary>
+        /// isValidCameraNo : 카메라의 번호가 유효한지 확인한다.
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <returns></returns>
         bool isValidCameraNo(int iCamNo)
         {
 #if SIMULATION_VISION
@@ -171,14 +176,17 @@ namespace LWDicer.Control
             return true;
         }
 
-        // 생성된 Local View 를 제거한다.	     
+        /// <summary>
+        /// DestroyLocalView : Display하고 있는 객체와 카메라의 영상 연결을 해제한다.
+        /// </summary>
+        /// <param name="iCamNo": 카메라 번호></param> 
         public int DestroyLocalView(int iCamNo)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (m_RefComp.View[iCamNo].IsLocalView())
             {
@@ -188,16 +196,20 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        // Local View 를 생성한다.	     
+        /// <summary>
+        /// InitialLocalView : 카메라 영상을 객체 Handle로 연결함
+        /// </summary>
+        /// <param name="iCamNo": 카메라 번호></param>
+        /// <param name="pObject": Display할 객체의 Handle값></param>        	     
         public int InitialLocalView(int iCamNo, IntPtr pObject)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
             // 설정할 Camera 번호가 Max 를 초과 여부 확인
-            if (iCamNo > DEF_MAX_CAMERA_NO) return ERR_VISION_ERROR;
+            if (iCamNo > DEF_MAX_CAMERA_NO) return GenerateErrorCode(ERR_VISION_CAMERA_FAIL);
 
             // 설정할 객체의 Handle값이 다른 View에 있으면 빠져 나감.
             for (int iIndex=0;iIndex < DEF_MAX_CAMERA_NO; iIndex++)
@@ -205,10 +217,10 @@ namespace LWDicer.Control
                 // 바꿀 View와 현재 View를 비교함.
                 if (m_RefComp.View[iIndex].GetViewHandle()== pObject)
                 {
-                    return ERR_VISION_ERROR;
+                    return SUCCESS;
                 }
             }
-            // View 를 Display로 등록한다.
+            // View를 Display로 등록한다.
             // View에 맞쳐 Zoom 설정을 한다
             // Mil의 SelectDisplayWindow 함수로 등록한다. 
             m_RefComp.View[iCamNo].SetDisplayWindow(pObject);
@@ -264,6 +276,7 @@ namespace LWDicer.Control
             return m_RefComp.Camera[iCamNo].GetCameraPixelSize();
         }
 
+
         /// <summary>
         /// GetGrabImage : Grab된 Image를 가져온다.
         /// </summary>
@@ -278,18 +291,21 @@ namespace LWDicer.Control
 
             return m_RefComp.View[iViewNo].GetImage();
         }
-        public void DisplayMarkImage(int iViewNo, IntPtr pDisplayHandle )
-        {
-#if SIMULATION_VISION
-                return;
-#endif
-            // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return;
+        //        public void DisplayMarkImage(int iViewNo, IntPtr pDisplayHandle )
+        //        {
+        //#if SIMULATION_VISION
+        //                return;
+        //#endif
+        //            // Vision System이 초기화 된지를 확인함
+        //            if (m_bSystemInit == false) return;
 
-            m_RefComp.View[iViewNo].GetMarkModelImage();
-        }
-
-        // Camera 와 View Window 를 연결한다.
+        //            m_RefComp.View[iViewNo].GetMarkModelImage();
+        //        }
+        
+        /// <summary>
+        /// ConnectCam : Camera 와 View Window 를 연결한다.
+        /// </summary>
+        /// <param name="iCamNo"></param>
         public void ConnectCam(int iCamNo)
         {
 #if SIMULATION_VISION
@@ -308,14 +324,15 @@ namespace LWDicer.Control
 
         }
 
-        // Write Vision Model Data
+        // 인터페이스에만 존재
+        // DB 연결로 삭제 예정
         public int WriteModelData(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (isValidPatternMarkNo(iModelNo))
             {
@@ -327,15 +344,21 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        //
+        /// <summary>
+        /// SelectCamera : Camera와 View와 연결함
+        /// </summary>
+        /// <param name="iCamNo": 카메라 번호></param>
+        /// <param name="iViewNo": View 번호></param>
+        /// <returns></returns>
         public int SelectCamera(int iCamNo, int iViewNo)
         {
 #if SIMULATION_VISION
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
+            // View 객체의 크기와 카메라 영상의 크기를 비율로 맞춘다
             m_RefComp.View[iViewNo].SelectCamera(m_RefComp.Camera[iCamNo]);
             return SUCCESS;
         }
@@ -347,20 +370,24 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (isValidPatternMarkNo(iModelNo))
             {
                 if (m_RefComp.Camera[iCamNo].GetSearchData(iModelNo).m_bIsModel)
                     return SUCCESS;
                 else
-                    return ERR_VISION_ERROR;
+                    return GenerateErrorCode(ERR_VISION_PATTERN_NONE);
             }
 
             return SUCCESS;
         }
 
-        // Delete Registered Model or Recognition Area
+        /// <summary>
+        /// DeleteMark : 등록한 Pattern Mark를 삭제한다.
+        /// </summary>
+        /// <param name="iCamNo": 카메라 번호></param>
+        /// <param name="iModelNo": Pattern Model 번호></param>
         public void DeleteMark(int iCamNo, int iModelNo)
         {
 #if SIMULATION_VISION
@@ -388,7 +415,7 @@ namespace LWDicer.Control
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             DateTime time = DateTime.Now;
             string strDirName = DEF_IMAGE_LOG_FILE + String.Format("{0:yyyy_MM_dd}",time); 
@@ -398,8 +425,7 @@ namespace LWDicer.Control
                 DirectoryInfo DirInfo = Directory.CreateDirectory(strDirName);
                 if (!DirInfo.Exists)
                 {
-                    // 104060 = LogPicture 폴더를 생성할 수 없어 Image 를 저장할 수 없습니다.
-                    return ERR_VISION_ERROR;
+                    return GenerateErrorCode(ERR_VISION_FOLDER_FAIL);
                 }
             }
             string strFileName = String.Format("LogImage {0:HH.mm.ss.fff} [Cam{1:0}_Mark{2:0} Score_{3:0.00}].bmp",
@@ -408,7 +434,6 @@ namespace LWDicer.Control
             m_RefComp.View[iCamNo].SaveImage(strDirName+"\\"+strFileName);
 
             return SUCCESS;
-
         }
 
         public int SaveImage(int iModelNo=0, double dScore=0)
@@ -417,7 +442,7 @@ namespace LWDicer.Control
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             DateTime time = DateTime.Now;
             string strDirName = DEF_IMAGE_LOG_FILE + String.Format("{0:yyyy_MM_dd}", time);
@@ -427,8 +452,7 @@ namespace LWDicer.Control
                 DirectoryInfo DirInfo = Directory.CreateDirectory(strDirName);
                 if (!DirInfo.Exists)
                 {
-                    // 104060 = LogPicture 폴더를 생성할 수 없어 Image 를 저장할 수 없습니다.
-                    return ERR_VISION_ERROR;
+                    return GenerateErrorCode(ERR_VISION_FOLDER_FAIL);
                 }
             }
 
@@ -441,21 +465,26 @@ namespace LWDicer.Control
 
         }
 
+        /// <summary>
+        /// SaveModelImage: Model Image를 저장함.
+        /// </summary>
+        /// <param name="strPath"></param>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
         public int SaveModelImage(int iCamNo, string strPath, string strName)
         {
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (!Directory.Exists(strPath))
             {
                 DirectoryInfo DirInfo = Directory.CreateDirectory(strPath);
                 if (!DirInfo.Exists)
                 {
-                    // 104060 = LogPicture 폴더를 생성할 수 없어 Image 를 저장할 수 없습니다.
-                    return ERR_VISION_ERROR;
+                    return GenerateErrorCode(ERR_VISION_FOLDER_FAIL);
                 }
             }
 
@@ -464,7 +493,6 @@ namespace LWDicer.Control
             return SUCCESS;
 
         }
-
 
         // Delete Old Error Image Files
         public int DeleteOldImageFiles()
@@ -475,8 +503,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        // Enable or Disable "Save Error Image" Fuction.
-	    
+        // Enable or Disable "Save Error Image" Fuction.	    
         public void EnableSaveErrorImage(bool bFlag = false)
         {
 #if SIMULATION_VISION
@@ -502,7 +529,7 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return;
 #endif
-            //return 0;
+            return;
         }
 
         // Get Camera Change Time.	     
@@ -517,9 +544,16 @@ namespace LWDicer.Control
         // Set Camera Change Time.
         public void SetCameraChangeTime(int iCamNo, int iCameraChangeTime)
         {
-            //return 0;
+            return;
         }
 
+        /// <summary>
+        /// ReLoadPatternMark : Pattern을 SearchData로 부터 재 등록한다.
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iTypeNo"></param>
+        /// <param name="pSData"></param>
+        /// <returns></returns>
         public int ReLoadPatternMark(int iCamNo,
                                      int iTypeNo,
                                      CSearchData pSData)
@@ -527,7 +561,7 @@ namespace LWDicer.Control
 #if SIMULATION_VISION
                 return SUCCESS;
 #endif
-            if (m_RefComp.Camera == null) return ERR_VISION_ERROR;
+            if (m_RefComp.Camera == null) return GenerateErrorCode(ERR_VISION_CAMERA_FAIL);
             // Pattern Data Load
             m_RefComp.Camera[iCamNo].SetSearchData(iTypeNo, pSData);
             // Mark Register
@@ -557,17 +591,17 @@ namespace LWDicer.Control
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             // 모델 갯수 보다 큰 경우 Err
-            if (iTypeNo > DEF_USE_SEARCH_MARK_NO) return ERR_VISION_ERROR;
+            if (iTypeNo > DEF_USE_SEARCH_MARK_NO) return GenerateErrorCode(ERR_VISION_PATTERN_NUM_OVER);
             // Search Size 확인 
             if (SearchArea.Width <= DEF_SEARCH_MIN_WIDTH ||
                SearchArea.Height <= DEF_SEARCH_MIN_HEIGHT ||
                SearchArea.Width > m_RefComp.Camera[iCamNo].m_CamPixelSize.Width ||
                SearchArea.Height > m_RefComp.Camera[iCamNo].m_CamPixelSize.Height)
             {
-                return ERR_VISION_ERROR;
+                GenerateErrorCode(ERR_VISION_SEARCH_SIZE_OVER);
             }
 
             // 기존의 Mark 모델 Data를 연결함 (주소값으로 연결됨).
@@ -605,7 +639,7 @@ namespace LWDicer.Control
             else
             {
                 pSData.m_bIsModel = false;
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_PATTERN_REG_FAIL);
             }                 
         }
         
@@ -622,15 +656,15 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
             // Model No 확인
-            if (isValidPatternMarkNo(iModelNo)==false) return ERR_VISION_ERROR;
+            if (isValidPatternMarkNo(iModelNo) == false) return GenerateErrorCode(ERR_VISION_PATTERN_NONE);
 
             // 저장된 Pattern 정보를 읽어옴
             CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
 
             // Data에 MIL 정보를 확인함.
-            if (pSData.m_milModel ==MIL.M_NULL) return ERR_VISION_ERROR;
+            if (pSData.m_milModel ==MIL.M_NULL) return GenerateErrorCode(ERR_VISION_PATTERN_NONE);
 
             // Image Display 호출
             m_RefComp.View[iCamNo].DisplayImage(pSData.m_ModelImage, pHandle);
@@ -651,12 +685,13 @@ namespace LWDicer.Control
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (SArea.Width <= DEF_SEARCH_MIN_WIDTH || SArea.Height <= DEF_SEARCH_MIN_HEIGHT ||
                 SArea.Width > m_RefComp.Camera[iCamNo].m_CamPixelSize.Width || SArea.Height > m_RefComp.Camera[iCamNo].m_CamPixelSize.Height)
-                // 104040 = Search Area Size 가 부적절합니다.
-                return ERR_VISION_ERROR;
+            {
+                GenerateErrorCode(ERR_VISION_SEARCH_SIZE_OVER);
+            }
 
             CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
             pSData.m_rectSearch = SArea;
@@ -728,7 +763,7 @@ namespace LWDicer.Control
                     iResult = SaveImage(iCamNo,1,90);
                     if(iResult != SUCCESS)
                     {
-                        return ERR_VISION_ERROR;
+                        return GenerateErrorCode(ERR_VISION_PATTERN_SEARCH_FAIL);
                     }
                 }
             }
@@ -738,9 +773,15 @@ namespace LWDicer.Control
         ERR_VISION_ERROR:
 
             pPatResult = new CResultData();
-            return ERR_VISION_ERROR;
+            return GenerateErrorCode(ERR_VISION_PATTERN_SEARCH_FAIL);
         }
-
+        /// <summary>
+        /// SetSearchData : Search Data를 설정한다.
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iModelNo"></param>
+        /// <param name="pSearchData"></param>
+        /// <returns></returns>
         public bool SetSearchData(int iCamNo, int iModelNo, CSearchData pSearchData)
         {
             return m_RefComp.Camera[iCamNo].SetSearchData(iModelNo,pSearchData);
@@ -755,7 +796,7 @@ namespace LWDicer.Control
         public MIL_ID GetPatternImage(int iCamNo, int iModelNo)
         {
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
             CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
             
             return pSData.m_milModel;
@@ -778,7 +819,7 @@ namespace LWDicer.Control
                 return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return SUCCESS;
         }
@@ -797,7 +838,7 @@ namespace LWDicer.Control
             return 0.0;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
@@ -821,7 +862,7 @@ namespace LWDicer.Control
             return 0.0;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
@@ -841,7 +882,7 @@ namespace LWDicer.Control
             return 0.0;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
@@ -901,7 +942,7 @@ namespace LWDicer.Control
             return 0.0;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (!isValidPatternMarkNo(iModelNo))
                 return 0.0;
@@ -922,17 +963,17 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             if (!isValidPatternMarkNo(iModelNo))
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_PATTERN_NONE);
 
             if (dValue < 0.0 || dValue > 100.0)
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_PARAMETER_UNFIT); 
 
             CVisionPatternData pSData = m_RefComp.Camera[iCamNo].GetSearchData(iModelNo);
             if (pSData.m_milModel == MIL.M_NULL)
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_PATTERN_NONE); 
 
             pSData.m_dAcceptanceThreshold = dValue;
             MIL.MpatSetAcceptance(pSData.m_milModel, dValue);
@@ -958,7 +999,7 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             // Edge Find 지령
             m_RefComp.System.FindEdge(iCamNo,ref pEdgeData);
@@ -1002,7 +1043,7 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             m_RefComp.System.SetEdgeFindParameter(mPos, dWidth, dHeight,dAng);
 
@@ -1014,7 +1055,7 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             Point mPos = new Point();
             // 위치는 영상의 가운데를 기준으로 한다.
@@ -1039,7 +1080,7 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return SUCCESS;
         }
@@ -1057,7 +1098,7 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return SUCCESS;
         }
@@ -1067,7 +1108,7 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return SUCCESS;
         }
@@ -1077,7 +1118,7 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return SUCCESS;
         }
@@ -1088,7 +1129,7 @@ namespace LWDicer.Control
             return SUCCESS;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return 0.0;
         }
@@ -1098,7 +1139,7 @@ namespace LWDicer.Control
             return 0.0;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return 0.0;
         }
@@ -1108,14 +1149,14 @@ namespace LWDicer.Control
             return 0.0;
 #endif
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return 0.0;
         }
         public double GetEdgeFinderDirection(int iCamNo, int iModelNo)
         {
             // Vision System이 초기화 된지를 확인함
-            if (m_bSystemInit == false) return ERR_VISION_ERROR;
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
 
             return 0.0;
         }

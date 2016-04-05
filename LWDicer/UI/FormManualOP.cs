@@ -93,7 +93,7 @@ namespace LWDicer.UI
             CMainFrame.LWDicer.m_Vision.DestroyLocalView(FINE_CAM);
             CMainFrame.LWDicer.m_Vision.DestroyLocalView(PRE__CAM);
             CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
-            
+
         }
 
         private void btnMicroView_Click(object sender, EventArgs e)

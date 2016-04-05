@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-
 using System.Drawing;
 using System.IO;
 using System.Drawing.Imaging;
@@ -12,12 +11,13 @@ using System.Diagnostics;
 
 using static LWDicer.Control.DEF_Vision;
 using static LWDicer.Control.DEF_Error;
+using static LWDicer.Control.DEF_Common;
 using BGAPI;
 using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {
-    public class MVisionDisplay
+    public class MVisionView: MObject
     {
         private MVisionCamera m_pCamera;
         private int m_iViewID;
@@ -29,8 +29,8 @@ namespace LWDicer.Control
         private IntPtr m_ImageBuffer;
         private IntPtr m_ImageHandle;
 
-        private int m_im_ImageWidth;
-        private int m_im_ImageHeight;
+        private int m_CameraWidth;
+        private int m_CameraHeight;
         
         private Rectangle m_recImage;
         private PictureBox m_Picture;
@@ -55,7 +55,7 @@ namespace LWDicer.Control
         private Point m_ptDrawStart;
         private Point m_ptDrawEnd;
 
-        public MVisionDisplay()
+        public MVisionView(CObjectInfo objInfo) : base(objInfo)
         {
             m_iViewID   = 0;
             m_Picture   = new PictureBox();
@@ -73,10 +73,6 @@ namespace LWDicer.Control
 
         }
 
-        MVisionDisplay(ref MVisionSystem pVisionSystem, ref MVisionCamera pCam, int iNumOfView)
-        {
-
-        }
         public int Initialize(int iViewNo, MVisionCamera pCamera)
         {
             // Num 설정
@@ -87,7 +83,7 @@ namespace LWDicer.Control
 
             // Camera Select
             if(SelectCamera(pCamera)==SUCCESS) return SUCCESS;
-            else return ERR_VISION_ERROR;
+            else return GenerateErrorCode(ERR_VISION_CAMERA_CREATE_FAIL);
 
 
         }
@@ -102,7 +98,7 @@ namespace LWDicer.Control
         }
         public int SelectCamera(MVisionCamera pCamera)
         {
-            if (pCamera == null) return ERR_VISION_ERROR;
+            if (pCamera == null)  return GenerateErrorCode(ERR_VISION_CAMERA_NON_USEFUL);
 
             Size CameraPixelSize;
 
@@ -111,19 +107,19 @@ namespace LWDicer.Control
 
             // Camera Pixel Size 대입
             CameraPixelSize = m_pCamera.GetCameraPixelSize();
-            m_im_ImageWidth = CameraPixelSize.Width;
-            m_im_ImageHeight = CameraPixelSize.Height;
+            m_CameraWidth = CameraPixelSize.Width;
+            m_CameraHeight = CameraPixelSize.Height;
 
-            if (m_im_ImageWidth == 0 || m_im_ImageHeight == 0) return ERR_VISION_ERROR;
+            if (m_CameraWidth == 0 || m_CameraHeight == 0) return GenerateErrorCode(ERR_VISION_CAMERA_IMAGE_SIZE_FAIL);
 
             // image byte 변수
-            m_ImgBits = new Byte[m_im_ImageWidth * m_im_ImageHeight];
+            m_ImgBits = new Byte[m_CameraWidth * m_CameraHeight];
 
             // set source image size Rect size 
             m_recImage.X = 0;
             m_recImage.Y = 0;
-            m_recImage.Width = m_im_ImageWidth;
-            m_recImage.Height = m_im_ImageHeight;            
+            m_recImage.Width = m_CameraWidth;
+            m_recImage.Height = m_CameraHeight;            
 
             // MIL Buffer 초기화
             if(m_MilImage != MIL.M_NULL)
@@ -150,7 +146,7 @@ namespace LWDicer.Control
             // get image to IntPtr   
             image.get(ref m_ImageBuffer);   
             // Copy to Byte[]
-            Marshal.Copy(m_ImageBuffer, m_ImgBits, 0, m_im_ImageWidth * m_im_ImageHeight);
+            Marshal.Copy(m_ImageBuffer, m_ImgBits, 0, m_CameraWidth * m_CameraHeight);
             // MIL Buffer에 Copy
             MIL.MbufPut(m_MilImage, m_ImgBits);
             MIL.MbufControl(m_MilImage, MIL.M_MODIFIED, MIL.M_DEFAULT);
@@ -248,7 +244,7 @@ namespace LWDicer.Control
         }
 
         /// <summary>
-        /// Model Image를 저장함.
+        /// SaveModelImage: Model Image를 저장함.
         /// </summary>
         /// <param name="strPath"></param>
         /// <param name="iModelNo"></param>
