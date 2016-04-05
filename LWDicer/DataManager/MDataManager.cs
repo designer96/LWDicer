@@ -299,8 +299,8 @@ namespace LWDicer.Control
         public class CPositionData
         {
             // MeHandler
-            public CHandlerPos MeUHandlerPos = new CHandlerPos();
-            public CHandlerPos MeLHandlerPos = new CHandlerPos();
+            public CUnitPos UHandlerPos = new CUnitPos((int)EHandlerPos.MAX);
+            public CUnitPos LHandlerPos = new CUnitPos((int)EHandlerPos.MAX);
 
             public CPositionData()
             {
@@ -428,6 +428,11 @@ namespace LWDicer.Control
             public bool[] MeUH_UseGuideCylFlag = new bool[DEF_MAX_COORDINATE];
             public bool[] MeUH_UseVccFlag = new bool[(int)EHandlerVacuum.MAX];
 
+            // MMeLowerHandler
+            public bool[] MeLH_UseMainCylFlag = new bool[DEF_MAX_COORDINATE];
+            public bool[] MeLH_UseSubCylFlag = new bool[DEF_MAX_COORDINATE];
+            public bool[] MeLH_UseGuideCylFlag = new bool[DEF_MAX_COORDINATE];
+            public bool[] MeLH_UseVccFlag = new bool[(int)EHandlerVacuum.MAX];
 
             // Control Layer
 
@@ -453,26 +458,28 @@ namespace LWDicer.Control
         CDBInfo DBInfo;
 
         // System Data
-        public CSystemData SystemData { get; set; } = new CSystemData();
-        public CSystemData_Axis SystemData_Axis { get; set; } = new CSystemData_Axis();
-        public CSystemData_Cylinder SystemData_Cylinder { get; set; } = new CSystemData_Cylinder();
-        public CSystemData_Vacuum SystemData_Vacuum { get; set; } = new CSystemData_Vacuum();
-        public CSystemData_Scanner SystemData_Scanner { get; set; } = new CSystemData_Scanner();
+        public CSystemData SystemData { get; private set; } = new CSystemData();
+        public CSystemData_Axis SystemData_Axis { get; private set; } = new CSystemData_Axis();
+        public CSystemData_Cylinder SystemData_Cylinder { get; private set; } = new CSystemData_Cylinder();
+        public CSystemData_Vacuum SystemData_Vacuum { get; private set; } = new CSystemData_Vacuum();
+        public CSystemData_Scanner SystemData_Scanner { get; private set; } = new CSystemData_Scanner();
 
         // Position Data
-        public CPositionData PositionData { get; set; } = new CPositionData();
+        public CPositionData FixedPos { get; private set; } = new CPositionData();
+        public CPositionData ModelPos { get; private set; } = new CPositionData();
+        public CPositionData OffsetPos { get; private set; } = new CPositionData();
 
         // Model Data
-        public CModelData ModelData { get; set; } = new CModelData();
-        public List<CModelHeader> ModelList { get; set; } = new List<CModelHeader>();
+        public CModelData ModelData { get; private set; } = new CModelData();
+        public List<CModelHeader> ModelList { get; private set; } = new List<CModelHeader>();
 
         // Parameter Data
-        public DEF_IO.CIOInfo[] InputArray { get; set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_INPUT];
-        public DEF_IO.CIOInfo[] OutputArray { get; set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_OUTPUT];
+        public DEF_IO.CIOInfo[] InputArray { get; private set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_INPUT];
+        public DEF_IO.CIOInfo[] OutputArray { get; private set; } = new DEF_IO.CIOInfo[DEF_IO.MAX_IO_OUTPUT];
 
         // Error Info는 필요할 때, 하나씩 불러와도 될 것 같은데, db test겸 초기화 편의성 때문에 임시로 만들어 둠
-        public List<CErrorInfo> ErrorInfoList { get; set; } = new List<CErrorInfo>();
-        public List<CParaInfo> ParaInfoList { get; set; } = new List<CParaInfo>();
+        public List<CErrorInfo> ErrorInfoList { get; private set; } = new List<CErrorInfo>();
+        public List<CParaInfo> ParaInfoList { get; private set; } = new List<CParaInfo>();
 
         public MDataManager(CObjectInfo objInfo, CDBInfo dbInfo)
             : base(objInfo)
@@ -489,10 +496,14 @@ namespace LWDicer.Control
                 OutputArray[i] = new DEF_IO.CIOInfo(i+DEF_IO.OUTPUT_ORIGIN, DEF_IO.EIOType.DO);
             }
 
+
             //TestFunction();
 
             LoadGeneralData();
+
+            // 아래의 네가지 함수 콜은 LWDicer의 Initialize에서 읽어들이는게 맞지만, 생성자에서 한번 더 읽어도 되기에.. 주석처리해도 상관없음
             LoadSystemData();
+            LoadPositionData(true);
             LoadModelList();
             ChangeModel(SystemData.ModelName);
         }
@@ -519,7 +530,7 @@ namespace LWDicer.Control
 
             //SaveSystemData();
             //SaveModelList();
-            //SaveModel();
+            //SaveModelData();
 
             for(int i = 0; i < 10; i++)
             {
@@ -585,14 +596,16 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int SaveSystemData(bool saveSystem = true, bool saveAxis = true, bool saveCylinder = true,
-            bool saveVacuum = true, bool saveScanner = true)
+        public int SaveSystemData(CSystemData system = null, CSystemData_Axis systemAxis = null,
+            CSystemData_Cylinder systemCylinder = null, CSystemData_Vacuum systemVacuum = null,
+            CSystemData_Scanner systemScanner = null)
         {
             // CSystemData
-            if (saveSystem == true)
+            if (system != null)
             {
                 try
                 {
+                    SystemData = ObjectExtensions.Copy(system);
                     string output = JsonConvert.SerializeObject(SystemData);
 
                     if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData), output,
@@ -610,10 +623,11 @@ namespace LWDicer.Control
             }
 
             // CSystemData_Axis
-            if (saveAxis == true)
+            if (systemAxis != null)
             {
                 try
                 {
+                    SystemData_Axis = ObjectExtensions.Copy(systemAxis);
                     string output = JsonConvert.SerializeObject(SystemData_Axis);
 
                     if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Axis), output,
@@ -631,10 +645,11 @@ namespace LWDicer.Control
             }
 
             // CSystemData_Cylinder
-            if (saveSystem == true)
+            if (systemCylinder != null)
             {
                 try
                 {
+                    SystemData_Cylinder = ObjectExtensions.Copy(systemCylinder);
                     string output = JsonConvert.SerializeObject(SystemData_Cylinder);
 
                     if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Cylinder), output,
@@ -652,10 +667,11 @@ namespace LWDicer.Control
             }
 
             // CSystemData_Vacuum
-            if (saveSystem == true)
+            if (systemVacuum != null)
             {
                 try
                 {
+                    SystemData_Vacuum = ObjectExtensions.Copy(systemVacuum);
                     string output = JsonConvert.SerializeObject(SystemData_Vacuum);
 
                     if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Vacuum), output,
@@ -673,10 +689,11 @@ namespace LWDicer.Control
             }
 
             // CSystemData_Scanner
-            if (saveSystem == true)
+            if (systemScanner != null)
             {
                 try
                 {
+                    SystemData_Scanner = ObjectExtensions.Copy(systemScanner);
                     string output = JsonConvert.SerializeObject(SystemData_Scanner);
 
                     if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Scanner), output,
@@ -708,7 +725,7 @@ namespace LWDicer.Control
                     if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData), out output) == true)
                     {
                         CSystemData data = JsonConvert.DeserializeObject<CSystemData>(output);
-                        SystemData = data;
+                        SystemData = ObjectExtensions.Copy(data);
                         WriteLog("success : load CSystemData.", ELogType.SYSTEM, ELogWType.LOAD);
                     }
                     //else // temporarily do not return error for continuous loading
@@ -731,7 +748,7 @@ namespace LWDicer.Control
                     if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Axis), out output) == true)
                     {
                         CSystemData_Axis data = JsonConvert.DeserializeObject<CSystemData_Axis>(output);
-                        SystemData_Axis = data;
+                        SystemData_Axis = ObjectExtensions.Copy(data);
                         WriteLog("success : load CSystemData_Axis.", ELogType.SYSTEM, ELogWType.LOAD);
                     }
                     //else // temporarily do not return error for continuous loading
@@ -757,7 +774,7 @@ namespace LWDicer.Control
                     if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Cylinder), out output) == true)
                     {
                         CSystemData_Cylinder data = JsonConvert.DeserializeObject<CSystemData_Cylinder>(output);
-                        SystemData_Cylinder = data;
+                        SystemData_Cylinder = ObjectExtensions.Copy(data);
                         WriteLog("success : load CSystemData_Cylinder.", ELogType.SYSTEM, ELogWType.LOAD);
                     }
                     //else // temporarily do not return error for continuous loading
@@ -780,7 +797,7 @@ namespace LWDicer.Control
                     if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Vacuum), out output) == true)
                     {
                         CSystemData_Vacuum data = JsonConvert.DeserializeObject<CSystemData_Vacuum>(output);
-                        SystemData_Vacuum = data;
+                        SystemData_Vacuum = ObjectExtensions.Copy(data);
                         WriteLog("success : load CSystemData_Vacuum.", ELogType.SYSTEM, ELogWType.LOAD);
                     }
                     //else // temporarily do not return error for continuous loading
@@ -803,7 +820,7 @@ namespace LWDicer.Control
                     if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData_Scanner), out output) == true)
                     {
                         CSystemData_Scanner data = JsonConvert.DeserializeObject<CSystemData_Scanner>(output);
-                        SystemData_Scanner = data;
+                        SystemData_Scanner = ObjectExtensions.Copy(data);
                         WriteLog("success : load CSystemData_Scanner.", ELogType.SYSTEM, ELogWType.LOAD);
                     }
                     //else // temporarily do not return error for continuous loading
@@ -821,32 +838,40 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int SavePositionData(EUnitPos unit = EUnitPos.ALL)
+        public int SavePositionData(bool bLoadFixed, EUnitObject unit = EUnitObject.ALL)
         {
-            EUnitPos tUnit;
-            if (unit == EUnitPos.ALL || unit == EUnitPos.LOADER)
+            string key_value;
+            CPositionData tData = OffsetPos;
+            string suffix = "_Offset_" + SystemData.ModelName;
+            if (bLoadFixed)
+            {
+                tData = FixedPos;
+                suffix = "_Fixed";
+            }
+
+            if (unit == EUnitObject.ALL || unit == EUnitObject.LOADER)
             {
 
             }
 
-            if (unit == EUnitPos.ALL || unit == EUnitPos.UHANDLER)
+            if (unit == EUnitObject.ALL || unit == EUnitObject.UHANDLER)
             {
                 try
                 {
-                    tUnit = EUnitPos.UHANDLER;
-                    string output = JsonConvert.SerializeObject(PositionData.MeUHandlerPos);
+                    key_value = EUnitObject.UHANDLER.ToString() + suffix;
+                    string output = JsonConvert.SerializeObject(tData.UHandlerPos);
 
-                    if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", tUnit.ToString(), output,
+                    if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TablePos, "name", key_value, output,
                         true, DBInfo.DBConn_Backup) != true)
                     {
-                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_POSITION_DATA);
                     }
-                    WriteLog($"success : save {tUnit.ToString()} Position.", ELogType.SYSTEM, ELogWType.SAVE);
+                    WriteLog($"success : save {key_value} Position.", ELogType.SYSTEM, ELogWType.SAVE);
                 }
                 catch (Exception ex)
                 {
                     WriteExLog(ex.ToString());
-                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_POSITION_DATA);
                 }
             }
 
@@ -854,26 +879,34 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int LoadPositionData(EUnitPos unit = EUnitPos.ALL)
+        public int LoadPositionData(bool bLoadFixed, EUnitObject unit = EUnitObject.ALL)
         {
             string output;
-            EUnitPos tUnit;
 
-            if (unit == EUnitPos.ALL || unit == EUnitPos.LOADER)
+            string key_value;
+            CPositionData tData = OffsetPos;
+            string suffix = "_Offset_" + SystemData.ModelName;
+            if (bLoadFixed)
+            {
+                tData = FixedPos;
+                suffix = "_Fixed";
+            }
+
+            if (unit == EUnitObject.ALL || unit == EUnitObject.LOADER)
             {
 
             }
 
-            if (unit == EUnitPos.ALL || unit == EUnitPos.UHANDLER)
+            if (unit == EUnitObject.ALL || unit == EUnitObject.UHANDLER)
             {
                 try
                 {
-                    tUnit = EUnitPos.UHANDLER;
-                    if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TablePos, "name", tUnit.ToString(), out output) == true)
+                    key_value = EUnitObject.UHANDLER.ToString() + suffix;
+                    if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TablePos, "name", key_value, out output) == true)
                     {
-                        CSystemData data = JsonConvert.DeserializeObject<CSystemData>(output);
-                        SystemData = data;
-                        WriteLog($"success : load {tUnit.ToString()} Position.", ELogType.SYSTEM, ELogWType.LOAD);
+                        CUnitPos data = JsonConvert.DeserializeObject<CUnitPos>(output);
+                        tData.UHandlerPos = ObjectExtensions.Copy(data);
+                        WriteLog($"success : load {key_value} Position.", ELogType.SYSTEM, ELogWType.LOAD);
                     }
                     //else // temporarily do not return error for continuous loading
                     //{
@@ -887,6 +920,16 @@ namespace LWDicer.Control
                 }
 
             }
+
+            return SUCCESS;
+        }
+
+        /// <summary>
+        /// Model(Panel, Wafer)의 크기에 따라 자동으로 모델 좌표를 생성시켜준다.
+        /// </summary>
+        /// <returns></returns>
+        public int GenerateModelPosition()
+        {
 
             return SUCCESS;
         }
@@ -980,24 +1023,14 @@ namespace LWDicer.Control
             return false;
         }
 
-        public int SaveModel(CModelData modelData = null)
+        public int SaveModelData(CModelData modelData)
         {
-            string name;
             try
             {
-                string output;
-                if(modelData == null)
-                {
-                    name = ModelData.Name;
-                    output = JsonConvert.SerializeObject(ModelData);
-                }
-                else
-                {
-                    name = modelData.Name;
-                    output = JsonConvert.SerializeObject(modelData);
-                }
+                ModelData = ObjectExtensions.Copy(modelData);
+                string output = JsonConvert.SerializeObject(ModelData);
 
-                if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableModel, "name", name, output,
+                if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableModel, "name", ModelData.Name, output,
                     true, DBInfo.DBConn_Backup) != true)
                 {
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_MODEL_DATA);
@@ -1009,12 +1042,13 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_MODEL_DATA);
             }
 
-            WriteLog($"success : save model [{name}].", ELogType.SYSTEM, ELogWType.SAVE);
+            WriteLog($"success : save model [{modelData.Name}].", ELogType.SYSTEM, ELogWType.SAVE);
             return SUCCESS;
         }
 
         public int ChangeModel(string name = "")
         {
+            int iResult;
             // 0. check exist
             if(string.IsNullOrEmpty(name))
             {
@@ -1042,7 +1076,7 @@ namespace LWDicer.Control
                 // 2. save system data
                 string prev_model = SystemData.ModelName;
                 SystemData.ModelName = name;
-                int iResult = SaveSystemData();
+                iResult = SaveSystemData(SystemData);
                 if(iResult != SUCCESS)
                 {
                     SystemData.ModelName = prev_model;
@@ -1056,16 +1090,25 @@ namespace LWDicer.Control
                 return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_MODEL_DATA);
             }
 
-            // finally, set model data
+            // 2. finally, set model data
             if(modelData != null)
             {
                 ModelData = modelData;
                 WriteLog($"success : change model [{ModelData.Name}].", ELogType.SYSTEM, ELogWType.LOAD);
             }
+
+            // 3. load model offset position
+            iResult = LoadPositionData(false);
+            if (iResult != SUCCESS) return iResult;
+
+            // 4. generate model position
+            iResult = GenerateModelPosition();
+            if (iResult != SUCCESS) return iResult;
+
             return SUCCESS;
         }
 
-        public int ViewModel(string name, out CModelData modelData)
+        public int ViewModelData(string name, out CModelData modelData)
         {
             modelData = new CModelData();
             // 0. check exist

@@ -182,7 +182,7 @@ namespace LWDicer.Control
             foreach (string table in tablelist)
             {
                 string cmd1_sql = $"DROP TABLE IF EXISTS {table}";
-                string cmd2_sql = $"DROP TABLE IF EXISTS Backup_{table}";
+                string cmd2_sql = $"DROP TABLE IF EXISTS {table}";
 
                 if (DBManager.ExecuteNonQuerys(conninfo, cmd1_sql) == false)
                 {
@@ -191,7 +191,7 @@ namespace LWDicer.Control
 
                 if (delete_backup)
                 {
-                    if (DBManager.ExecuteNonQuerys(conninfo, cmd1_sql) == false)
+                    if (DBManager.ExecuteNonQuerys(backup_conninfo, cmd2_sql) == false)
                     {
                         return false;
                     }
@@ -234,7 +234,7 @@ namespace LWDicer.Control
                 return false;
 
             string query;
-            if(backup == true && IsNullOrEmpty(backup_conninfo))
+            if(backup == true && IsNullOrEmpty(backup_conninfo) == false)
             {
                 // 2. select previous and check change
                 query = $"SELECT * FROM {table} WHERE ({key} = '{key_value}')";
@@ -246,6 +246,7 @@ namespace LWDicer.Control
                 if (ExecuteSelectQuery(conninfo, query, column1, column2) == false)
                     return false;
 
+                // if data are same, return ok
                 if (data == column1.Value)
                 {
                     return true;
@@ -254,8 +255,8 @@ namespace LWDicer.Control
                 // 3. backup
                 if (IsNullOrEmpty(column1.Value) == false)
                 {
-                    create_query = $"CREATE TABLE IF NOT EXISTS Backup_{table} (name string, created datetime, modified datetime, op_number string, op_type string, data string)";
-                    query = $"INSERT INTO Backup_{table} VALUES ('{key_value}', '{column2.Value}', '{DateTimeSQLite(now)}', '{op_number}', '{op_type}', '{column1.Value}')";
+                    create_query = $"CREATE TABLE IF NOT EXISTS {table} (name string, created datetime, modified datetime, op_number string, op_type string, data string)";
+                    query = $"INSERT INTO {table} VALUES ('{key_value}', '{column2.Value}', '{DateTimeSQLite(now)}', '{op_number}', '{op_type}', '{column1.Value}')";
 
                     ExecuteNonQuerys(backup_conninfo, create_query, query);
                 }

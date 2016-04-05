@@ -287,7 +287,9 @@ namespace LWDicer.Control
             ////////////////////////////////////////////////////////////////////////
             // 5. Set Data
             ////////////////////////////////////////////////////////////////////////
-            SetAllParameterToComponent();
+            SetSystemDataToComponent();
+            SetModelDataToComponent();
+            SetPositionDataToComponent();
 
             ////////////////////////////////////////////////////////////////////////
             // 6. Start Thread & System
@@ -628,37 +630,77 @@ namespace LWDicer.Control
             m_trsAutoManager.ThreadStop();
         }
 
-        void SetAllParameterToComponent()
+        public int SaveSystemData(CSystemData system = null, CSystemData_Axis systemAxis = null,
+            CSystemData_Cylinder systemCylinder = null, CSystemData_Vacuum systemVacuum = null,
+            CSystemData_Scanner systemScanner = null)
+        {
+            int iResult;
+
+            // save
+            iResult = m_DataManager.SaveSystemData(system, systemAxis, systemCylinder, systemVacuum, systemScanner);
+            if (iResult != SUCCESS) return SUCCESS;
+
+            // set
+            SetSystemDataToComponent();
+
+            return SUCCESS;
+        }
+
+        private void SetSystemDataToComponent()
         {
             m_DataManager.LoadSystemData();
             m_DataManager.LoadModelList();
-            m_DataManager.ChangeModel(m_DataManager.SystemData.ModelName);
 
             MLWDicer.bInSfaTest = m_DataManager.SystemData.UseInSfaTest;
             MLWDicer.bUseOnline = m_DataManager.SystemData.UseOnLineUse;
 
-            SetSystemDataToComponent();
+            // set system data to each component
+        }
+
+        public int SaveModelData(CModelData modelData)
+        {
+            int iResult;
+
+            // save
+            iResult = m_DataManager.SaveModelData(modelData);
+            if (iResult != SUCCESS) return SUCCESS;
+
+            // set
             SetModelDataToComponent();
-            SetPositionDataToComponent();
+
+            return SUCCESS;
         }
 
-        void SetSystemDataToComponent()
+        public void SetModelDataToComponent()
         {
+            m_DataManager.ChangeModel(m_DataManager.SystemData.ModelName);
 
-        }
-
-        void SetModelDataToComponent()
-        {
+            // set model data to each component
             // MMeHandler
             m_MeUpperHandler.SetCylUseFlag(m_DataManager.ModelData.MeUH_UseMainCylFlag,
                 m_DataManager.ModelData.MeUH_UseSubCylFlag, m_DataManager.ModelData.MeUH_UseGuideCylFlag);
             m_MeUpperHandler.SetVccUseFlag(m_DataManager.ModelData.MeUH_UseVccFlag);
 
+            m_MeLowerHandler.SetCylUseFlag(m_DataManager.ModelData.MeLH_UseMainCylFlag,
+                m_DataManager.ModelData.MeLH_UseSubCylFlag, m_DataManager.ModelData.MeLH_UseGuideCylFlag);
+            m_MeLowerHandler.SetVccUseFlag(m_DataManager.ModelData.MeLH_UseVccFlag);
         }
 
-        void SetPositionDataToComponent()
+        public void SetPositionDataToComponent(EUnitObject unit = EUnitObject.ALL)
         {
+            m_DataManager.LoadPositionData(true, unit);
+            m_DataManager.LoadPositionData(false, unit);
+            m_DataManager.GenerateModelPosition();
 
+            CPositionData FixedPos = m_DataManager.FixedPos;
+            CPositionData ModelPos = m_DataManager.ModelPos;
+            CPositionData OffsetPos = m_DataManager.OffsetPos;
+
+            // set position data to each component
+
+            // MMeHandler
+            m_MeUpperHandler.SetHandlerPosition(FixedPos.UHandlerPos, ModelPos.UHandlerPos, OffsetPos.UHandlerPos);
+            m_MeLowerHandler.SetHandlerPosition(FixedPos.LHandlerPos, ModelPos.LHandlerPos, OffsetPos.LHandlerPos);
         }
 
         public bool GetKeyPad(string StrCurrent, out string strModify)
@@ -744,7 +786,19 @@ namespace LWDicer.Control
 
         void CreateMeLowerHandler(CObjectInfo objInfo)
         {
+            CMeHandlerRefComp refComp = new CMeHandlerRefComp();
+            CMeHandlerData data = new CMeHandlerData();
 
+            refComp.IO = m_IO;
+            refComp.AxHandler = m_AxLowerHandler;
+            refComp.Vacuum[(int)EHandlerVacuum.SELF] = m_LHandlerSelfVac;
+
+            data.HandlerType[DEF_X] = EHandlerType.AXIS;
+            data.HandlerType[DEF_Z] = EHandlerType.AXIS;
+
+            data.InDetectObject = iUHandler_PanelDetect;
+
+            m_MeLowerHandler = new MMeHandler(objInfo, refComp, data);
         }
 
     }

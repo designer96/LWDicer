@@ -281,7 +281,7 @@ namespace LWDicer.Control
             LCNET_MAX_UNIT, // MAX UNIT
         }
 
-        public enum EUnitPos // 좌표셋을 저장할 수 있는 단위
+        public enum EUnitObject // 좌표셋을 저장할 수 있는 단위
         {
             ALL = -1,
             LOADER,

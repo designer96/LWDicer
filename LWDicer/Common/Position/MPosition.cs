@@ -6,41 +6,6 @@ using System.Diagnostics;
 
 namespace LWDicer.Control
 {
-    public class CPosition
-    {
-        public CPos_XYTZ Fixed;     // 고정 좌표
-        public CPos_XYTZ Model;     // 모델 (패널, 웨이퍼의 크기)에 따라 자동으로 구성되는 좌표
-        public CPos_XYTZ Offset;    // 옵셋 좌표
-        public CPos_XYTZ AlignOffset;     // Align 보정값
-
-        public CPosition(CPos_XYTZ Fixed = null, CPos_XYTZ Model = null, CPos_XYTZ Offset = null, CPos_XYTZ Align = null)
-        {
-            this.Fixed = Fixed ?? new CPos_XYTZ();
-            this.Model = Model ?? new CPos_XYTZ();
-            this.Offset = Offset ?? new CPos_XYTZ();
-            this.AlignOffset = Align ?? new CPos_XYTZ();
-        }
-
-        public void InitAll()
-        {
-            Fixed.Init();
-            Model.Init();
-            Offset.Init();
-            InitAlign();
-        }
-
-        public void InitAlign()
-        {
-            AlignOffset.Init();
-        }
-
-        public CPos_XYTZ GetTargetPos()
-        {
-            CPos_XYTZ target = Fixed + Model + Offset + AlignOffset;
-            return target;
-        }
-    }
-
     public class CPos_XY
     {
         public double dX;

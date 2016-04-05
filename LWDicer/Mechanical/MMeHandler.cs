@@ -50,26 +50,13 @@ namespace LWDicer.Control
         public enum EHandlerPos
         {
             NONE = -1,
-            WAIT = 0,
-            TURN,
-            LOAD,
+            LOAD = 0,
+            WAIT,
             UNLOAD,
+            TURN,
             LOAD_Z_UP,      // Loading Pos(x,y,t) + Z Up
             UNLOAD_Z_UP,    // Unloading Pos(x,y,t) + Z Up
             MAX,
-        }
-
-        public class CHandlerPos
-        {
-            public CPosition[] Pos = new CPosition[(int)EHandlerPos.MAX];
-
-            public CHandlerPos()
-            {
-                for (int i = 0; i < Pos.Length; i++)
-                {
-                    Pos[i] = new CPosition();
-                }
-            }
         }
 
         public class CMeHandlerRefComp
@@ -132,6 +119,9 @@ namespace LWDicer.Control
         private CMeHandlerRefComp m_RefComp;
         private CMeHandlerData m_Data;
 
+        // MovingObject
+        private CMovingObject AxHandlerInfo = new CMovingObject((int)EHandlerPos.MAX);
+
         // Cylinder
         private bool[] UseMainCylFlag = new bool[DEF_MAX_COORDINATE];
         private bool[] UseSubCylFlag = new bool[DEF_MAX_COORDINATE];
@@ -139,11 +129,6 @@ namespace LWDicer.Control
 
         // Vacuum
         private bool[] UseVccFlag = new bool[(int)EHandlerVacuum.MAX];
-
-        private CHandlerPos HandlerPos = new CHandlerPos();
-        private int HandlerPosInfo;
-        private bool IsMarkAligned;
-        private CPos_XYTZ AlignOffset = new CPos_XYTZ();
 
         MTickTimer m_waitTimer = new MTickTimer();
 
@@ -157,8 +142,6 @@ namespace LWDicer.Control
             {
                 UseVccFlag[i] = false;
             }
-
-            HandlerPosInfo = (int)EHandlerPos.NONE;
         }
 
         public int SetData(CMeHandlerData source)
@@ -171,6 +154,12 @@ namespace LWDicer.Control
         {
             target = ObjectExtensions.Copy(m_Data);
 
+            return SUCCESS;
+        }
+
+        public int SetHandlerPosition(CUnitPos FixedPos, CUnitPos ModelPos, CUnitPos OffsetPos)
+        {
+            AxHandlerInfo.SetPosition(FixedPos, ModelPos, OffsetPos);
             return SUCCESS;
         }
 
@@ -366,93 +355,10 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int SetHandlerPos(CHandlerPos HandlerPos)
-        {
-            this.HandlerPos = ObjectExtensions.Copy(HandlerPos);
-            return SUCCESS;
-        }
-
-        public int SetHandlerPos(int iPos, CPosition pos)
-        {
-            HandlerPos.Pos[iPos] = ObjectExtensions.Copy(pos);
-            return SUCCESS;
-        }
-
-        public int SetHandlerPos(CPosition[] pos)
-        {
-            if (pos.Length != HandlerPos.Pos.Length)
-                return GenerateErrorCode(ERR_HANDLER_INVALID_PARAMETER);
-
-            for (int i = 0; i < HandlerPos.Pos.Length; i++)
-            {
-                SetHandlerPos(i, pos[i]);
-            }
-            return SUCCESS;
-        }
-
-        public int GetHandlerPos(int iPos, out CPosition pos)
-        {
-            pos = ObjectExtensions.Copy(HandlerPos.Pos[iPos]);
-            return SUCCESS;
-        }
-
-        public int GetHandlerPos(out CPosition[] pos)
-        {
-            pos = new CPosition[HandlerPos.Pos.Length];
-
-            for (int i = 0; i < HandlerPos.Pos.Length; i++)
-            {
-                GetHandlerPos(i, out pos[i]);
-            }
-            return SUCCESS;
-        }
-
-        public int GetHandlerTargetPos(int iPos, out CPos_XYTZ pos)
-        {
-            pos = HandlerPos.Pos[iPos].GetTargetPos();
-            return SUCCESS;
-        }
-
-        public int GetHandlerTargetPos(out CPos_XYTZ[] pos)
-        {
-            pos = new CPos_XYTZ[HandlerPos.Pos.Length];
-
-            for (int i = 0; i < HandlerPos.Pos.Length; i++)
-            {
-                GetHandlerTargetPos(i, out pos[i]);
-            }
-            return SUCCESS;
-        }
-
         public int GetHandlerCurPos(out CPos_XYTZ pos)
         {
             m_RefComp.AxHandler.GetCurPos(out pos);
             return SUCCESS;
-        }
-
-        public void InitAlignOffset()
-        {
-            IsMarkAligned = false;
-            AlignOffset.Init();
-            for(int i = 0; i < (int)EHandlerPos.MAX; i++)
-            {
-                HandlerPos.Pos[i].InitAlign();
-            }
-        }
-
-        public void SetAlignOffset(CPos_XYTZ offset)
-        {
-            IsMarkAligned = true;
-            AlignOffset = ObjectExtensions.Copy(offset);
-            for (int i = 0; i < (int)EHandlerPos.MAX; i++)
-            {
-                HandlerPos.Pos[i].AlignOffset = ObjectExtensions.Copy(offset);
-            }
-        }
-
-        public void GetAlignOffset(out CPos_XYTZ offset)
-        {
-            offset = ObjectExtensions.Copy(AlignOffset);
         }
 
         /// <summary>
@@ -476,7 +382,9 @@ namespace LWDicer.Control
 
             // Load Position으로 가는 것이면 Align Offset을 초기화해야 한다.
             if (iPos == (int)EHandlerPos.LOAD)
-                InitAlignOffset();
+            {
+                AxHandlerInfo.InitAlignOffset();
+            }
 
             // trans to array
             double[] dPos;
@@ -523,7 +431,7 @@ namespace LWDicer.Control
             // set working pos
             if (iPos > (int)EHandlerPos.NONE)
             {
-                HandlerPosInfo = iPos;
+                AxHandlerInfo.PosInfo = iPos;
             }
 
             string str = $"success : move handler to pos:{iPos} {sPos.ToString()}";
@@ -545,8 +453,7 @@ namespace LWDicer.Control
         {
             int iResult = SUCCESS;
 
-            CPos_XYTZ sTargetPos;
-            GetHandlerTargetPos(iPos, out sTargetPos);
+            CPos_XYTZ sTargetPos = AxHandlerInfo.GetTargetPos(iPos);
             if (dMoveOffset != null)
             {
                 sTargetPos = sTargetPos + dMoveOffset;
@@ -610,8 +517,7 @@ namespace LWDicer.Control
 
             bResult = false;
 
-            CPos_XYTZ targetPos;
-            iResult = GetHandlerTargetPos(iPos, out targetPos);
+            CPos_XYTZ targetPos = AxHandlerInfo.GetTargetPos(iPos);
             if (iResult != SUCCESS) return iResult;
 
             iResult = CompareHandlerPos(targetPos, out bResult, bCheck_TAxis, bCheck_ZAxis, bSkipError);
@@ -622,12 +528,12 @@ namespace LWDicer.Control
 
         public int GetHandlerPosInfo()
         {
-            return HandlerPosInfo;
+            return AxHandlerInfo.PosInfo;
         }
 
         public void SetHandlerPosInfo(int posInfo)
         {
-            HandlerPosInfo = posInfo;
+            AxHandlerInfo.PosInfo = posInfo;
         }
 
         public int IsHandlerOrignReturn(out bool bStatus)

@@ -143,6 +143,7 @@
   <ItemGroup>
     <Compile Include="Common\BaseClass\MCmdTarget.cs" />
     <Compile Include="Common\BaseClass\MEvent.cs" />
+    <Compile Include="Common\Position\CMovingObject.cs" />
     <Compile Include="Common\BaseClass\MObject.cs" />
     <Compile Include="Common\BaseClass\MWorkerThread.cs" />
     <Compile Include="Common\Util\CUtils.cs" />
