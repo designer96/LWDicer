@@ -591,7 +591,7 @@ namespace LWDicer.Control
 
             // Pattern Model Data Read & Apply
             CModelData pModelData;
-            CMainFrame.LWDicer.m_DataManager.ViewModel("Default", out pModelData);
+            CMainFrame.LWDicer.m_DataManager.ViewModelData("Default", out pModelData);
             CMainFrame.LWDicer.m_DataManager.m_ModelData = pModelData;
 
             CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternA);
