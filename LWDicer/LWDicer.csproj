@@ -242,12 +242,6 @@
     <Compile Include="UI\FormEngineerMaint.Designer.cs">
       <DependentUpon>FormEngineerMaint.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\FormEngineerMaintBottom.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="UI\FormEngineerMaintBottom.Designer.cs">
-      <DependentUpon>FormEngineerMaintBottom.cs</DependentUpon>
-    </Compile>
     <Compile Include="UI\FormAxisOperation.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -272,11 +266,11 @@
     <Compile Include="UI\FormFullAuto.Designer.cs">
       <DependentUpon>FormFullAuto.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\FormFullAutoBottom.cs">
+    <Compile Include="UI\FormEmptyBottom.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\FormFullAutoBottom.Designer.cs">
-      <DependentUpon>FormFullAutoBottom.cs</DependentUpon>
+    <Compile Include="UI\FormEmptyBottom.Designer.cs">
+      <DependentUpon>FormEmptyBottom.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\FormFullAuto_1.cs">
       <SubType>Form</SubType>
@@ -308,12 +302,6 @@
     <Compile Include="UI\FormLaserMaint.Designer.cs">
       <DependentUpon>FormLaserMaint.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\FormLaserMaintBottom.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="UI\FormLaserMaintBottom.Designer.cs">
-      <DependentUpon>FormLaserMaintBottom.cs</DependentUpon>
-    </Compile>
     <Compile Include="UI\FormLaserMaint_1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -337,12 +325,6 @@
     </Compile>
     <Compile Include="UI\FormMachineMaint.Designer.cs">
       <DependentUpon>FormMachineMaint.cs</DependentUpon>
-    </Compile>
-    <Compile Include="UI\FormMachineMaintBottom.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="UI\FormMachineMaintBottom.Designer.cs">
-      <DependentUpon>FormMachineMaintBottom.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\FormMachineMaint_1.cs">
       <SubType>Form</SubType>
@@ -380,12 +362,6 @@
     <Compile Include="UI\FormManualOP.Designer.cs">
       <DependentUpon>FormManualOP.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\FormManualOPBottom.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="UI\FormManualOPBottom.Designer.cs">
-      <DependentUpon>FormManualOPBottom.cs</DependentUpon>
-    </Compile>
     <Compile Include="UI\FormManualOP_1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -409,12 +385,6 @@
     </Compile>
     <Compile Include="UI\FormOperatorMaint.Designer.cs">
       <DependentUpon>FormOperatorMaint.cs</DependentUpon>
-    </Compile>
-    <Compile Include="UI\FormOperatorMaintBottom.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="UI\FormOperatorMaintBottom.Designer.cs">
-      <DependentUpon>FormOperatorMaintBottom.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\FormOperatorMaint_1.cs">
       <SubType>Form</SubType>
@@ -495,9 +465,6 @@
     <EmbeddedResource Include="UI\FormEngineerMaint.resx">
       <DependentUpon>FormEngineerMaint.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormEngineerMaintBottom.resx">
-      <DependentUpon>FormEngineerMaintBottom.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="UI\FormAxisOperation.resx">
       <DependentUpon>FormAxisOperation.cs</DependentUpon>
     </EmbeddedResource>
@@ -510,8 +477,8 @@
     <EmbeddedResource Include="UI\FormFullAuto.resx">
       <DependentUpon>FormFullAuto.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormFullAutoBottom.resx">
-      <DependentUpon>FormFullAutoBottom.cs</DependentUpon>
+    <EmbeddedResource Include="UI\FormEmptyBottom.resx">
+      <DependentUpon>FormEmptyBottom.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\FormFullAuto_1.resx">
       <DependentUpon>FormFullAuto_1.cs</DependentUpon>
@@ -528,9 +495,6 @@
     <EmbeddedResource Include="UI\FormLaserMaint.resx">
       <DependentUpon>FormLaserMaint.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormLaserMaintBottom.resx">
-      <DependentUpon>FormLaserMaintBottom.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="UI\FormLaserMaint_1.resx">
       <DependentUpon>FormLaserMaint_1.cs</DependentUpon>
     </EmbeddedResource>
@@ -542,9 +506,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\FormMachineMaint.resx">
       <DependentUpon>FormMachineMaint.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormMachineMaintBottom.resx">
-      <DependentUpon>FormMachineMaintBottom.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\FormMachineMaint_1.resx">
       <DependentUpon>FormMachineMaint_1.cs</DependentUpon>
@@ -564,9 +525,6 @@
     <EmbeddedResource Include="UI\FormManualOP.resx">
       <DependentUpon>FormManualOP.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormManualOPBottom.resx">
-      <DependentUpon>FormManualOPBottom.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="UI\FormManualOP_1.resx">
       <DependentUpon>FormManualOP_1.cs</DependentUpon>
     </EmbeddedResource>
@@ -578,9 +536,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\FormOperatorMaint.resx">
       <DependentUpon>FormOperatorMaint.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormOperatorMaintBottom.resx">
-      <DependentUpon>FormOperatorMaintBottom.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\FormOperatorMaint_1.resx">
       <DependentUpon>FormOperatorMaint_1.cs</DependentUpon>

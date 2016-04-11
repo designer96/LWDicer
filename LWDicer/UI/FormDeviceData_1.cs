@@ -14,6 +14,8 @@ namespace LWDicer.UI
     {
         private PageInfo PrevPage = null;
         private PageInfo NextPage = null;
+        private BottomPageInfo NextBottomPage = null;
+        private BottomPageInfo PrevBottomPage = null;
 
         public void SetPrevPage(PageInfo page)
         {
@@ -23,6 +25,16 @@ namespace LWDicer.UI
         public void SetNextPage(PageInfo page)
         {
             NextPage = page;
+        }
+
+        public void SetNextBottomPage(BottomPageInfo page)
+        {
+            NextBottomPage = page;
+        }
+
+        public void SetPrevBottomPage(BottomPageInfo page)
+        {
+            PrevBottomPage = page;
         }
 
         public FormDeviceData_1()
@@ -47,6 +59,7 @@ namespace LWDicer.UI
             }
 
             CMainFrame.MainFrame.MoveToPage(NextPage);
+            CMainFrame.MainFrame.MoveToBottomPage(NextBottomPage);
         }
 
         private void BtnExit_Click(object sender, EventArgs e)
@@ -57,6 +70,7 @@ namespace LWDicer.UI
             }
 
             CMainFrame.MainFrame.MoveToPage(PrevPage);
+            CMainFrame.MainFrame.MoveToBottomPage(PrevBottomPage);
         }
     }
 }

@@ -145,3 +145,10 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 //  - MDataManager -> SaveExcelSystemData(string [,] strParameter)
 //  - Motor Data 경로 SFA\LWDicer\SystemData\SystemData.xlsx
 
+// Version : 0.0.5
+// Grade : ★
+// Date : 2016-04-11
+// Context
+// * UI 변경
+// 1. Scanner Image 편집 UI 추가
+
