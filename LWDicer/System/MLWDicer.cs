@@ -588,9 +588,9 @@ namespace LWDicer.Control
             m_Vision = new MVision(objInfo, refComp, data);
 
             // View Object select & Cam Live Set
-            CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
-            CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
-            CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
+            //CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
+            //CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
+            //CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
 
             // Pattern Model Data Read & Apply
             CModelData pModelData;
