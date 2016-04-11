@@ -239,6 +239,7 @@ namespace LWDicer.Control
             OBJ_ML_DISPENSER,
             OBJ_ML_UVLAMP,
             OBJ_ML_POLYGON,
+            OBJ_ML_VISION,
 
             // Control Layer - Common
             OBJ_CL_LOADER = 70,
@@ -496,7 +497,7 @@ namespace LWDicer.Control
             public string TableEventLog     ; // Event History
 
             public string ExcelIOList       ; // Excel File IO List
-
+            public string ExcelSystemData   ; // Excel System Data List
 
             // Common Dir
             public string SystemDir         ; // System Data가 저장되는 디렉토리
@@ -537,6 +538,7 @@ namespace LWDicer.Control
                 TableEventLog     = "ELog";
 
                 ExcelIOList       = "LWDicer_IO_List.xlsx";
+                ExcelSystemData   = "SystemData.xlsx";
 
                 // Model Dir
                 SystemDir = ConfigurationManager.AppSettings["AppFilePath"] + @"\SystemData\";

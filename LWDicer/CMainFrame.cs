@@ -31,7 +31,7 @@ namespace LWDicer.UI
         public static MLWDicer LWDicer = new MLWDicer(new CObjectInfo());
 
         public static CMainFrame MainFrame = null;
-
+        
         private FormTop m_FormTop;
 
         private FormSubBottom m_FormSubBottom;
@@ -43,43 +43,38 @@ namespace LWDicer.UI
         private FormFullAuto_1 m_FormFullAuto_1;
         private FormFullAuto_2 m_FormFullAuto_2;
         private FormFullAuto_3 m_FormFullAuto_3;
-        private FormFullAutoBottom m_FormFullAutoBottom;
+        private FormEmptyBottom m_FormEmptyBottom;
 
         public FormManualOP m_FormManualOP;
         public FormManualOP_1 m_FormManualOP_1;
         public FormManualOP_2 m_FormManualOP_2;
         public FormManualOP_3 m_FormManualOP_3;
-        public FormManualOPBottom m_FormManualOPBottom;
 
-        private FormDeviceData m_FormDeviceData;
-        private FormDeviceData_1 m_FormDeviceData_1;
-        private FormDeviceData_2 m_FormDeviceData_2;
-        private FormDeviceData_3 m_FormDeviceData_3;
-        private FormDeviceDataBottom m_FormDeviceDataBottom;
+        public FormDeviceData m_FormDeviceData;
+        public FormDeviceData_1 m_FormDeviceData_1;
+        public FormDeviceData_2 m_FormDeviceData_2;
+        public FormDeviceData_3 m_FormDeviceData_3;
+        public FormDeviceDataBottom m_FormDeviceDataBottom;
 
         private FormEngineerMaint m_FormEngineerMaint;
         private FormAxisOperation m_AxisOperation;
         private FormIOCheck       m_IOCheck;
-        private FormEngineerMaint_3 m_FormEngineerMaint_3;
-        private FormEngineerMaintBottom m_FormEngineerMaintBottom;
+        private FormAxisParameter m_AxisParameter;
 
         private FormOperatorMaint m_FormOperatorMaint;
         private FormOperatorMaint_1 m_FormOperatorMaint_1;
         private FormOperatorMaint_2 m_FormOperatorMaint_2;
         private FormOperatorMaint_3 m_FormOperatorMaint_3;
-        private FormOperatorMaintBottom m_FormOperatorMaintBottom;
 
         private FormMachineMaint m_FormMachineMaint;
         private FormMachineMaint_1 m_FormMachineMaint_1;
         private FormMachineMaint_2 m_FormMachineMaint_2;
         private FormMachineMaint_3 m_FormMachineMaint_3;
-        private FormMachineMaintBottom m_FormMachineMaintBottom;
 
         private FormLaserMaint m_FormLaserMaint;
         private FormLaserMaint_1 m_FormLaserMaint_1;
         private FormLaserMaint_2 m_FormLaserMaint_2;
         private FormLaserMaint_3 m_FormLaserMaint_3;
-        private FormLaserMaintBottom m_FormLaserMaintBottom;
 
         public List<KeyValuePair<PageInfo, Form>> FormMatchingList = new List<KeyValuePair<PageInfo, Form>>();
         public List<KeyValuePair<BottomPageInfo, Form>> BottomFormMatchingList = new List<KeyValuePair<BottomPageInfo, Form>>();
@@ -92,6 +87,9 @@ namespace LWDicer.UI
 
         public CMainFrame()
         {
+
+            InitializeLWDicer();
+
             InitializeComponent();
 
             InitializeForm();
@@ -106,7 +104,7 @@ namespace LWDicer.UI
 
             MainFrame = this;
 
-            InitializeLWDicer();
+            
         }
 
         public void ProcessMsg(MEvent evnt)
@@ -170,13 +168,12 @@ namespace LWDicer.UI
             m_FormFullAuto_1 = new FormFullAuto_1();
             m_FormFullAuto_2 = new FormFullAuto_2();
             m_FormFullAuto_3 = new FormFullAuto_3();
-            m_FormFullAutoBottom = new FormFullAutoBottom();
+            m_FormEmptyBottom = new FormEmptyBottom();
 
             m_FormManualOP = new FormManualOP();
             m_FormManualOP_1 = new FormManualOP_1();
             m_FormManualOP_2 = new FormManualOP_2();
             m_FormManualOP_3 = new FormManualOP_3();
-            m_FormManualOPBottom = new FormManualOPBottom();
 
             m_FormDeviceData = new FormDeviceData();
             m_FormDeviceData_1 = new FormDeviceData_1();
@@ -187,26 +184,22 @@ namespace LWDicer.UI
             m_FormEngineerMaint = new FormEngineerMaint();
             m_AxisOperation     = new FormAxisOperation();
             m_IOCheck           = new FormIOCheck();
-            m_FormEngineerMaint_3 = new FormEngineerMaint_3();
-            m_FormEngineerMaintBottom = new FormEngineerMaintBottom();
+            m_AxisParameter     = new FormAxisParameter();
 
             m_FormOperatorMaint = new FormOperatorMaint();
             m_FormOperatorMaint_1 = new FormOperatorMaint_1();
             m_FormOperatorMaint_2 = new FormOperatorMaint_2();
             m_FormOperatorMaint_3 = new FormOperatorMaint_3();
-            m_FormOperatorMaintBottom = new FormOperatorMaintBottom();
 
             m_FormMachineMaint = new FormMachineMaint();
             m_FormMachineMaint_1 = new FormMachineMaint_1();
             m_FormMachineMaint_2 = new FormMachineMaint_2();
             m_FormMachineMaint_3 = new FormMachineMaint_3();
-            m_FormMachineMaintBottom = new FormMachineMaintBottom();
 
             m_FormLaserMaint = new FormLaserMaint();
             m_FormLaserMaint_1 = new FormLaserMaint_1();
             m_FormLaserMaint_2 = new FormLaserMaint_2();
             m_FormLaserMaint_3 = new FormLaserMaint_3();
-            m_FormLaserMaintBottom = new FormLaserMaintBottom();
         }
 
         private void PageCreationSetting()
@@ -220,14 +213,8 @@ namespace LWDicer.UI
             PageInfo PageInfoFormMain = new PageInfo() { BigClassifyingNumber = 0, SmallClassifyingNumber = 0 };
 
             BottomPageInfo PageInfoFormMainBottom = new BottomPageInfo();
-            BottomPageInfo PageInfoFormFullAutoBottom = new BottomPageInfo();
-            BottomPageInfo PageInfoFormManualOPBottom = new BottomPageInfo();
+            BottomPageInfo PageInfoFormEmptyBottom = new BottomPageInfo();
             BottomPageInfo PageInfoFormDeviceDataBottom = new BottomPageInfo();
-
-            BottomPageInfo PageInfoFormEngineerMaintBottom = new BottomPageInfo();
-            BottomPageInfo PageInfoFormOperatorMaintBottom = new BottomPageInfo();
-            BottomPageInfo PageInfoFormMachineMaintBottom = new BottomPageInfo();
-            BottomPageInfo PageInfoFormLaserMaintBottom = new BottomPageInfo();
 
             PageInfo PageInfoFormFullAuto = new PageInfo() { BigClassifyingNumber = 1, SmallClassifyingNumber = 1 };
             PageInfo PageInfoFormFullAuto_1 = new PageInfo() { BigClassifyingNumber = 1, SmallClassifyingNumber = 2 };
@@ -247,6 +234,7 @@ namespace LWDicer.UI
             PageInfo PageInfoEngineerMaint = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 1 };
             PageInfo PageInfoAxisOperation = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 2 };
             PageInfo PageInfoIOCheck       = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 3 };
+            PageInfo PageInfoAxisParameter = new PageInfo() { BigClassifyingNumber = 4, SmallClassifyingNumber = 4 };
 
             PageInfo PageInfoOperatorMaint = new PageInfo() { BigClassifyingNumber = 5, SmallClassifyingNumber = 1 };
             PageInfo PageInfoOperatorMaint_1 = new PageInfo() { BigClassifyingNumber = 5, SmallClassifyingNumber = 2 };
@@ -263,14 +251,14 @@ namespace LWDicer.UI
             PageInfo PageInfoLaserMaint_2 = new PageInfo() { BigClassifyingNumber = 7, SmallClassifyingNumber = 3 };
             PageInfo PageInfoLaserMaint_3 = new PageInfo() { BigClassifyingNumber = 7, SmallClassifyingNumber = 4 };
 
-            m_FormMain.SetFullAutoPage(PageInfoFormFullAuto, PageInfoFormFullAutoBottom);
-            m_FormMain.SetManualOPPage(PageInfoFormManualOP, PageInfoFormManualOPBottom);
+            m_FormMain.SetFullAutoPage(PageInfoFormFullAuto, PageInfoFormEmptyBottom);
+            m_FormMain.SetManualOPPage(PageInfoFormManualOP, PageInfoFormEmptyBottom);
             m_FormMain.SetDeviceDataPage(PageInfoFormDeviceData, PageInfoFormDeviceDataBottom);
 
-            m_FormMain.SetOperatorMaintPage(PageInfoOperatorMaint, PageInfoFormOperatorMaintBottom);
-            m_FormMain.SetMachineMaintPage(PageInfoMachineMaint, PageInfoFormMachineMaintBottom);
-            m_FormMain.SetEngineerMaintPage(PageInfoEngineerMaint, PageInfoFormEngineerMaintBottom);
-            m_FormMain.SetLaserMaintPage(PageInfoLaserMaint, PageInfoFormLaserMaintBottom);
+            m_FormMain.SetOperatorMaintPage(PageInfoOperatorMaint, PageInfoFormEmptyBottom);
+            m_FormMain.SetMachineMaintPage(PageInfoMachineMaint, PageInfoFormEmptyBottom);
+            m_FormMain.SetEngineerMaintPage(PageInfoEngineerMaint, PageInfoFormEmptyBottom);
+            m_FormMain.SetLaserMaintPage(PageInfoLaserMaint, PageInfoFormEmptyBottom);
 
             m_FormFullAuto.SetPrevPage(PageInfoFormMain);
             m_FormFullAuto.SetNextPage(PageInfoFormFullAuto_1);
@@ -299,17 +287,24 @@ namespace LWDicer.UI
             m_FormManualOP_3.SetNextPage(null);
 
             m_FormDeviceData.SetPrevPage(PageInfoFormMain);
+            m_FormDeviceData.SetPrevBottomPage(PageInfoFormMainBottom);
             m_FormDeviceData.SetNextPage(PageInfoFormDeviceData_1);
-            m_FormDeviceData.SetNextBottomPage(PageInfoFormMainBottom);
-
+            m_FormDeviceData.SetNextBottomPage(PageInfoFormEmptyBottom);
+            
             m_FormDeviceData_1.SetPrevPage(PageInfoFormDeviceData);
+            m_FormDeviceData_1.SetPrevBottomPage(PageInfoFormDeviceDataBottom);
             m_FormDeviceData_1.SetNextPage(PageInfoFormDeviceData_2);
+            m_FormDeviceData_1.SetNextBottomPage(PageInfoFormEmptyBottom);
 
-            m_FormDeviceData_2.SetPrevPage(PageInfoFormDeviceData_1);
+            m_FormDeviceData_2.SetPrevPage(PageInfoFormDeviceData);
+            m_FormDeviceData_2.SetPrevBottomPage(PageInfoFormDeviceDataBottom);
             m_FormDeviceData_2.SetNextPage(PageInfoFormDeviceData_3);
+            m_FormDeviceData_2.SetNextBottomPage(PageInfoFormEmptyBottom);
 
             m_FormDeviceData_3.SetPrevPage(PageInfoFormDeviceData_2);
+            m_FormDeviceData_2.SetPrevBottomPage(PageInfoFormEmptyBottom);
             m_FormDeviceData_3.SetNextPage(null);
+            m_FormDeviceData_3.SetNextBottomPage(null);
 
             m_FormEngineerMaint.SetPrevPage(PageInfoFormMain);
             m_FormEngineerMaint.SetAxisOPPage(PageInfoAxisOperation);
@@ -317,8 +312,9 @@ namespace LWDicer.UI
             m_FormEngineerMaint.SetNextBottomPage(PageInfoFormMainBottom);
 
             m_AxisOperation.SetPrevPage(PageInfoEngineerMaint);
+            m_AxisOperation.SetNextPage(PageInfoAxisParameter);
+            m_AxisParameter.SetPrevPage(PageInfoAxisOperation);
             m_IOCheck.SetPrevPage(PageInfoEngineerMaint);
-
 
             m_FormOperatorMaint.SetPrevPage(PageInfoFormMain);
             m_FormOperatorMaint.SetNextPage(PageInfoOperatorMaint_1);
@@ -390,7 +386,9 @@ namespace LWDicer.UI
 
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoEngineerMaint, m_FormEngineerMaint));
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoAxisOperation, m_AxisOperation));
+            FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoAxisParameter, m_AxisParameter));
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoIOCheck, m_IOCheck));
+
 
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoLaserMaint, m_FormLaserMaint));
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoLaserMaint_1, m_FormLaserMaint_1));
@@ -398,14 +396,8 @@ namespace LWDicer.UI
             FormMatchingList.Add(new KeyValuePair<PageInfo, Form>(PageInfoLaserMaint_3, m_FormLaserMaint_3));
 
             BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormMainBottom, m_FormMainBottom));
-            BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormFullAutoBottom, m_FormFullAutoBottom));
-            BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormManualOPBottom, m_FormManualOPBottom));
+            BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormEmptyBottom, m_FormEmptyBottom));
             BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormDeviceDataBottom, m_FormDeviceDataBottom));
-
-            BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormEngineerMaintBottom, m_FormEngineerMaintBottom));
-            BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormOperatorMaintBottom, m_FormOperatorMaintBottom));
-            BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormMachineMaintBottom, m_FormMachineMaintBottom));
-            BottomFormMatchingList.Add(new KeyValuePair<BottomPageInfo, Form>(PageInfoFormLaserMaintBottom, m_FormLaserMaintBottom));
 
             // Top Page : 고정 Page
             CurrentPage = new KeyValuePair<PageInfo, Form>(PageInfoFormTop, m_FormTop);
@@ -485,14 +477,8 @@ namespace LWDicer.UI
         private void FormsAttachToBottomContentsPanel()
         {
             FormAttachToPanel(m_FormMainBottom, PanelBottom);
-            FormAttachToPanel(m_FormFullAutoBottom, PanelBottom);
-            FormAttachToPanel(m_FormManualOPBottom, PanelBottom);
+            FormAttachToPanel(m_FormEmptyBottom, PanelBottom);
             FormAttachToPanel(m_FormDeviceDataBottom, PanelBottom);
-
-            FormAttachToPanel(m_FormEngineerMaintBottom, PanelBottom);
-            FormAttachToPanel(m_FormOperatorMaintBottom, PanelBottom);
-            FormAttachToPanel(m_FormMachineMaintBottom, PanelBottom);
-            FormAttachToPanel(m_FormLaserMaintBottom, PanelBottom);
         }
 
         private void FormsAttachToMainContentsPanel()
@@ -530,6 +516,7 @@ namespace LWDicer.UI
             FormAttachToPanel(m_FormEngineerMaint, MainUIPanel);
             FormAttachToPanel(m_AxisOperation, MainUIPanel);
             FormAttachToPanel(m_IOCheck, MainUIPanel);
+            FormAttachToPanel(m_AxisParameter, MainUIPanel);
 
             FormAttachToPanel(m_FormLaserMaint, MainUIPanel);
             FormAttachToPanel(m_FormLaserMaint_1, MainUIPanel);

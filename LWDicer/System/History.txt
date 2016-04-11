@@ -111,6 +111,14 @@ LWDicer의 DataManager에서 데이터를 읽어오기 위한 3가지 함수 : S
 2. Baumer Dll Copy
 3. Simulation Vision Mode 설정
 
+// Version : 0.0.2
+// Grade : ★★
+// Date : 2016-04-04
+// Context
+1. Hardware Layer에서 System,Camera,Display 객체 생성
+2. MVision의 System,Camera,Display를 RefComp로 연결
+3. GenerateErrorCode 생성기능을 적용함. 
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LHS
@@ -148,4 +156,21 @@ LWDicer의 DataManager에서 데이터를 읽어오기 위한 3가지 함수 : S
 // 3. Excel IO List Load 추가
 //  -  MDataManager -> LoadExcelIOList()
 //  - IO List 경로 SFA\LWDicer\SystemData\LWDicer_IO_List.xlsx
+
+// Version : 0.0.4
+// Grade : ★
+// Date : 2016-04-04
+// Context
+// * UI 변경
+// 1. Axis Operation UI 추가
+// 2. Motor Parameter UI 추가 / Motor Parameter Excel File Load,Save 구문 추가
+//  - MDataManager -> SaveExcelSystemData(string [,] strParameter)
+//  - Motor Data 경로 SFA\LWDicer\SystemData\SystemData.xlsx
+
+// Version : 0.0.5
+// Grade : ★
+// Date : 2016-04-11
+// Context
+// * UI 변경
+// 1. Scanner Image 편집 UI 추가
 

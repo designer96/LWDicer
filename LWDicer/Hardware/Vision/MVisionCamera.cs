@@ -2,22 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
-using static LWDicer.Control.DEF_Vision;
-using static LWDicer.Control.DEF_Error;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+
+using static LWDicer.Control.DEF_Vision;
+using static LWDicer.Control.DEF_Error;
+using static LWDicer.Control.DEF_Common;
 
 using BGAPI;
 using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {
-    class MVisionCamera
+    public class MVisionCamera: MObject
     {
         private int m_iCamID;
         private int m_iResult;               
@@ -31,30 +32,30 @@ namespace LWDicer.Control
         private BGAPIX_CameraImageFormat m_CamImageInfo;
 
         private MIL_ID m_pMilSystemID;
-        private MVisionDisplay m_pDisplay;
+        private MVisionView m_pDisplay;
 
         public Size m_CamPixelSize;
         private CCameraData m_cCameraData;
-        private CSearchData[] m_rgsCSearchData;
+        private CVisionPatternData[] m_rgsCSearchData;
         private CResultData[] m_rgsCResultData;
         private bool m_bLive;
+        
+        public MVisionCamera(CObjectInfo objInfo): base(objInfo)
+        {
+            int iMarkNum = (int)EPatternMarkType.ALIGN_MARK_COUNT;
 
-        public MVisionCamera()
-        {            
             m_iCamID            = 0;
             m_iResult           = 0;
             m_bLive             = false;
             m_cCameraData       = new CCameraData();
-            m_rgsCSearchData    = new CSearchData[DEF_USE_SEARCH_MARK_NO];
-            m_rgsCResultData    = new CResultData[DEF_USE_SEARCH_MARK_NO];
+            m_rgsCSearchData    = new CVisionPatternData[iMarkNum];
+            m_rgsCResultData    = new CResultData[iMarkNum];
 
-            for (int i = 0; i < DEF_USE_SEARCH_MARK_NO; i++)
+            for (int i = 0; i < iMarkNum; i++)
             {
                 // Search Data Init
-                m_rgsCSearchData[i] = new CSearchData();
+                m_rgsCSearchData[i] = new CVisionPatternData();
                 m_rgsCSearchData[i].m_bIsModel = false;
-                m_rgsCSearchData[i].m_milModel = MIL.M_NULL;
-                m_rgsCSearchData[i].m_milGmfModel = MIL.M_NULL;
                 m_rgsCSearchData[i].m_dAcceptanceThreshold = DEF_DEFAULT_ACCEP_THRESHOLD;
                 m_rgsCSearchData[i].m_dCertaintyThreshold  = DEF_DEFAULT_CERTAIN_THRESHOLD;
 
@@ -95,7 +96,7 @@ namespace LWDicer.Control
             if (m_iResult != BGAPI.Result.OK)            
             {
                 //"System create camera failed!"
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_CAMERA_CREATE_FAIL);
             }
 
             // get camera device information   
@@ -103,7 +104,7 @@ namespace LWDicer.Control
             m_cCameraData.m_CamDeviceInfo = m_CamDeviceInfo;
             if (m_iResult != BGAPI.Result.OK)
             {   // "Camera get Device Information failed!"
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_CAMERA_GET_INFO_FAIL);
             }
 
             // get camera Image information   
@@ -111,7 +112,7 @@ namespace LWDicer.Control
       
             if (m_iResult != BGAPI.Result.OK)
             {   // "Camera get Device Information failed!"
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_CAMERA_GET_INFO_FAIL);
             }
             else
             {
@@ -124,31 +125,41 @@ namespace LWDicer.Control
             m_iResult = m_Camera.open();
             if (m_iResult != BGAPI.Result.OK)
             {   //"Camera open failed!"
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_CAMERA_CONNECT_FAIL);
             }
 
             // image create 
             m_iResult = BGAPI.EntryPoint.createImage(ref m_CamImage);
             if (m_iResult != BGAPI.Result.OK)
             {   // Create Image failed
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_CAMERA_CREATE_IMAGE_FAIL);
             }
             
             // camera & image connect 
             m_iResult = m_Camera.setImage(ref m_CamImage);
             if (m_iResult != BGAPI.Result.OK)
             {   // Camera set Image failed!
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_CAMERA_GET_IMAGE_FAIL);
             }
                         
             return SUCCESS;
         }
 
+        /// <summary>
+        /// SetMil_ID : MIL ID를 카메라와 연결함
+        /// </summary>
+        /// <param name="MilSystem": System에서 생성된 MIL ID></param>
         public void SetMil_ID(MIL_ID MilSystem)
         {
             m_pMilSystemID = MilSystem;
         }
-        public int SelectView(MVisionDisplay m_Display)
+
+        /// <summary>
+        /// SelectView : View와 카메라와 연결함
+        /// </summary>
+        /// <param name="m_Display"></param>
+        /// <returns></returns>
+        public int SelectView(MVisionView m_Display)
         {
             // Display 객체를 받아온다
             m_pDisplay = m_Display;
@@ -157,28 +168,32 @@ namespace LWDicer.Control
             m_iResult = m_Camera.registerNotifyCallback(this, m_pDisplay.ImageCallback);
             if (m_iResult != BGAPI.Result.OK)
             {   // Camera register Notify Callback failed!
-                return ERR_VISION_ERROR;
+                return GenerateErrorCode(ERR_VISION_CAMERA_SET_CALLBACK_FAIL);
             }
 
             return SUCCESS;
-        }        
-
-        public bool CheckImage()
-        {
-            return true;
         }
 
-
+        /// <summary>
+        /// GetCamDeviceInfo : 카메라 정보를 반환한다.
+        /// </summary>
+        /// <returns></returns>
         public CCameraData GetCamDeviceInfo()
         {
             return m_cCameraData;
         }
-
+        /// <summary>
+        /// GetCamera : 카메라 객체를 반환한다.
+        /// </summary>
+        /// <returns></returns>
         public BGAPI.Camera GetCamera()
         {
             return m_Camera;
         }
-
+        /// <summary>
+        /// GetCameraPixelSize: 카메라 영상의 가로/세로 사이즈를 반환한다
+        /// </summary>
+        /// <returns></returns>
         public Size GetCameraPixelSize()
         {
             return m_CamPixelSize;
@@ -192,6 +207,10 @@ namespace LWDicer.Control
         {
             return m_iCamID;
         }
+        /// <summary>
+        /// SetLive: 카메라의 Live 상태를 지령한다.
+        /// </summary>
+        /// <param name="bRun"></param>
         public void SetLive(bool bRun)
         {
             int iRes;
@@ -210,14 +229,27 @@ namespace LWDicer.Control
             SetLiveFlag(bRun);
 
         }
+        /// <summary>
+        /// SetLiveFlag : 카메라 Live 상태 Bit를 설정한다.
+        /// </summary>
+        /// <param name="bLive"></param>
         public void SetLiveFlag(bool bLive)
         {
             m_bLive = bLive;
         }
+
+        /// <summary>
+        /// IsLive : 카메라의 Live 상태를 반환한다.
+        /// </summary>
+        /// <returns></returns>
         public bool IsLive()
         {
             return m_bLive;
         }
+
+        /// <summary>
+        /// SetTrigger: 카메라의 Trigger를 설정한다. (SW 방식)
+        /// </summary>
         public void SetTrigger()
         {
             m_Camera.setTrigger(true);
@@ -225,75 +257,56 @@ namespace LWDicer.Control
             m_Camera.doTrigger();
 
         }
+        /// <summary>
+        /// MirrorImage: 영상의 이미지를 반전한다.
+        /// </summary>
         public void MirrorImage()
         {
+            // $$$ 기능 추가
             //return 0;
-        }       
+        }
 
-        public CSearchData GetSearchData(int iModelNo)
+        /// <summary>
+        /// SetSearchData: Search할 Data를 카메라 내부로 할당한다.
+        /// </summary>
+        /// <param name="iModelNo"></param>
+        /// <param name="pSearchData"></param>
+        /// <returns></returns>
+        public bool SetSearchData(int iModelNo, CSearchData pSearchData)
         {
+            m_rgsCSearchData[iModelNo].m_bIsModel = pSearchData.m_bIsModel;
+            m_rgsCSearchData[iModelNo].m_dAcceptanceThreshold = pSearchData.m_dAcceptanceThreshold;
+            m_rgsCSearchData[iModelNo].m_pointReference = pSearchData.m_pointReference;
+            m_rgsCSearchData[iModelNo].m_rectModel = pSearchData.m_rectModel;
+            m_rgsCSearchData[iModelNo].m_rectSearch = pSearchData.m_rectSearch;
+            m_rgsCSearchData[iModelNo].m_strFileName = pSearchData.m_strFileName;
+            m_rgsCSearchData[iModelNo].m_strFilePath = pSearchData.m_strFilePath;
+            
+            return true;
+        }
+        /// <summary>
+        /// GetSearchData: 할당된 Search Data를 반환한다.
+        /// </summary>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
+        public CVisionPatternData GetSearchData(int iModelNo)
+        { 
             return m_rgsCSearchData[iModelNo];
         }
-        // Pattern Maching Result Data
+        /// <summary>
+        /// GetResultData: Pattern Search한 결과를 반환한다.
+        /// </summary>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
         public CResultData GetResultData(int iModelNo)
         {
             return m_rgsCResultData[iModelNo];
         }
 
-        public int LoadCameraData(string strModelFilePath)
-        {
-            int iResult;
-            string strFileName;
-            //	strFileName.Format("Cam_%d.dat", m_iCamID);
-            strFileName= string.Format("VisionCamera_#{0}.dat", m_iCamID + 1);
-
-            MVisionModelData cameraData= new MVisionModelData(m_pMilSystemID, strFileName, strModelFilePath);
-            iResult = cameraData.ReadCameraData(m_iCamID, ref m_cCameraData);
-            if (iResult != SUCCESS) return ERR_VISION_FILE_READ_FAILURE;
-
-            return SUCCESS;            
-        }
-
-        public int WriteCameraData()
-        {
-            return SUCCESS;
-        }
-        public int LoadSearchData(string strModelFilePath)
-        {
-            string strFileName;
-            strFileName = string.Format("VisionCamera_#{0}.dat", m_iCamID + 1);
-
-            MVisionModelData modelData = new MVisionModelData(m_pMilSystemID, strFileName, strModelFilePath);
-
-           // CResultData pRData;
-            for (int i = 0; i < DEF_USE_SEARCH_MARK_NO; i++)
-            {
-                modelData.ReadSearchData(m_iCamID, i, ref m_rgsCSearchData[i]);
-            }
-
-            return SUCCESS;
-        }
-
-        public int WriteSearchData(int iModelNo)
-        {
-            string strFileName;
-            CSearchData pSData = m_rgsCSearchData[iModelNo];
-
-            strFileName= string.Format(DEF_NGC_MARK_NAME_TEMPLATE, pSData.m_strFilePath, m_iCamID, iModelNo);
-            MIL.MpatSave(strFileName, pSData.m_milModel);
-
-            MVisionModelData modelData = new MVisionModelData(m_pMilSystemID,
-                                                              pSData.m_strFileName,
-                                                              pSData.m_strFilePath);
-            modelData.WriteSearchData(iModelNo, ref pSData);
-
-            return SUCCESS;
-        }
-
 
         public void DeleteSearchModel(int iModelNo)
         {
-            CSearchData pSData = m_rgsCSearchData[iModelNo];
+            CVisionPatternData pSData = m_rgsCSearchData[iModelNo];
 
             if (pSData.m_milModel != MIL.M_NULL && pSData.m_bIsModel)
             {
@@ -303,25 +316,10 @@ namespace LWDicer.Control
             }
 
             pSData.m_pointReference = new Point(0, 0);
-            //pSData.m_rectModel.SetRectEmpty();
             pSData.m_rectSearch = new Rectangle(3, 3, DEF_IMAGE_SIZE_X - 3, DEF_IMAGE_SIZE_Y - 3);
             pSData.m_dAcceptanceThreshold = 70.0;
             pSData.m_dCertaintyThreshold = 90.0;
-
-
-            MVisionModelData visionModelData = new MVisionModelData(m_pMilSystemID,
-                                                                    pSData.m_strFileName,
-                                                                    pSData.m_strFilePath);
-
-            visionModelData.DeleteSearchData(iModelNo, ref pSData);
-
-
-            string strFileName;
-            strFileName= string.Format(DEF_NGC_MARK_NAME_TEMPLATE, pSData.m_strFilePath, m_iCamID, iModelNo);
-
-            // File 이 존재하지 않으면 Fail ⇒ FALSE Return.            
-            File.Delete(strFileName);
-
+            
         }
 
         public void RemoveModel()

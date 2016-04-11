@@ -26,8 +26,6 @@ namespace LWDicer.Control
 	            new CObjectInfo( (int)OBJ_HL_MOTION_LIB, "MotionLib", 3, "YMC Board", 1500, "YMCLib", LOG_ALL, LOG_DAY ),
 
 	            new CObjectInfo( (int)OBJ_HL_IO, "IO", 6, "Device Net", 2000, "IO", LOG_ALL, LOG_DAY ),	
-				
-	            new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 9, "Vision", 3000, "Vision", LOG_ALL, LOG_DAY ),
 		
 	            new CObjectInfo( (int)OBJ_HL_MELSEC, "Melsec", 11, "Melsec", 4000, "Melsec", LOG_ALL, LOG_DAY ),
 		
@@ -36,6 +34,13 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 31, "RS232 SHead2", 5000, "RS232_SHead2", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 32, "RS232 GHead1", 5000, "RS232_GHead1", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_HL_SERIAL, "Serial", 33, "RS232 GHead2", 5000, "RS232_GHead2", LOG_ALL, LOG_DAY ),
+		
+                // 40-59 : Vision ------------------------------------------------------------------------
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 40, "HardWare : Vision System", 3000, "System", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 42, "HardWare : Vision Camera1", 3200, "Camera1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 43, "HardWare : Vision Camera2", 3200, "Camera2", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 46, "HardWare : Vision Display1", 3600, "Display1", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_HL_VISION, "Vision", 47, "HardWare : Vision Display2", 3600, "Display2", LOG_ALL, LOG_DAY ),
 		
 	            // 40-49 : Dummy Reserved
 	            // 50-59 : Ethernet Reserved
@@ -120,6 +125,7 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_ML_DISPENSER , "GHead2",     317, "Mechanical : GHead2", 22000, "GHead2", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_ML_HANDLER   , "UpperHandler",   318, "Mechanical : UpperHandler", 19000, "UpperHandler", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_ML_HANDLER   , "LowerHandler",   319, "Mechanical : LowerHandler", 19000, "LowerHandler", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_ML_VISION    , "Vision",     320, "Mechanical : Vision", 25000, "Vison", LOG_ALL, LOG_DAY ),
 		
 	            // 350-399 : Control Layer --------------------------------------------------------------------
 	            new CObjectInfo( (int)OBJ_CL_MANAGE_OP_PANEL   , "ManageOpPanel",     350, "Control : Manage OP Panel", 32200, "C_ManageOpPanel", LOG_ALL, LOG_DAY ),
