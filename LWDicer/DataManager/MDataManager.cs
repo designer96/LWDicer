@@ -27,6 +27,7 @@ using static LWDicer.Control.DEF_Vacuum;
 
 using static LWDicer.Control.DEF_MeHandler;
 using static LWDicer.Control.DEF_PolygonScanner;
+using static LWDicer.Control.DEF_Vision;
 
 namespace LWDicer.Control
 {
@@ -237,9 +238,6 @@ namespace LWDicer.Control
 
             public bool UseVIPMode;
 
-            // 2014.10.20 CF Align
-            public bool UseUseCFAlign;       // CF Align 사용 여부
-            public double CFAlignLimit;
 
             public CSystemData()
             {
@@ -247,7 +245,7 @@ namespace LWDicer.Control
         }
 
         public class CSystemData_Axis
-        {
+                {
             // YMC Motion Axis
             public CMPMotionData[] MPMotionData = new CMPMotionData[MAX_MP_AXIS];
 
@@ -276,7 +274,7 @@ namespace LWDicer.Control
         }
 
         public class CSystemData_Vacuum
-        {
+                {
             // Timer
             public CVacuumTime[] VacuumTimer = new CVacuumTime[(int)EObjectVacuum.MAX_OBJ];
 
@@ -421,9 +419,7 @@ namespace LWDicer.Control
             // Header
             public string Name = "Default";   // unique primary key
 
-            ///////////////////////////////////////////////////////////
-            // Wafer Data
-            public CWaferData Wafer = new CWaferData();
+
 
             ///////////////////////////////////////////////////////////
             // Function Parameter
@@ -455,6 +451,18 @@ namespace LWDicer.Control
 
 	        public bool UseUHandler_ExtraVccUseFlag; // 2014.02.21 by ranian. Extra Vcc 추가
             public bool UseUHandler_WaitPosUseFlag; // 2014.02.21 by ranian. LP->UP 로 갈 때, WP 사용 여부
+
+
+            ///////////////////////////////////////////////////////////
+            // Wafer Data
+            public CWaferData Wafer = new CWaferData();
+
+            ///////////////////////////////////////////////////////////
+            // Vision Data (Pattern)
+            public CSearchData MacroPatternA = new CSearchData();
+            public CSearchData MacroPatternB = new CSearchData();
+            public CSearchData MicroPatternA = new CSearchData();
+            public CSearchData MicroPatternB = new CSearchData();
         }
 
     }
@@ -611,23 +619,23 @@ namespace LWDicer.Control
             // CSystemData
             if (system != null)
             {
-                try
-                {
+            try
+            {
                     SystemData = ObjectExtensions.Copy(system);
                     string output = JsonConvert.SerializeObject(SystemData);
 
                     if (DBManager.InsertRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData), output,
                         true, DBInfo.DBConn_Backup) != true)
-                    {
-                        return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
-                    }
-                    WriteLog("success : save CSystemData.", ELogType.SYSTEM, ELogWType.SAVE);
-                }
-                catch (Exception ex)
                 {
-                    WriteExLog(ex.ToString());
                     return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
                 }
+                    WriteLog("success : save CSystemData.", ELogType.SYSTEM, ELogWType.SAVE);
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
+            }
             }
 
             // CSystemData_Axis
@@ -642,7 +650,7 @@ namespace LWDicer.Control
                         true, DBInfo.DBConn_Backup) != true)
                     {
                         return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_SAVE_SYSTEM_DATA);
-                    }
+        }
                     WriteLog("success : save CSystemData_Axis.", ELogType.SYSTEM, ELogWType.SAVE);
                 }
                 catch (Exception ex)
@@ -654,9 +662,9 @@ namespace LWDicer.Control
 
             // CSystemData_Cylinder
             if (systemCylinder != null)
+        {
+            try
             {
-                try
-                {
                     SystemData_Cylinder = ObjectExtensions.Copy(systemCylinder);
                     string output = JsonConvert.SerializeObject(SystemData_Cylinder);
 
@@ -723,11 +731,11 @@ namespace LWDicer.Control
         public int LoadSystemData(bool loadSystem = true, bool loadAxis = true, bool loadCylinder = true,
             bool loadVacuum = true, bool loadScanner = true)
         {
-            string output;
+                string output;
 
             // CSystemData
             if (loadSystem == true)
-            {
+                {
                 try
                 {
                     if (DBManager.SelectRow(DBInfo.DBConn, DBInfo.TableSystem, "name", nameof(CSystemData), out output) == true)
@@ -735,17 +743,17 @@ namespace LWDicer.Control
                         CSystemData data = JsonConvert.DeserializeObject<CSystemData>(output);
                         SystemData = ObjectExtensions.Copy(data);
                         WriteLog("success : load CSystemData.", ELogType.SYSTEM, ELogWType.LOAD);
-                    }
+                }
                     //else // temporarily do not return error for continuous loading
-                    //{
-                    //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
-                    //}
-                }
-                catch (Exception ex)
-                {
-                    WriteExLog(ex.ToString());
-                    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
-                }
+                //{
+                //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+                //}
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);
+            }
             }
 
             // CSystemData_Axis
@@ -758,7 +766,7 @@ namespace LWDicer.Control
                         CSystemData_Axis data = JsonConvert.DeserializeObject<CSystemData_Axis>(output);
                         SystemData_Axis = ObjectExtensions.Copy(data);
                         WriteLog("success : load CSystemData_Axis.", ELogType.SYSTEM, ELogWType.LOAD);
-                    }
+            }
                     //else // temporarily do not return error for continuous loading
                     //{
                     //    return GenerateErrorCode(ERR_DATA_MANAGER_FAIL_LOAD_SYSTEM_DATA);

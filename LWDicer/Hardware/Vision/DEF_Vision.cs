@@ -54,6 +54,9 @@ namespace LWDicer.Control
         public const int PRE__CAM = 0;
         public const int FINE_CAM = 1;
  
+        public const int PATTERN_A = 0;
+        public const int PATTERN_B = 1;
+
 
         /** Display Image Resolution */
         public const int DEF_IMAGE_SIZE_X = 1624;
@@ -87,7 +90,7 @@ namespace LWDicer.Control
         /*                         Data Structure Define                        */
         /************************************************************************/
 
-        public const int DEF_USE_SEARCH_MARK_NO = 3;
+        public const int DEF_USE_SEARCH_MARK_NO = 2;
         public const int DEF_DEFAULT_ACCEP_THRESHOLD = 70;
         public const int DEF_DEFAULT_CERTAIN_THRESHOLD = 90;
 
@@ -99,9 +102,9 @@ namespace LWDicer.Control
         /// </summary>
         public enum EPatternMarkType
         {
-            PRE_ALIGN_MARK,
-            FINE_ALIGN_MARK_A,
-            FINE_ALIGN_MARK_B,
+            ALIGN_MARK_A,
+            ALIGN_MARK_B,
+            ALIGN_MARK_COUNT
         }
         // This structure is defined Vision Component Data list of Vision.
         //
@@ -139,66 +142,61 @@ namespace LWDicer.Control
 
         };
 
+        // Vision DB 데이터
         public class CSearchData
         {
-            /** Pattern File Path */
+            //Pattern File Path
             public string m_strFilePath;
-
-            /** Pattern File Name */
+            //Pattern File Name
             public string m_strFileName;
-
-            /** Model 등록 여부 */
+            // Model 등록 여부 
             public bool m_bIsModel;
-
-            /** MIL 에서 사용하는 Model ID (NGC) */
-            public MIL_ID m_milModel;
-
-            public MIL_ID m_ModelImage;
-
-            /** MIL 에서 사용하는 Model ID (GMF) */
-            public MIL_ID m_milGmfModel;
-
-            /** Model Rectangle */
+            // Model Rectangle 
             public Rectangle m_rectModel;
-
-            /** Search Area Pos. & Size */
+            // Search Area Pos. & Size 
             public Rectangle m_rectSearch;
-
-            /** Reference Point */
+            // Reference Point 
             public Point m_pointReference;
-
-            /** Acceptance Threshold */
+            // Acceptance Threshold
             public double m_dAcceptanceThreshold;
-
-            /** Certainty Threshold */
+            // Certainty Threshold
             public double m_dCertaintyThreshold;
-
-            /** Search Angle : MIL 내부 bug 로 사용하면 Error 발생 */
-            //	double m_dSearchAngle;
 
         };
 
+        // Vision Pattern Data
+        // DB Data + Mil Data임
+        public class CVisionPatternData : CSearchData
+        {
+            /// Search Model Data
+            // MIL 에서 사용하는 Model ID (NGC)
+            public MIL_ID m_milModel = new MIL_ID();
+            // MIL 에서 영상 Display용
+            public MIL_ID m_ModelImage = new MIL_ID();
+            // MIL 에서 사용하는 Model ID (GMF)
+            public MIL_ID m_milGmfModel = new MIL_ID();
+        }
+
         public class CResultData
         {
-            /** Search 작업 성공 여부 */
+            //  Search 작업 성공 여부
             public bool m_bSearchSuccess;
 
-            /** Vision 좌표계를 따르는 인식 좌표
-             *  Display View 좌측 상단 좌표 : (0.0, 0.0)
-             */
+            //  Vision 좌표계를 따르는 인식 좌표
+            //  Display View 좌측 상단 좌표 : (0.0, 0.0)          
             public double m_dPixelX;
             public double m_dPixelY;
 
-            // Score : 인식률 */
+            // Score : 인식률 
             public double m_dScore;
 
-            // Search 작업 성공 결과 Model Pos. & Size */
+            // Search 작업 성공 결과 Model Pos. & Size 
             public Rectangle m_rectFindedModel;
 
-            // Search Area Pos. & Size */
+            // Search Area Pos. & Size 
             public Rectangle m_rectSearch;
 
-            // Search Result 를 저장할 문자열 */
+            // Search Result 를 저장할 문자열 
             public string m_strResult;
 
             // Search 작업에 걸린 시간 
@@ -221,75 +219,52 @@ namespace LWDicer.Control
             public double[] m_dPosX;
             public double[] m_dPosY;           
 
+            // Search Result 를 저장할 문자열 
+            public string m_strResult;
+
         };
 
+        public class CVisionRefComp
+        {
+            public MVisionSystem System;
+            public MVisionCamera[] Camera = new MVisionCamera[DEF_MAX_CAMERA_NO];
+            public MVisionView[] View = new MVisionView[DEF_MAX_CAMERA_NO];
+        };
 
         /************************************************************************/
         /*                          Error Code Define                           */
         /************************************************************************/
 
-        /** Error Code Reference */
-        /** generateErrorCode() 를 사용해서 Error Code 를 생성하는 것은
-         *  MVision Class 에서만 담당한다.
-         *  나머지 Vision 관련 Class 에서는 아래 정의된 에러 코드를 사용한다.
-         */
+        // Error Define
+        public const int ERR_VISION_SYSTEM_FAIL                 = 10;
+        public const int ERR_VISION_SYSTEM_CHECK_FAIL           = 11;
+        public const int ERR_VISION_SYSTEM_CREATE_FAIL          = 12;
+        public const int ERR_VISION_SYSTEM_OPEN_FAIL            = 13;
+        public const int ERR_VISION_SYSTEM_CHECK_CAM_FAIL       = 14;  
 
-        public const int ERR_VISION_BOARD_NOT_INSTALLED = 1;
-        // 104001 = Vision Board 가 설치되지 않았습니다.
-        public const int ERR_VISION_ALLOCATION_FAILURE = 2;
-        public const int ERR_VISION_REALLOCATION_ATTEMPT = 3;
-        public const int ERR_VISION_NOT_LOCAL_VIEW_MODE = 4;
-        // 104027 = Local View Mode 가 아닙니다.
+        public const int ERR_VISION_CAMERA_FAIL                 = 20;
+        public const int ERR_VISION_CAMERA_NON_USEFUL           = 20;
+        public const int ERR_VISION_CAMERA_CREATE_FAIL          = 21;
+        public const int ERR_VISION_CAMERA_GET_INFO_FAIL        = 22;
+        public const int ERR_VISION_CAMERA_CONNECT_FAIL         = 23;
+        public const int ERR_VISION_CAMERA_IMAGE_SIZE_FAIL      = 23;
+        public const int ERR_VISION_CAMERA_CREATE_IMAGE_FAIL    = 24;
+        public const int ERR_VISION_CAMERA_GET_IMAGE_FAIL       = 25;
+        public const int ERR_VISION_CAMERA_SET_CALLBACK_FAIL    = 26;
+
+        public const int ERR_VISION_PATTERN_NONE                = 30;
+        public const int ERR_VISION_PATTERN_NUM_OVER            = 31;
+        public const int ERR_VISION_PATTERN_SEARCH_FAIL         = 32;
+        public const int ERR_VISION_PATTERN_REG_FAIL            = 33;
+        public const int ERR_VISION_EDGE_SEARCH_FAIL            = 34;
+        public const int ERR_VISION_SEARCH_SIZE_OVER            = 35;
+
+        public const int ERR_VISION_PARAMETER_UNFIT             = 40;
+        public const int ERR_VISION_FOLDER_FAIL                 = 50;
+
+        public const int ERR_VISION_SUCCESS = 0;
         public const int ERR_VISION_ERROR = 5;
-        public const int ERR_VISION_INVALID_CAMERA_NUMBER = 6;
-        public const int ERR_VISION_GET_INVALID_VALUE = 7;
-        // 104025 = 사용할 수 있는 범위 밖의 값입니다.
-        // 104055 = 잘못된 Camera 번호입니다.
-        // 104026 = OCR Calibration 에 실패했습니다.
 
-        public const int ERR_VISION_IMAGE_BUFFER_ALLOCATION_FAILURE = 999;
-        // 104002 = Vision Application Allocation 에 실패했습니다.
-        // 104003 = Vision System Allocation 에 실패했습니다.
-        // 104004 = Vision Digitizer (Camera) Allocation 에 실패했습니다.
-        // 104005 = Vision Display (View) Allocation 에 실패했습니다.
-
-        // 104006 = DCF File 을 찾을 수 없습니다.
-
-        // 104007 = Vision Image Buffer Allocation 에 실패했습니다.
-        // 104008 = Model Display 를 위한 Image Buffer Allocation 에 실패했습니다.
-        // 104009 = GMF Model Masking 을 위한 Image Buffer Allocation 에 실패했습니다.
-        // 104010 = OCR 인식을 위한 Image Buffer Allocation 에 실패했습니다.
-
-        // 104015 = Pattern Matching Model Allocation 에 실패했습니다.
-        // 104016 = Blob Analysis Model Allocation 에 실패했습니다.
-        // 104017 = Edge Finder Model Allocation 에 실패했습니다.
-        // 104018 = OCR Model Allocation 에 실패했습니다.
-
-        //Recognition operations failure caused by Low Scores.
-        public const int ERR_VISION_SEARCH_FAILURE = 345;
-        // 104020 = Pattern Matching Model 인식에 실패했습니다.
-        // 104022 = Edge 를 찾지 못했습니다.      
-
-        // 104030 = Mark 번호 오류입니다.
-        public const int ERR_VISION_INVALIDE_SEARCH_MARK_NO = 9999;
-        // 104031 = Pattern Matching Model 번호가 아닙니다.
-
-        public const int ERR_VISION_BAD_SIZE = 90;
-        // 104040 = Search Area Size 가 부적절합니다.
-        // 104041 = Model Area Size 가 부적절합니다.
-        public const int ERR_VISION_INVALID_REFERENCE_POINT = 1;
-
-        public const int ERR_VISION_FILE_READ_FAILURE = 1;
-        public const int ERR_VISION_FILE_WRITE_FAILURE = 16;
-        public const int ERR_BACKUP_FILE_WRITE_FAILURE = 10;
-
-        public const int ERR_VISION_CAMERA_CHANGE = 80;
-        // 104045 = Camera Change 에 실패했습니다.
-
-        public const int ERR_VISION_INVALID_MODEL = 1000;
-        public const int ERR_VISION_NOT_USE_MODEL = 1;
-        public const int ERR_VISION_NO_MODEL = 1;
-        // 104050 = 해당 번호로 등록된 Model 이 없습니다.
 
 
     }

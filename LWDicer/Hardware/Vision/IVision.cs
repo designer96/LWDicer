@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using static LWDicer.Control.DEF_Vision;
+using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {      
@@ -24,24 +25,20 @@ namespace LWDicer.Control
 
 	    // Local View 를 생성한다.	     
 	     int InitialLocalView(int iCamNo, IntPtr pObject);
-
-        // Image View를 생성한다.
-         int InitialImageView(Rectangle RectSize, IntPtr pObject);
+        
 
         // Grab Operation 을 수행한다.	     
         void Grab(int iCamNo);
 
-	    // Grab Buffer 로부터 해당 Camera 의 영상을 가져와 연결된 화면에 Display 한다.
-	    // 
-	     void GetGrabImage(int iViewNo);
+        // Grab Buffer 로부터 해당 Camera 의 영상을 가져와 연결된 화면에 Display 한다.
+        // 
+        MIL_ID GetGrabImage(int iViewNo);
 
         // Camera 와 View Window 를 연결한다.
         //
         void ConnectCam(int iCamNo);
 
         // Write Vision Model Data
-
-        int WriteModelData(int iCamNo, int iModelNo);
 
 
 	     int SelectCamera(int iCamNo,int iViewNo);
@@ -59,7 +56,7 @@ namespace LWDicer.Control
 	     
 	    int SaveImage(int iCamNo, int iModelNo, double dScore);
 
-        int SaveModelImage(int iCamNo, int iModelNo);
+        int SaveModelImage(int iCamNo, string strPath, string strName);
 
         // Delete Old Error Image Files
 
@@ -79,23 +76,25 @@ namespace LWDicer.Control
 
 	    // Set Camera Change Time.	     
 	     void SetCameraChangeTime(int iCamNo, int iCameraChangeTime);
-        
+
+        int ReLoadPatternMark(int iCamNo, int iTypeNo, CSearchData pSData);
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         //      Related Pattern Matching Operations
 
-          //Register NGC & GMF Model
-          //@return boolean type : TRUE or FALSE
-          //@param iCameraNo : Camera Number
-          //@param SelectMark : Model Mark Number
-          //@param SearchArea : Search Area Rectangle
-          //@param ModelArea : Model Area Rectangle
-          //@param ReferencePoint : Reference Point
-         
-         int RegisterPatternMark(int iCameraNo,
-                                        int SelectMark,
-                                        ref Rectangle SearchArea,
-                                        ref Rectangle ModelArea,
-                                        ref Point ReferencePoint);
+        //Register NGC & GMF Model
+        //@return boolean type : TRUE or FALSE
+        //@param iCameraNo : Camera Number
+        //@param SelectMark : Model Mark Number
+        //@param SearchArea : Search Area Rectangle
+        //@param ModelArea : Model Area Rectangle
+        //@param ReferencePoint : Reference Point
+
+        int RegisterPatternMark(int iCameraNo,
+                                 string strModel,
+                                 int iTypeNo,                                        
+                                 ref Rectangle SearchArea,
+                                 ref Rectangle ModelArea,
+                                 ref Point ReferencePoint);
 
 	      //Reset Search Area
 	      //@param iCamNo : Camera Number
@@ -113,16 +112,33 @@ namespace LWDicer.Control
 	     
 	     int RecognitionPatternMark(int iCameraNo, int iModelNo, out CResultData pPatResult, bool bUseGMF = false);
 
-	      //Make a Mask Image & Apply the Mask Image to GMF Search Context
-	      //@return int type Error Code : 0 - SUCCESS, etc. - Error
-	      //@param iCamNo : Camera Number
-	      //@param iModelNo : Model Mark Number
-	      //@param MaskRect : Rectangle for masking
-	      //@param ModelRect : GMF Model Rectangle
-	      //@param bMakeEndFlag : TRUE - Stop making mask image & Apply the Mask Image to GMF Search Context
-	      //                      FALSE - Continue making mask image
-	     
-	     int MaskImage(int iCamNo,int iModelNo,ref Rectangle MaskRect,ref Rectangle ModelRect, bool bMakeEndFlag);
+        
+        /// <summary>
+        /// Camera의 등록된 Search Data Read
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
+        CSearchData GetSearchData(int iCamNo, int iModelNo);
+
+
+        /// <summary>
+        /// Camera에 동록된 Pattern Image Read
+        /// </summary>
+        /// <param name="iCamNo"></param>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
+        MIL_ID GetPatternImage(int iCamNo, int iModelNo);
+
+        //Make a Mask Image & Apply the Mask Image to GMF Search Context
+        //@return int type Error Code : 0 - SUCCESS, etc. - Error
+        //@param iCamNo : Camera Number
+        //@param iModelNo : Model Mark Number
+        //@param MaskRect : Rectangle for masking
+        //@param ModelRect : GMF Model Rectangle
+        //@param bMakeEndFlag : TRUE - Stop making mask image & Apply the Mask Image to GMF Search Context
+        //                      FALSE - Continue making mask image
+        int MaskImage(int iCamNo,int iModelNo,ref Rectangle MaskRect,ref Rectangle ModelRect, bool bMakeEndFlag);
 
 	      //Return Pattern Matching Result : Reference Point X value
 	      //@return double type : X coordinate

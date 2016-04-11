@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-
 using System.Drawing;
 using System.IO;
 using System.Drawing.Imaging;
@@ -12,12 +11,13 @@ using System.Diagnostics;
 
 using static LWDicer.Control.DEF_Vision;
 using static LWDicer.Control.DEF_Error;
+using static LWDicer.Control.DEF_Common;
 using BGAPI;
 using Matrox.MatroxImagingLibrary;
 
 namespace LWDicer.Control
 {
-    class MVisionDisplay
+    public class MVisionView: MObject
     {
         private MVisionCamera m_pCamera;
         private int m_iViewID;
@@ -29,8 +29,8 @@ namespace LWDicer.Control
         private IntPtr m_ImageBuffer;
         private IntPtr m_ImageHandle;
 
-        private int m_im_ImageWidth;
-        private int m_im_ImageHeight;
+        private int m_CameraWidth;
+        private int m_CameraHeight;
         
         private Rectangle m_recImage;
         private PictureBox m_Picture;
@@ -55,7 +55,7 @@ namespace LWDicer.Control
         private Point m_ptDrawStart;
         private Point m_ptDrawEnd;
 
-        public MVisionDisplay()
+        public MVisionView(CObjectInfo objInfo) : base(objInfo)
         {
             m_iViewID   = 0;
             m_Picture   = new PictureBox();
@@ -65,7 +65,6 @@ namespace LWDicer.Control
 
             m_MilImage = MIL.M_NULL;
             m_MilDisplay = MIL.M_NULL;
-
             m_DrawPen = new Pen(Color.LightGreen);
             m_DrawPen.DashStyle = System.Drawing.Drawing2D.DashStyle.DashDot;
             m_ptDrawStart = new Point(0, 0);
@@ -73,10 +72,6 @@ namespace LWDicer.Control
 
         }
 
-        MVisionDisplay(ref MVisionSystem pVisionSystem, ref MVisionCamera pCam, int iNumOfView)
-        {
-
-        }
         public int Initialize(int iViewNo, MVisionCamera pCamera)
         {
             // Num 설정
@@ -86,9 +81,9 @@ namespace LWDicer.Control
             MIL.MdispAlloc(m_pMilSystemID, MIL.M_DEFAULT, "M_DEFAULT", MIL.M_WINDOWED, ref m_MilDisplay);
 
             // Camera Select
-            SelectCamera(pCamera);
+            if(SelectCamera(pCamera)==SUCCESS) return SUCCESS;
+            else return GenerateErrorCode(ERR_VISION_CAMERA_CREATE_FAIL);
 
-            return SUCCESS;
         }
         
         public int GetIdNum()
@@ -99,9 +94,15 @@ namespace LWDicer.Control
         {
             m_pMilSystemID  = MilSystem;
         }
+        /// <summary>
+        /// SelectCamera: 카메라의 영상의 크기로 Byte array 크기를 할당하고,
+        /// Mil 변수에 영상을 할당한다.
+        /// </summary>
+        /// <param name="pCamera"></param>
+        /// <returns></returns>
         public int SelectCamera(MVisionCamera pCamera)
         {
-            if (pCamera == null) return ERR_VISION_ERROR;
+            if (pCamera == null)  return GenerateErrorCode(ERR_VISION_CAMERA_NON_USEFUL);
 
             Size CameraPixelSize;
 
@@ -110,17 +111,20 @@ namespace LWDicer.Control
 
             // Camera Pixel Size 대입
             CameraPixelSize = m_pCamera.GetCameraPixelSize();
-            m_im_ImageWidth = CameraPixelSize.Width;
-            m_im_ImageHeight = CameraPixelSize.Height;
+
+            m_CameraWidth = CameraPixelSize.Width;
+            m_CameraHeight = CameraPixelSize.Height;
+
+            if (m_CameraWidth == 0 || m_CameraHeight == 0) return GenerateErrorCode(ERR_VISION_CAMERA_IMAGE_SIZE_FAIL);
 
             // image byte 변수
-            m_ImgBits = new Byte[m_im_ImageWidth * m_im_ImageHeight];
+            m_ImgBits = new Byte[m_CameraWidth * m_CameraHeight];
 
             // set source image size Rect size 
             m_recImage.X = 0;
             m_recImage.Y = 0;
-            m_recImage.Width = m_im_ImageWidth;
-            m_recImage.Height = m_im_ImageHeight;            
+            m_recImage.Width = m_CameraWidth;
+            m_recImage.Height = m_CameraHeight;            
 
             // MIL Buffer 초기화
             if(m_MilImage != MIL.M_NULL)
@@ -147,7 +151,7 @@ namespace LWDicer.Control
             // get image to IntPtr   
             image.get(ref m_ImageBuffer);   
             // Copy to Byte[]
-            Marshal.Copy(m_ImageBuffer, m_ImgBits, 0, m_im_ImageWidth * m_im_ImageHeight);
+            Marshal.Copy(m_ImageBuffer, m_ImgBits, 0, m_CameraWidth * m_CameraHeight);
             // MIL Buffer에 Copy
             MIL.MbufPut(m_MilImage, m_ImgBits);
             MIL.MbufControl(m_MilImage, MIL.M_MODIFIED, MIL.M_DEFAULT);
@@ -164,6 +168,9 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
+        /// <summary>
+        /// Pattern Search한 결과를 View의 화면에 String으로 표시한다.
+        /// </summary>
         private void DisplaySearchResult()
         {
             double XOrg = 0.0;              // Original model position.
@@ -190,21 +197,11 @@ namespace LWDicer.Control
             DrawString(strResult, new PointF(100, 800));
 
         }
-
-        public static long GrabEnd()
-        {
-            return 0;
-        }
-
-        public void FreeGraphicsContext()
-        {
-
-        }
-        public void AllocGraphicsContext()
-        {
-
-        }
-
+        /// <summary>
+        ///  현재 Grab하는 Image를 저장함.
+        /// </summary>
+        /// <param name="strPath"></param>
+        /// <returns></returns>
         public bool SaveImage(MIL_ID pImage , string strPath)
         {
             MIL_ID pSaveImage = MIL.M_NULL;
@@ -222,6 +219,12 @@ namespace LWDicer.Control
 
             return true;
         }
+
+        /// <summary>
+        ///  현재 Grab하는 Image를 저장함.
+        /// </summary>
+        /// <param name="strPath"></param>
+        /// <returns></returns>
         public bool SaveImage(string strPath)
         {
             MIL_ID pSaveImage = MIL.M_NULL;
@@ -237,10 +240,18 @@ namespace LWDicer.Control
             
             return true;
         }
+
+        /// <summary>
+        /// SaveModelImage: Model Image를 저장함.
+        /// </summary>
+        /// <param name="strPath"></param>
+        /// <param name="iModelNo"></param>
+        /// <returns></returns>
         public bool SaveModelImage(string strPath,int iModelNo)
         {
-            CSearchData pSData = m_pCamera.GetSearchData(iModelNo);
-
+            CVisionPatternData pSData = m_pCamera.GetSearchData(iModelNo);
+           
+            if (pSData.m_ModelImage == MIL.M_NULL) return false;
             MIL.MbufExport(strPath, MIL.M_BMP, pSData.m_ModelImage);
             
             return true;
@@ -288,16 +299,19 @@ namespace LWDicer.Control
             Marshal.Copy(ImgBits, 0, BmpData.Scan0, iWidth * iHeight);
             Bitmap.UnlockBits(BmpData);
 
-            Panel RecDisplay = (Panel)System.Windows.Forms.Control.FromHandle(pHandle);
+            // Display할 객체의 Size를 읽기
+            int Width = System.Windows.Forms.Control.FromHandle(pHandle).Width;
+            int Height = System.Windows.Forms.Control.FromHandle(pHandle).Height;
 
-            Rectangle RecPic = new Rectangle(0, 0, RecDisplay.Width, RecDisplay.Height);
+            Rectangle RecHandle = new Rectangle(0, 0, Width, Height);
 
             // Graph로 Bmp를 Display함
             System.Drawing.Graphics graph;
             graph = System.Drawing.Graphics.FromHwnd(pHandle);
-            graph.DrawImage(Bitmap, RecPic, RecImage, GraphicsUnit.Pixel);
+            graph.DrawImage(Bitmap, RecHandle, RecImage, GraphicsUnit.Pixel);
 
         }
+        
         public MIL_ID GetImage()
         {
             return m_MilImage;
@@ -518,14 +532,6 @@ namespace LWDicer.Control
             m_bLocal = true;
 
         }
-
-        
-        public void DisplayView()
-        {               
-            //if (m_Bitmap == null) return;
-            if (m_ImageHandle == IntPtr.Zero) return;
-       
-        }
         
         public bool IsLocalView()
         {
@@ -535,10 +541,7 @@ namespace LWDicer.Control
             else
                 return true;
         }
-        public void GetLocalOverlay()
-        {
 
-        }
         public MIL_ID GetLocalView()
         {
             return m_MilImage;
@@ -559,18 +562,7 @@ namespace LWDicer.Control
 
             return true;
         }
-        public int FreeModelImage()
-        {
-            return 0;
-        }
-        public void SetModelViewFlag(bool bModelView)
-        {
 
-        }
-        public bool IsModelView()
-        {
-            return true;
-        }
         public void ClearOverlay()
         {
             // Clear the overlay to transparent.
@@ -663,15 +655,7 @@ namespace LWDicer.Control
         public IntPtr GetViewHandle()
         {
             return m_ImageHandle;
-        }
-        public void GetDisplay(int iCamNo)
-        {
-
-        }
-        public int CreatViews(long lZoomFactor)
-        {
-            return 0;
-        }
+        }       
 
         public void FreeDisplay()
         {

@@ -111,6 +111,14 @@ LWDicer의 DataManager에서 데이터를 읽어오기 위한 3가지 함수 : S
 2. Baumer Dll Copy
 3. Simulation Vision Mode 설정
 
+// Version : 0.0.2
+// Grade : ★★
+// Date : 2016-04-04
+// Context
+1. Hardware Layer에서 System,Camera,Display 객체 생성
+2. MVision의 System,Camera,Display를 RefComp로 연결
+3. GenerateErrorCode 생성기능을 적용함. 
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LHS
