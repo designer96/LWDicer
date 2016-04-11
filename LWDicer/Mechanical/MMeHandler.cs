@@ -53,9 +53,26 @@ namespace LWDicer.Control
             LOAD = 0,
             WAIT,
             UNLOAD,
-            TURN,
-            LOAD_Z_UP,      // Loading Pos(x,y,t) + Z Up
-            UNLOAD_Z_UP,    // Unloading Pos(x,y,t) + Z Up
+            //TURN,
+            // Z Safety Up Position은 System Data 에서 관리하도록 한다.
+            //LOAD_Z_UP,      // Loading Pos(x,y,t) + Z Up
+            //UNLOAD_Z_UP,    // Unloading Pos(x,y,t) + Z Up
+            MAX,
+        }
+
+        public enum EHandlerXAxZone
+        {
+            NONE = -1,
+            LOAD,
+            WAIT,
+            UNLOAD,
+            MAX,
+        }
+
+        public enum EHandlerZAxZone
+        {
+            NONE = -1,
+            SAFETY_UP,
             MAX,
         }
 
@@ -96,6 +113,10 @@ namespace LWDicer.Control
 
             public int OutUpCylinder    = IO_ADDR_NOT_DEFINED;
             public int OutDownCylinder  = IO_ADDR_NOT_DEFINED;
+
+            // Physical check zone sensor
+            public int[] XAxZoneAddr    = new int[(int)EHandlerXAxZone.MAX];
+            public int[] ZAxZoneAddr    = new int[(int)EHandlerXAxZone.MAX];
 
             public CMeHandlerData(bool[] UseVccFlag = null, EHandlerType[] HandlerType = null)
             {
@@ -526,9 +547,29 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int GetHandlerPosInfo()
+        public int GetHandlerPosInfo(out int posInfo, bool bUpdatePos = true, bool bCheckZAxis = false)
         {
-            return AxHandlerInfo.PosInfo;
+            posInfo = (int)EHandlerPos.NONE;
+            bool bStatus;
+            int iResult = IsHandlerOrignReturn(out bStatus);
+            if (iResult != SUCCESS) return iResult;
+
+            // 실시간으로 자기 위치를 체크
+            if(bUpdatePos)
+            {
+                for (int i = 0; i < (int)EHandlerPos.MAX; i++)
+                {
+                    CompareHandlerPos(i, out bStatus, false, bCheckZAxis);
+                    if (bStatus)
+                    {
+                        AxHandlerInfo.PosInfo = i;
+                        break;
+                    }
+                }
+            }
+
+            posInfo = AxHandlerInfo.PosInfo;
+            return SUCCESS;
         }
 
         public void SetHandlerPosInfo(int posInfo)
@@ -812,6 +853,61 @@ namespace LWDicer.Control
                 int iResult = m_RefComp.SubCyl[index].Back(bSkipSensor);
                 if (iResult != SUCCESS) return iResult;
             }
+
+            return SUCCESS;
+        }
+
+        public int GetHandlerXAxZone(out int curZone)
+        {
+            curZone = (int)EHandlerXAxZone.NONE;
+            for(int i = 0; i < (int)EHandlerXAxZone.MAX; i++)
+            {
+                bool bStatus;
+                int iResult = m_RefComp.IO.IsOn(m_Data.XAxZoneAddr[i], out bStatus);
+                if (iResult != SUCCESS) return iResult;
+                if (bStatus == true)
+                {
+                    curZone = i;
+                    break;
+                }
+            }
+            return SUCCESS;
+        }
+
+        public int GetHandlerZAxZone(out int curZone)
+        {
+            curZone = (int)EHandlerZAxZone.NONE;
+            for (int i = 0; i < (int)EHandlerZAxZone.MAX; i++)
+            {
+                bool bStatus;
+                int iResult = m_RefComp.IO.IsOn(m_Data.ZAxZoneAddr[i], out bStatus);
+                if (iResult != SUCCESS) return iResult;
+                if (bStatus == true)
+                {
+                    curZone = i;
+                    break;
+                }
+            }
+            return SUCCESS;
+        }
+
+        public int IsHandlerZInSafetyZone(out bool bStatus)
+        {
+            bStatus = false;
+            int curZone;
+            int iResult = GetHandlerZAxZone(out curZone);
+            if (iResult != SUCCESS) return iResult;
+
+            if(curZone == (int)EHandlerZAxZone.SAFETY_UP)
+            {
+                bStatus = true;
+            }
+            return SUCCESS;
+        }
+
+        public int CheckForHandlerMove()
+        {
+            int iResult = IsHandlerOrignReturn();
 
             return SUCCESS;
         }
