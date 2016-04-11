@@ -78,6 +78,13 @@ namespace LWDicer.Control
         public const int DEF_MAX_OFFSET_POSITION_SECTION = 14;
         public const int DEF_MAX_AXIS_NUM = 4;
 
+
+        public const int ERR_DATA_MANAGER_IO_EXCEL_FILE_READ_FAIL = 1;
+        public const int ERR_DATA_MANAGER_SYSTEM_EXCEL_FILE_READ_FAIL = 2;
+        public const int ERR_DATA_MANAGER_SYSTEM_EXCEL_FILE_SAVE_FAIL = 3;
+
+
+
         public class CSystemDataFileNames
         {
             public string SystemDataFile;
@@ -498,6 +505,7 @@ namespace LWDicer.Control
 
 
             //TestFunction();
+
 
             LoadGeneralData();
 
@@ -1517,48 +1525,200 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public void LoadExcelIOList()
+        public int LoadExcelIOList()
         {
             int i = 0, j = 0, nSheetCount = 0, nCount = 0;
 
             string strPath = DBInfo.SystemDir + DBInfo.ExcelIOList;
 
-            Excel.Application ExcelApp = new Microsoft.Office.Interop.Excel.Application();
-            Excel.Workbook WorkBook = ExcelApp.Workbooks.Open(strPath);
-
-            // 1. Open 한 Excel File에 Sheet Count
-            nSheetCount = WorkBook.Worksheets.Count;
-
-            // 2. Excel Sheet Row, Column 접근을 위한 Range 생성
-            Excel.Range[] IOBoard = new Excel.Range[nSheetCount];
-
-            // 3. Excel Sheet Item Data 획득을 위한 Worksheet 생성
-            Excel.Worksheet[] Sheet = new Excel.Worksheet[nSheetCount];
-
-            // 4. Excel Sheet 정보를 불러 온다.
-            for (i = 0; i < nSheetCount; i++)
+            try
             {
-                Sheet[i] = (Excel.Worksheet)WorkBook.Worksheets.get_Item(i + 1);
-                IOBoard[i] = Sheet[i].UsedRange;
+                Excel.Application ExcelApp = new Microsoft.Office.Interop.Excel.Application();
+                Excel.Workbook WorkBook = ExcelApp.Workbooks.Open(strPath);
 
-                for (j = 0; j < 16; j++)
+                // 1. Open 한 Excel File에 Sheet Count
+                nSheetCount = WorkBook.Worksheets.Count;
+
+                // 2. Excel Sheet Row, Column 접근을 위한 Range 생성
+                Excel.Range[] IOBoard = new Excel.Range[nSheetCount];
+
+                // 3. Excel Sheet Item Data 획득을 위한 Worksheet 생성
+                Excel.Worksheet[] Sheet = new Excel.Worksheet[nSheetCount];
+
+                // 4. Excel Sheet 정보를 불러 온다.
+                for (i = 0; i < nSheetCount; i++)
                 {
-                    InputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 2] as Excel.Range).Value2;
-                    OutputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 4] as Excel.Range).Value2;
+                    Sheet[i] = (Excel.Worksheet)WorkBook.Worksheets.get_Item(i + 1);
+                    IOBoard[i] = Sheet[i].UsedRange;
 
-                    nCount++;
+                    for (j = 0; j < 16; j++)
+                    {
+                        InputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 2] as Excel.Range).Value2;
+                        OutputArray[nCount].Name[0] = (string)(IOBoard[i].Cells[j + 2, 4] as Excel.Range).Value2;
+
+                        nCount++;
+                    }
                 }
+
+                WorkBook.Close(true);
+                ExcelApp.Quit();
+
+                SaveIOList();
+            }
+            catch(Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_IO_EXCEL_FILE_READ_FAIL);
             }
 
-            WorkBook.Close(true);
-            ExcelApp.Quit();
+            WriteLog($"success : IO Excel File Read Completed", ELogType.Debug);
+            return SUCCESS;
+           
+        }
 
-            SaveIOList();
+        public int LoadExcelSystemData()
+        {
+            int i = 0, j = 0, nSheetCount = 0, nCount = 0;
+
+            string strPath = DBInfo.SystemDir + DBInfo.ExcelSystemData;
+
+            try
+            {
+                Excel.Application ExcelApp = new Microsoft.Office.Interop.Excel.Application();
+                Excel.Workbook WorkBook = ExcelApp.Workbooks.Open(strPath);
+
+                // 1. Open 한 Excel File에 Sheet Count
+                nSheetCount = WorkBook.Worksheets.Count;
+
+                // 2. Excel Sheet Row, Column 접근을 위한 Range 생성
+                Excel.Range[] SheetRange = new Excel.Range[nSheetCount];
+
+                // 3. Excel Sheet Item Data 획득을 위한 Worksheet 생성
+                Excel.Worksheet[] Sheet = new Excel.Worksheet[nSheetCount];
+
+                // 4. Excel Sheet 정보를 불러 온다.
+                for (i = 0; i < nSheetCount; i++)
+                {
+                    Sheet[i] = (Excel.Worksheet)WorkBook.Worksheets.get_Item(i+1);
+                    SheetRange[i] = Sheet[i].UsedRange;
+                }
+
+                // Motor Data Sheet
+                for (i=0;i<19;i++)  
+                {
+                    // Speed
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.MANUAL_SLOW].Vel = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 3] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.MANUAL_FAST].Vel = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 4] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.AUTO_SLOW].Vel = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 5] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.AUTO_FAST].Vel = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 6] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.JOG_SLOW].Vel = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 7] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.JOG_FAST].Vel = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 8] as Excel.Range).Text);
+
+                    // Acc
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.MANUAL_SLOW].Acc = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 9] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.MANUAL_FAST].Acc = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 10] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.AUTO_SLOW].Acc = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 11] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.AUTO_FAST].Acc = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 12] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.JOG_SLOW].Acc = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 13] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.JOG_FAST].Acc = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 14] as Excel.Range).Text);
+
+                    // Dec
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.MANUAL_SLOW].Dec = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 15] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.MANUAL_FAST].Dec = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 16] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.AUTO_SLOW].Dec = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 17] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.AUTO_FAST].Dec = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 18] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.JOG_SLOW].Dec = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 19] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].Speed[(int)EMotorSpeed.JOG_FAST].Dec = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 20] as Excel.Range).Text);
+
+                    // S/W Limit
+                    SystemData_Axis.MPMotionData[i].PosLimit.Plus = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 21] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].PosLimit.Minus = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 22] as Excel.Range).Text);
+
+                    // Limit Time
+                    SystemData_Axis.MPMotionData[i].TimeLimit.tMoveLimit = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 23] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].TimeLimit.tSleepAfterMove = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 24] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].TimeLimit.tOriginLimit = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 25] as Excel.Range).Text);
+
+                    // Home Option
+                    SystemData_Axis.MPMotionData[i].OriginData.Method = Convert.ToInt16((string)(SheetRange[1].Cells[i + 2, 26] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].OriginData.Dir = Convert.ToInt16((string)(SheetRange[1].Cells[i + 2, 27] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].OriginData.FastSpeed = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 28] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].OriginData.SlowSpeed = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 29] as Excel.Range).Text);
+                    SystemData_Axis.MPMotionData[i].OriginData.HomeOffset = Convert.ToDouble((string)(SheetRange[1].Cells[i + 2, 30] as Excel.Range).Text);
+                }
+
+                WorkBook.Close(true);
+                ExcelApp.Quit();
+
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_SYSTEM_EXCEL_FILE_READ_FAIL);
+            }
+
+            WriteLog($"success : System Data Excel File Read Completed", ELogType.Debug);
+            return SUCCESS;
+
+        }
+        
+        public int SaveExcelSystemData(string [,] strParameter)
+        {
+            int i = 0, j = 0, nSheetCount = 0, nCount = 0;
+
+            string strPath = DBInfo.SystemDir + DBInfo.ExcelSystemData;
+
+            try
+            {
+                Excel.Application ExcelApp = new Microsoft.Office.Interop.Excel.Application();
+                Excel.Workbook WorkBook = ExcelApp.Workbooks.Open(strPath);
+
+                // 1. Open 한 Excel File에 Sheet Count
+                nSheetCount = WorkBook.Worksheets.Count;
+
+                // 2. Excel Sheet Row, Column 접근을 위한 Range 생성
+                Excel.Range[] SheetRange = new Excel.Range[nSheetCount];
+
+                // 3. Excel Sheet Item Data 획득을 위한 Worksheet 생성
+                Excel.Worksheet[] Sheet = new Excel.Worksheet[nSheetCount];
+
+                // 4. Excel Sheet 정보를 불러 온다.
+                for (i = 0; i < nSheetCount; i++)
+                {
+                    Sheet[i] = (Excel.Worksheet)WorkBook.Worksheets.get_Item(i + 1);
+                    SheetRange[i] = Sheet[i].UsedRange;
+                }
+
+
+                // Motor Data Sheet
+                for (i = 0; i < 19; i++)
+                {
+                    for(j=0;j<28;j++)
+                    {
+                        (SheetRange[1].Cells[i + 2, j+3] as Excel.Range).Value2 = strParameter[i,j];
+                    }
+                }
+
+                WorkBook.Save();
+                WorkBook.Close(true);
+                ExcelApp.Quit();
+
+            }
+            catch (Exception ex)
+            {
+                WriteExLog(ex.ToString());
+                return GenerateErrorCode(ERR_DATA_MANAGER_SYSTEM_EXCEL_FILE_READ_FAIL);
+            }
+
+            WriteLog($"success : Saved Motion Parameter Data", ELogType.Debug);
+            return SUCCESS;
         }
 
 
         void InitMPMotionData()
         {
+            LoadExcelSystemData();
+
             // Excel에서 읽어오는 방식도 생각해봤으나, 축 이름과 필수적인것들만 초기화하면 될것 같아서 소스코드 내부에서 처리 
             int index;
             CMPMotionData tMotion;

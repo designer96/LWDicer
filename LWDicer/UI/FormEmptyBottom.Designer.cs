@@ -1,6 +1,6 @@
 ﻿namespace LWDicer.UI
 {
-    partial class FormEngineerMaintBottom
+    partial class FormEmptyBottom
     {
         /// <summary>
         /// Required designer variable.
@@ -28,10 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormEngineerMaintBottom));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormEmptyBottom));
             this.SuspendLayout();
             // 
-            // FormEngineerMaintBottom
+            // FormEmptyBottom
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -39,8 +39,8 @@
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(1099, 168);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FormEngineerMaintBottom";
-            this.Text = "FormEngineerMaintBottom";
+            this.Name = "FormEmptyBottom";
+            this.Text = "FormEmptyBottom";
             this.ResumeLayout(false);
 
         }

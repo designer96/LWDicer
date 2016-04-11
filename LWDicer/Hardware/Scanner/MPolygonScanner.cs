@@ -1136,7 +1136,7 @@ namespace LWDicer.Control
         {
             string strFile = "";
 
-            strFile = string.Format("{0:s}{1:s}.bmp", m_DBInfo.ScannerLogDir,strBMP);
+            strFile = string.Format("{0:s}{1:s}.bmp", m_DBInfo.ScannerLogDir, strBMP);
 
             Bitmap bmp = new Bitmap(PicWafer.Width, PicWafer.Height);
 

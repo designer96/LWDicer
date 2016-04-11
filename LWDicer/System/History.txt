@@ -149,3 +149,20 @@ LWDicer의 DataManager에서 데이터를 읽어오기 위한 3가지 함수 : S
 //  -  MDataManager -> LoadExcelIOList()
 //  - IO List 경로 SFA\LWDicer\SystemData\LWDicer_IO_List.xlsx
 
+// Version : 0.0.4
+// Grade : ★
+// Date : 2016-04-04
+// Context
+// * UI 변경
+// 1. Axis Operation UI 추가
+// 2. Motor Parameter UI 추가 / Motor Parameter Excel File Load,Save 구문 추가
+//  - MDataManager -> SaveExcelSystemData(string [,] strParameter)
+//  - Motor Data 경로 SFA\LWDicer\SystemData\SystemData.xlsx
+
+// Version : 0.0.5
+// Grade : ★
+// Date : 2016-04-11
+// Context
+// * UI 변경
+// 1. Scanner Image 편집 UI 추가
+

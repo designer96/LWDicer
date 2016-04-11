@@ -118,10 +118,29 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="BtnExit.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAACgAAAAqCAYAAADBNhlmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAJUSURBVFhHYxgFeMDly5cDkfHTp0+5oFIDCwoLC6Xz8gr++/j6Y+AtW7f/f/HiBTdU6cCA8vLK
+        /94+flgdCBKvqqpyhCodGOALdQguB27YsPEHVOnAAJAjYBjTgf5AB276D1U6MAAWUuiOg+FB4UB8GBjF
+        ow7EC7A5ChmPOpAQwOYoZDzqQEIAm6OQ8agDCQFsjkLGow4kBLA5ChmPOpAQwOYoZDzaWCAEsDkKGY8s
+        B16+fGUasI/xOis7539OTkEAVBgvwOYoZEyVNHj9+nWF5uaWn35+AfDme3t7B1EGY3MUMqYoBNetW6cT
+        H584GZvBtbX1BA0+efKkNza9yJgsBy5evFi9pKRsIsgA9A4PjE2MAzMysg8j68WGSXLgjh37VTo7u5YE
+        BAZhNQyGQZZmZGb/37Jly//Nm7eAaXSclZWDVS86JsqBO3ceFVu7dsOR4OBQrIbQEhN04MWLl98Fh4T9
+        AykmFB20wDgdOH/+UoOY2Hh4GkPH2AyjBcbqwAkTJtj5+wcCHYJQOBCOA2GsDlyxYq0dZMwENVpp7UBs
+        5uOM4tOnz9b09fX/90UqfGnpOBhGtgPEJliTHDlybHJpafl7mEPRDaEmBpmLjjMzc+2hTsEPdu/e05Wc
+        nPYM2aG0wDCzQ0LD/2fnZB+GWk88WLJkSVl4ZNRLZMNgvkV2ODE1CU3B3LkLkoGNgx/oDoPxB9yBIDB/
+        /nyO1tZWT5ijYHhQhCAyOHv2rPGWLVu/BAaFwENxwoRJg8eBMHDixGnXGTNmXp40afL/vLw8VajwSAEM
+        DADQs7kEwTnDzgAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <metadata name="TmrMotor.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="$this.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAABQAAAALvCAIAAAC1M/95AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADr8AAA6/ATgFUyQAAP+lSURBVHhe7NdJzjVNcJ5nLYVL4TpsD7QL7sRjzzgx4AVw
+        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAP+lSURBVHhe7NdJzjVNcJ5nLYVL4TpsD7QL7sRjzzgx4AVw
         wKnlvlVDNVRLUg0pyfYCXFlZGXHnUxAQERnHA6N+XALEAQHp/U5lPPff+tt/+2//re+/77/vv++/77/v
         v++/77/vv++/77/vv/9f/Penf/qnf/7nf/7Hf/zHz//8/ff9t/77wz/8w/F//sv/6r/+b//uX/yn/J23
         v5f23/29v0z7++q//43/oeAf/FXW//gb/5P4s4r/+c/+ddo/VP/LD/yvBf/o3xT8bz/wv7/947T/o+Cf

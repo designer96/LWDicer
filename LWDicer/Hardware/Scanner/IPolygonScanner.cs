@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Drawing;
 
 using static LWDicer.Control.DEF_PolygonScanner;
 
@@ -151,6 +152,12 @@ namespace LWDicer.Control
             public int nWaferSize;
                    
             public float fPitch;
+
+            public int nShape;
+
+            public float fOffSetX;
+
+            public float fOffSetY;
         }
 
     }
