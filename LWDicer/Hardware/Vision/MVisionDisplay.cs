@@ -19,9 +19,10 @@ namespace LWDicer.Control
 {
     public class MVisionView: MObject
     {
+        public int m_iResult { get; private set; }
+
         private MVisionCamera m_pCamera;
-        private int m_iViewID;
-        private int m_iResult;
+        private int m_iViewID;        
         private bool m_bLocal;
         private double dGrabInterval = 0.0;
         
@@ -81,8 +82,17 @@ namespace LWDicer.Control
             MIL.MdispAlloc(m_pMilSystemID, MIL.M_DEFAULT, "M_DEFAULT", MIL.M_WINDOWED, ref m_MilDisplay);
 
             // Camera Select
-            if(SelectCamera(pCamera)==SUCCESS) return SUCCESS;
-            else return GenerateErrorCode(ERR_VISION_CAMERA_CREATE_FAIL);
+            if (SelectCamera(pCamera) == SUCCESS)
+            {
+                // System Init 결과 저장
+                m_iResult = SUCCESS;
+
+                return SUCCESS;
+            }
+            else
+            {
+                return GenerateErrorCode(ERR_VISION_CAMERA_CREATE_FAIL);
+            }
 
         }
         

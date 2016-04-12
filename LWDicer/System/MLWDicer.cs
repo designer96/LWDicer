@@ -308,6 +308,8 @@ namespace LWDicer.Control
             SetThreadChannel();
             StartThreads();
 
+
+
             return SUCCESS;
         }
 
@@ -564,6 +566,11 @@ namespace LWDicer.Control
         void CreateVision(CObjectInfo objInfo)
         {
 #if !SIMULATION_VISION
+            bool VisionHardwareCheck = true;
+            if(m_VisionSystem.m_iResult != SUCCESS)
+            {
+                VisionHardwareCheck = false;
+            }
             CVisionData data = new CVisionData();
             CVisionRefComp refComp = new CVisionRefComp();
 
@@ -572,6 +579,11 @@ namespace LWDicer.Control
 
             for (int iIndex = 0; iIndex < DEF_MAX_CAMERA_NO; iIndex++)
             {
+                if(m_VisionCamera[iIndex].m_iResult != SUCCESS || m_VisionView[iIndex].m_iResult != SUCCESS)
+                {
+                    VisionHardwareCheck = false;
+                    break;
+                }
                 refComp.Camera[iIndex] = m_VisionCamera[iIndex];
                 refComp.View[iIndex]   = m_VisionView[iIndex];
 
@@ -583,20 +595,29 @@ namespace LWDicer.Control
 
             m_Vision = new MVision(objInfo, refComp, data);
 
-            // View Object select & Cam Live Set
-            CMainFrame.LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
-            CMainFrame.LWDicer.m_Vision.LiveVideo(PRE__CAM);
-            CMainFrame.LWDicer.m_Vision.LiveVideo(FINE_CAM);
+            if(VisionHardwareCheck==false)
+            {
+                m_Vision.m_bSystemInit = false;
+            }
+            else
+            {
+                m_Vision.m_bSystemInit = true;
+            }
+
+            // Cam Live Set
+            m_Vision.LiveVideo(PRE__CAM);
+            m_Vision.LiveVideo(FINE_CAM);
 
             // Pattern Model Data Read & Apply
             CModelData pModelData;
-            CMainFrame.LWDicer.m_DataManager.ViewModelData("Default", out pModelData);
-            CMainFrame.LWDicer.m_DataManager.m_ModelData = pModelData;
+            m_DataManager.ViewModelData("Default", out pModelData);
+            m_DataManager.m_ModelData = pModelData;
 
-            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternA);
-            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MacroPatternB);
-            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_A, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternA);
-            CMainFrame.LWDicer.m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_B, CMainFrame.LWDicer.m_DataManager.m_ModelData.MicroPatternB);
+            m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_A, m_DataManager.m_ModelData.MacroPatternA);
+            m_Vision.ReLoadPatternMark(PRE__CAM, PATTERN_B, m_DataManager.m_ModelData.MacroPatternB);
+            m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_A, m_DataManager.m_ModelData.MicroPatternA);
+            m_Vision.ReLoadPatternMark(FINE_CAM, PATTERN_B, m_DataManager.m_ModelData.MicroPatternB);
+
 #endif
 
         }

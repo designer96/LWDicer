@@ -21,8 +21,9 @@ namespace LWDicer.Control
         private int m_iSystemNo;
         private int m_iSystemIndex;
         private int m_iCheckCamNo;
-        private int m_iResult;
-        
+
+        public int m_iResult { get; private set; }
+
         //=========================================================
         // System
         private MIL_ID m_MilApp;            // Application identifier.
@@ -102,7 +103,10 @@ namespace LWDicer.Control
 
             // Allocate a MIL system.
             MIL.MsysAlloc(MIL.M_DEFAULT, "M_DEFAULT", MIL.M_DEFAULT, MIL.M_DEFAULT, ref m_MilSystem);
-            
+
+            // System Init 결과 저장
+            m_iResult = SUCCESS;
+
             return SUCCESS;
         }
 

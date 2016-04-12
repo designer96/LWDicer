@@ -19,10 +19,10 @@ using Matrox.MatroxImagingLibrary;
 namespace LWDicer.Control
 {
     public class MVisionCamera: MObject
-    {
-        private int m_iCamID;
-        private int m_iResult;               
+    {        
+        public int m_iResult { get; private set; }
 
+        private int m_iCamID;
         private BGAPI.System m_CamSystem;
         private BGAPI.Camera m_Camera;
         private BGAPI.Image m_CamImage;
@@ -141,7 +141,10 @@ namespace LWDicer.Control
             {   // Camera set Image failed!
                 return GenerateErrorCode(ERR_VISION_CAMERA_GET_IMAGE_FAIL);
             }
-                        
+
+            // System Init 결과 저장
+            m_iResult = SUCCESS;
+
             return SUCCESS;
         }
 
