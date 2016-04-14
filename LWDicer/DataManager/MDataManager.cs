@@ -489,6 +489,8 @@ namespace LWDicer.Control
 
         // System Data
         public CSystemData SystemData { get; private set; } = new CSystemData();
+        public CModelData m_ModelData { get; set; } = new CModelData();
+
         public CSystemData_Axis SystemData_Axis { get; private set; } = new CSystemData_Axis();
         public CSystemData_Cylinder SystemData_Cylinder { get; private set; } = new CSystemData_Cylinder();
         public CSystemData_Vacuum SystemData_Vacuum { get; private set; } = new CSystemData_Vacuum();

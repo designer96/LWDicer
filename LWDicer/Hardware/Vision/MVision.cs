@@ -16,7 +16,7 @@ namespace LWDicer.Control
 {
     public class MVision : MObject,IVision,IDisposable
     {
-        public bool m_bSystemInit { get; private set; }
+        public bool m_bSystemInit { get; set; }
         private bool m_bErrorPrint;
         private bool m_bSaveErrorImage;
 
@@ -541,6 +541,8 @@ namespace LWDicer.Control
                 return SUCCESS;
 #endif
             if (m_RefComp.Camera == null) return GenerateErrorCode(ERR_VISION_CAMERA_FAIL);
+            // Vision System이 초기화 된지를 확인함
+            if (m_bSystemInit == false) return GenerateErrorCode(ERR_VISION_SYSTEM_FAIL);
             // Pattern Data Load
             m_RefComp.Camera[iCamNo].SetSearchData(iTypeNo, pSData);
             // Mark Register

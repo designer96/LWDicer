@@ -21,6 +21,7 @@ using static LWDicer.Control.DEF_Error;
 using static LWDicer.Control.DEF_Common;
 using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_SerialPort;
+using static LWDicer.Control.DEF_Vision;
 
 //#pragma warning disable CS0219
 
@@ -104,7 +105,11 @@ namespace LWDicer.UI
 
             MainFrame = this;
 
-            
+#if !SIMULATION_VISION
+            // View Object select & Cam Live Set
+            LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
+#endif
+
         }
 
         public void ProcessMsg(MEvent evnt)
