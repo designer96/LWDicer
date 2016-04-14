@@ -14,7 +14,7 @@ using static LWDicer.Control.DEF_Common;
 
 namespace LWDicer.Control
 {
-    public class MWorkerThread : MCmdTarget, IDisposable
+    public abstract class MWorkerThread : MCmdTarget, IDisposable
     {
         // for creating thread
         static List<MWorkerThread> stThreadList = new List<MWorkerThread>();

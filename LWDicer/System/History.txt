@@ -109,6 +109,7 @@ LWDicer의 DataManager에서 데이터를 읽어오기 위한 3가지 함수 : S
 2. MMeHandler: 1번항목 관련 update 및 이동 관련 함수들을 상위 class 에서 호출하기 쉽도록 함수들 정리
 3. CSystemData_MAxSafetyPos : 각 MultiAxes의 Safety Position을 system data에서 관리 
 4. MCtrlHandler : skeleton code 작성 시작
+5. MMechanicalLayer, MCtrlLayer의 필수 특성들을 위한 각 Layer의 Parent class 작성
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LJJ

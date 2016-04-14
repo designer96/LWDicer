@@ -23,7 +23,7 @@ namespace LWDicer.Control
     {
     }
 
-    public class MCtrlLoader : MObject
+    public class MCtrlLoader : MCtrlLayer
     {
         private CCtrlLoaderRefComp m_RefComp;
         private CCtrlLoaderData m_Data;

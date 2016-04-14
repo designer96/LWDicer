@@ -45,7 +45,7 @@ namespace LWDicer.Control
 
     }
 
-    public class MManageOpPanel : MObject
+    public class MManageOpPanel : MCtrlLayer
     {
         // Blink Rate
         double m_dBlinkRate;

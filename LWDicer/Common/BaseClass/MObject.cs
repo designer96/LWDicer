@@ -11,7 +11,7 @@ using static LWDicer.Control.DEF_Error;
 
 namespace LWDicer.Control
 {
-    public class MObject
+    public abstract class MObject
     {
         protected CObjectInfo ObjInfo;
         protected MLog LogManager;

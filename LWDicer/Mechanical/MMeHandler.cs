@@ -154,7 +154,7 @@ namespace LWDicer.Control
         }
     }
     
-    public class MMeHandler : MObject
+    public class MMeHandler : MMechanicalLayer
     {
         private CMeHandlerRefComp m_RefComp;
         private CMeHandlerData m_Data;

@@ -11,20 +11,33 @@ namespace LWDicer.Control
 {
     public class CCtrlHandlerRefComp
     {
-        //public CCtrlHandlerRefComp()
-        //{
-        //}
+        // MeHandler
+        MMeHandler UpperHandler;
+        MMeHandler LowerHandler;
+
+        // MeStage
+
+        // MePushPull
+
+        public CCtrlHandlerRefComp()
+        {
+        }
+
         public override string ToString()
         {
-            return $"MCtrlHandlerRefComp : ";
+            return $"CCtrlHandlerRefComp : ";
         }
     }
 
     public class CCtrlHandlerData
     {
+        public CCtrlHandlerData()
+        {
+
+        }
     }
 
-    public class MCtrlHandler : MObject
+    public class MCtrlHandler : MCtrlLayer
     {
         private CCtrlHandlerRefComp m_RefComp;
         private CCtrlHandlerData m_Data;

@@ -23,7 +23,7 @@ namespace LWDicer.Control
     {
     }
 
-    public class MCtrlStage1 : MObject
+    public class MCtrlStage1 : MCtrlLayer
     {
         private CCtrlStage1RefComp m_RefComp;
         private CCtrlStage1Data m_Data;

@@ -33,7 +33,7 @@ namespace LWDicer.Control
             CW_CCW,
             OPEN_CLOSE,
             UP_MID_DOWN,
-            LEFT_MIDE_RIGHT,
+            LEFT_MID_RIGHT,
             FRONT_MID_BACK,
             UPSTREAM_MID_DOWNSTREAM,
             UPSTREAM_DOWNSTREAM_VARIOUS_VELOCITY,

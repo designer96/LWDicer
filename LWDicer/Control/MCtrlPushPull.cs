@@ -23,7 +23,7 @@ namespace LWDicer.Control
     {
     }
 
-    public class MCtrlPushPull : MObject
+    public class MCtrlPushPull : MCtrlLayer
     {
         private CCtrlPushPullRefComp m_RefComp;
         private CCtrlPushPullData m_Data;

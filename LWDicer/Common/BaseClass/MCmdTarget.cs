@@ -9,7 +9,7 @@ using static LWDicer.Control.DEF_Common;
 
 namespace LWDicer.Control
 {
-    public class MCmdTarget : MObject
+    public abstract class MCmdTarget : MObject
     {
         private Queue<MEvent>  m_eventQ;
 
