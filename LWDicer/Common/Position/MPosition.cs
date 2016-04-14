@@ -144,6 +144,27 @@ namespace LWDicer.Control
                               
             return s;
         }
+
+        public double GetAt(int axis)
+        {
+            switch (axis)
+            {
+                case 0: // DEF_X
+                    return dX;
+                    break;
+                case 1: // DEF_Y
+                    return dY;
+                    break;
+                //case 2: // DEF_T
+                //    return dT;
+                //    break;
+                //case 3: // DEF_Z
+                //    return dZ;
+                //    break;
+            }
+            return 0;
+        }
+
     }
 
     public class CPos_XYT
@@ -297,6 +318,27 @@ namespace LWDicer.Control
                                
             return s;
         }
+
+        public double GetAt(int axis)
+        {
+            switch (axis)
+            {
+                case 0: // DEF_X
+                    return dX;
+                    break;
+                case 1: // DEF_Y
+                    return dY;
+                    break;
+                case 2: // DEF_T
+                    return dT;
+                    break;
+                //case 3: // DEF_Z
+                //    return dZ;
+                //    break;
+            }
+            return 0;
+        }
+
     }
 
     public class CPos_XYTZ
@@ -477,6 +519,26 @@ namespace LWDicer.Control
             if (dDiv[3] != 0) s.dZ = s1.dZ / dDiv[3];
 
             return s;
+        }
+
+        public double GetAt(int axis)
+        {
+            switch(axis)
+            {
+                case 0: // DEF_X
+                    return dX;
+                    break;
+                case 1: // DEF_Y
+                    return dY;
+                    break;
+                case 2: // DEF_T
+                    return dT;
+                    break;
+                case 3: // DEF_Z
+                    return dZ;
+                    break;
+            }
+            return 0;
         }
     }
 }

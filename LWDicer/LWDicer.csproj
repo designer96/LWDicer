@@ -148,6 +148,7 @@
     <Compile Include="Common\BaseClass\MWorkerThread.cs" />
     <Compile Include="Common\Util\CUtils.cs" />
     <Compile Include="Common\Util\DBManager.cs" />
+    <Compile Include="Control\MCtrlHandler.cs" />
     <Compile Include="Hardware\IO\MIO_YMC.cs" />
     <Compile Include="Hardware\Motion\MMultiAxes_YMC.cs" />
     <Compile Include="Hardware\Scanner\IPolygonScanner.cs" />

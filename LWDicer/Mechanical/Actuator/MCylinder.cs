@@ -171,14 +171,13 @@ namespace LWDicer.Control
             return IsDown(out pbVal);
         }
 
-        public int IsDownstr(out bool pbVal)
+        public int IsUpstr(out bool pbVal)
         {
             return IsUp(out pbVal);
         }
 
-        public int IsUpstr(out bool pbVal)
+        public int IsDownstr(out bool pbVal)
         {
-
             return IsDown(out pbVal);
         }
 
@@ -336,12 +335,12 @@ namespace LWDicer.Control
 
         //--------------- Downstr / Upstr -------------
 
-        public int Downstr(bool skip_sensor = false)
+        public int Upstr(bool skip_sensor = false)
         {
             return Up(skip_sensor);
         }
 
-        public int Upstr(bool skip_sensor = false)
+        public int Downstr(bool skip_sensor = false)
         {
             return Down(skip_sensor);
         }
@@ -432,7 +431,7 @@ namespace LWDicer.Control
 */
         public int StartDownstr()
         {
-            return Up(true);
+            return Down(true);
         }
 
         /**
@@ -441,7 +440,7 @@ namespace LWDicer.Control
 */
         public int StartUpstr()
         {
-            return Down(true);
+            return Up(true);
         }
 
         /**
@@ -778,7 +777,7 @@ namespace LWDicer.Control
 */
         public int Wait4DownstrComplete()
         {
-            return (Wait4UpComplete());
+            return (Wait4DownComplete());
         }
 
         /**
@@ -787,7 +786,7 @@ namespace LWDicer.Control
 */
         public int Wait4UpstrComplete()
         {
-            return (Wait4DownComplete());
+            return (Wait4UpComplete());
         }
 
         /**

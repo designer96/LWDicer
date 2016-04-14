@@ -112,16 +112,31 @@ namespace LWDicer.Control
             public string TeachingDataFile;
         }
 
+        /// <summary>
+        /// MultiAxes가 이동시에 특정 축들이 먼저 안전한 위치로 이동 후에 이동해야할경우 (ex, ZAxis)
+        /// 사용하는 안전한 위치의 값들을 관리하는 class
+        /// </summary>
+        public class CSystemData_MAxSafetyPos
+        {
+            public CPos_XYTZ UHandler_Pos;
+            public CPos_XYTZ LHandler_Pos;
+        }
+
         public class CSystemData
         {
             // Axis, Cylinder, Vacuum 등의 class array는 별도의 class에서 처리하도록 한다.
             //
             public string ModelName = "Default";
 
+            // SafetyPos for Axis Move
+            public CSystemData_MAxSafetyPos MAxSafetyPos = new CSystemData_MAxSafetyPos();
+
+            /////////////////////////////////////////////////////////
+            // 아래는 아직 미정리 내역들
+
             //
             public string PassWord;     // Engineer Password
 
-            // 아래는 아직 미정리 내역들
 
             public int SystemType;      // 작업변
             public bool UseSafetySensor;

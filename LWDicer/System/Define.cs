@@ -250,7 +250,7 @@ namespace LWDicer.Control
             //OBJ_CL_DISPENSE,
             //OBJ_CL_STAGE2,
             //OBJ_CL_STAGE3,
-            OBJ_CL_UNLOAD_HANDLER,
+            OBJ_CL_HANDLER,
             OBJ_CL_MANAGE_OP_PANEL,
             OBJ_CL_HW_TEACH,
             OBJ_CL_VISION_CALIBRATION,

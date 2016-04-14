@@ -535,6 +535,58 @@ namespace LWDicer.Control
             public bool[] bNegativeLevel = new bool[DEF_MAX_AXIS_NO];
             public bool[] bHomeLevel = new bool[DEF_MAX_AXIS_NO];
         }
+
+        /// <summary>
+        /// 원점복귀 여부와 상관없이 해당 축의 물리적인 위치를 체크하기 위한 센서들을 관리하는 class
+        /// </summary>
+        public class COneAxisZoneCheck
+        {
+            private int Length;          // Zone
+            public int[] ZoneAddr;     // Sensor Address, if -1, not use
+
+            public COneAxisZoneCheck(int Length)
+            {
+                if (Length < 1) Length = 1;
+                this.Length = Length;
+                ZoneAddr = new int[Length];
+                for (int i = 0; i < Length; i++)
+                {
+                    ZoneAddr[i] = -1;
+                }
+            }
+        }
+
+        public class CMAxisZoneCheck
+        {
+            public COneAxisZoneCheck[] Axis = new COneAxisZoneCheck[DEF_XYTZ];
+            public bool[] UseSafetyMove = new bool[DEF_XYTZ];  // Axis Moving시에 SafetyPos으로 이동후에 목표위치로 이동하는 옵션
+            public CPos_XYTZ SafetyPos;    // 안전 위치. 비간섭 position
+
+
+            public CMAxisZoneCheck(int XLength, int YLength, int TLength, int ZLength)
+            {
+                Axis[DEF_X] = new COneAxisZoneCheck(XLength);
+                Axis[DEF_Y] = new COneAxisZoneCheck(YLength);
+                Axis[DEF_T] = new COneAxisZoneCheck(TLength);
+                Axis[DEF_Z] = new COneAxisZoneCheck(ZLength);
+            }
+
+            public CMAxisZoneCheck(int[] ZoneLength)
+            {
+                for (int i = 0; i < DEF_XYTZ; i++)
+                {
+                    Axis[i] = new COneAxisZoneCheck(ZoneLength[i]);
+                }
+            }
+
+            public CMAxisZoneCheck(COneAxisZoneCheck[] Axis)
+            {
+                for (int i = 0; i < DEF_XYTZ; i++)
+                {
+                    Axis[i] = ObjectExtensions.Copy(Axis[i]);
+                }
+            }
+        }
     }
 
     interface IMotionLib

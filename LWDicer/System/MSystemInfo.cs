@@ -132,7 +132,7 @@ namespace LWDicer.Control
                 new CObjectInfo( (int)OBJ_CL_LOADER            , "CtrlLoader",        351, "Control : Loader", 30600, "C_Loader", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_CL_PUSHPULL          , "CtrlPushPull",      352, "Control : PushPull", 30700, "C_PushPull", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_CL_STAGE1            , "CtrlStage1",        353, "Control : Stage1", 30500, "C_Stage1", LOG_ALL, LOG_DAY ),
-                new CObjectInfo( (int)OBJ_CL_UNLOAD_HANDLER    , "CtrlUHandler",      356, "Control : UHandler", 30800, "C_UHandler", LOG_ALL, LOG_DAY ),
+                new CObjectInfo( (int)OBJ_CL_HANDLER           , "CtrlHandler",       354, "Control : Handler", 30800, "C_Handler", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_CL_VISION_CALIBRATION, "VisionCalibration", 360, "Control : Vision Calibration1", 31000, "C_VisionCalib1", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_CL_VISION_CALIBRATION, "VisionCalibration", 361, "Control : Vision Calibration2", 31000, "C_VisionCalib2", LOG_ALL, LOG_DAY ),
                 new CObjectInfo( (int)OBJ_CL_HW_TEACH          , "HWTeach",           362, "Control : HW Teach", 32000, "C_HWTeach", LOG_ALL, LOG_DAY ),

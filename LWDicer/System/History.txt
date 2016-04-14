@@ -91,7 +91,7 @@ serialization 기능을 이용해서 자동으로 data class save, load하는 �
 // Grade : ★
 // Date : 2016-04-05
 // Context
-1. MeHandler : Up/Down 등의 cylidner 관련 함수들 정리중..
+1. MMeHandler : Up/Down 등의 cylidner 관련 함수들 정리중..
 2. 각 Unit별 좌표 class CUnitPos 추가 및 save/load 및 인스턴스에 할당 관련 함수들 정리중..
 3. MultiAxes 와 1:1로 맵핑되어 티칭 좌표등을 종합적으로 관리하는 CMovingObject class 추가함
 4. DataManage의 데이터 읽고 쓰는 부분 함수들 정리 및 LWDicer에서 DataManager 호출하는 함수들도 정리
@@ -100,6 +100,15 @@ LWDicer의 SaveSystemData, SaveModelData를 이용해서 저장하는 방식으�
 (강제로 유도하기 위해서 property format 으로 바꾸고 { get; private set; } 으로 지정함)
 LWDicer의 DataManager에서 데이터를 읽어오기 위한 3가지 함수 : SetSystemDataToComponent(), SetModelDataToComponent(), SetPositionDataToComponent()
 
+// Version : 0.0.11
+// Grade : ★
+// Date : 2016-04-14
+// Context
+1. CMAxisZoneCheck : MultiAxes 축을 가진 Object가 이동시에, 특정 축이 안전위치로 이동후에 목표 위치로 
+움직일 수 있도록 CMAxisZoneCheck class 를 추가함. 이때 안전위치를 체크하는 것은 로봇 위치가 아닌 센서로 감지하는 조건임. 
+2. MMeHandler: 1번항목 관련 update 및 이동 관련 함수들을 상위 class 에서 호출하기 쉽도록 함수들 정리
+3. CSystemData_MAxSafetyPos : 각 MultiAxes의 Safety Position을 system data에서 관리 
+4. MCtrlHandler : skeleton code 작성 시작
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LJJ

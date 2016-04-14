@@ -102,6 +102,7 @@ namespace LWDicer.Control
         public MCtrlLoader m_ctrlLoader { get; private set; }
         public MCtrlPushPull m_ctrlPushPull { get; private set; }
         public MCtrlStage1 m_ctrlStage1 { get; private set; }
+        public MCtrlHandler m_ctrlHandler { get; private set; }
 
         ///////////////////////////////////////////////////////////////////////
         // Process Layer
@@ -272,6 +273,9 @@ namespace LWDicer.Control
 
             m_SystemInfo.GetObjectInfo(353, out objInfo);
             CreateCtrlStage1(objInfo);
+
+            m_SystemInfo.GetObjectInfo(354, out objInfo);
+            CreateCtrlHandler(objInfo);
 
             ////////////////////////////////////////////////////////////////////////
             // 4. Process Layer
@@ -618,6 +622,14 @@ namespace LWDicer.Control
             m_ctrlLoader = new MCtrlLoader(objInfo, refComp, data);
         }
 
+        void CreateCtrlHandler(CObjectInfo objInfo)
+        {
+            CCtrlHandlerRefComp refComp = new CCtrlHandlerRefComp();
+            CCtrlHandlerData data = new CCtrlHandlerData();
+
+            m_ctrlHandler = new MCtrlHandler(objInfo, refComp, data);
+        }
+
         void CreateCtrlPushPull(CObjectInfo objInfo)
         {
             CCtrlPushPullRefComp refComp = new CCtrlPushPullRefComp();
@@ -761,6 +773,29 @@ namespace LWDicer.Control
             MLWDicer.bUseOnline = m_DataManager.SystemData.UseOnLineUse;
 
             // set system data to each component
+
+            //////////////////////////////////////////////////////////////////
+            // Hardware Layer
+
+            //////////////////////////////////////////////////////////////////
+            // Mechanical Layer
+
+            // MeHandler
+            CMeHandlerData meHandlerData;
+            m_MeUpperHandler.GetData(out meHandlerData);
+            meHandlerData.HandlerZone.SafetyPos = m_DataManager.SystemData.MAxSafetyPos.UHandler_Pos;
+            m_MeUpperHandler.SetData(meHandlerData);
+
+            m_MeUpperHandler.GetData(out meHandlerData);
+            meHandlerData.HandlerZone.SafetyPos = m_DataManager.SystemData.MAxSafetyPos.UHandler_Pos;
+            m_MeUpperHandler.SetData(meHandlerData);
+
+            //////////////////////////////////////////////////////////////////
+            // Control Layer
+
+            //////////////////////////////////////////////////////////////////
+            // Process Layer
+
         }
 
         public int SaveModelData(CModelData modelData)
@@ -782,6 +817,13 @@ namespace LWDicer.Control
             m_DataManager.ChangeModel(m_DataManager.SystemData.ModelName);
 
             // set model data to each component
+
+            //////////////////////////////////////////////////////////////////
+            // Hardware Layer
+
+            //////////////////////////////////////////////////////////////////
+            // Mechanical Layer
+
             // MMeHandler
             m_MeUpperHandler.SetCylUseFlag(m_DataManager.ModelData.MeUH_UseMainCylFlag,
                 m_DataManager.ModelData.MeUH_UseSubCylFlag, m_DataManager.ModelData.MeUH_UseGuideCylFlag);
@@ -790,6 +832,14 @@ namespace LWDicer.Control
             m_MeLowerHandler.SetCylUseFlag(m_DataManager.ModelData.MeLH_UseMainCylFlag,
                 m_DataManager.ModelData.MeLH_UseSubCylFlag, m_DataManager.ModelData.MeLH_UseGuideCylFlag);
             m_MeLowerHandler.SetVccUseFlag(m_DataManager.ModelData.MeLH_UseVccFlag);
+
+            //////////////////////////////////////////////////////////////////
+            // Control Layer
+
+            //////////////////////////////////////////////////////////////////
+            // Process Layer
+
+
         }
 
         public void SetPositionDataToComponent(EUnitObject unit = EUnitObject.ALL)
@@ -804,9 +854,22 @@ namespace LWDicer.Control
 
             // set position data to each component
 
+            //////////////////////////////////////////////////////////////////
+            // Hardware Layer
+
+            //////////////////////////////////////////////////////////////////
+            // Mechanical Layer
+
             // MMeHandler
             m_MeUpperHandler.SetHandlerPosition(FixedPos.UHandlerPos, ModelPos.UHandlerPos, OffsetPos.UHandlerPos);
             m_MeLowerHandler.SetHandlerPosition(FixedPos.LHandlerPos, ModelPos.LHandlerPos, OffsetPos.LHandlerPos);
+
+            //////////////////////////////////////////////////////////////////
+            // Control Layer
+
+            //////////////////////////////////////////////////////////////////
+            // Process Layer
+
         }
 
         public bool GetKeyPad(string StrCurrent, out string strModify)
@@ -887,6 +950,9 @@ namespace LWDicer.Control
 
             data.InDetectObject = iUHandler_PanelDetect;
 
+            data.HandlerZone.UseSafetyMove[DEF_Z] = true;
+            data.HandlerZone.Axis[DEF_Z].ZoneAddr[(int)EHandlerZAxZone.SAFETY] = 111; // need updete io address
+
             m_MeUpperHandler = new MMeHandler(objInfo, refComp, data);
         }
 
@@ -903,6 +969,9 @@ namespace LWDicer.Control
             data.HandlerType[DEF_Z] = EHandlerType.AXIS;
 
             data.InDetectObject = iUHandler_PanelDetect;
+
+            data.HandlerZone.UseSafetyMove[DEF_Z] = true;
+            data.HandlerZone.Axis[DEF_Z].ZoneAddr[(int)EHandlerZAxZone.SAFETY] = 111; // need updete io address
 
             m_MeLowerHandler = new MMeHandler(objInfo, refComp, data);
         }
