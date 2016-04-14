@@ -153,7 +153,7 @@ namespace LWDicer.Control
             }
         }
     }
-
+    
     public class MMeHandler : MObject
     {
         private CMeHandlerRefComp m_RefComp;
@@ -545,6 +545,12 @@ namespace LWDicer.Control
         {
             int iResult = SUCCESS;
 
+            // Load Position으로 가는 것이면 Align Offset을 초기화해야 한다.
+            if (iPos == (int)EHandlerPos.LOAD)
+            {
+                AxHandlerInfo.InitAlignOffset();
+            }
+
             CPos_XYTZ sTargetPos = AxHandlerInfo.GetTargetPos(iPos);
             if (dMoveOffset != null)
             {
@@ -595,7 +601,7 @@ namespace LWDicer.Control
             }
 
             // 2. move z only
-            if (bMoveXYT)
+            if (bMoveZ)
             {
                 bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { false, false, false, true };
                 return MoveHandlerPos(iPos, false, bMoveFlag);
