@@ -105,8 +105,10 @@ namespace LWDicer.UI
 
             MainFrame = this;
 
+#if !SIMULATION_VISION
             // View Object select & Cam Live Set
             LWDicer.m_Vision.InitialLocalView(PRE__CAM, CMainFrame.MainFrame.m_FormManualOP.VisionView1.Handle);
+#endif
 
         }
 
