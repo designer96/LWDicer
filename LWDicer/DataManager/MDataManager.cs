@@ -118,6 +118,7 @@ namespace LWDicer.Control
         /// </summary>
         public class CSystemData_MAxSafetyPos
         {
+            public CPos_XYTZ Elevator_Pos;
             public CPos_XYTZ UHandler_Pos;
             public CPos_XYTZ LHandler_Pos;
         }

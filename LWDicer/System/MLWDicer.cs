@@ -26,7 +26,9 @@ using static LWDicer.Control.DEF_Cylinder;
 using static LWDicer.Control.DEF_Vacuum;
 using static LWDicer.Control.DEF_Vision;
 
+using static LWDicer.Control.DEF_MeElevator;
 using static LWDicer.Control.DEF_MeHandler;
+using static LWDicer.Control.DEF_MeStage;
 using static LWDicer.Control.DEF_SerialPort;
 using static LWDicer.Control.DEF_PolygonScanner;
 
@@ -78,6 +80,7 @@ namespace LWDicer.Control
 
         public IVacuum m_UHandlerSelfVac;
         public IVacuum m_LHandlerSelfVac;
+        public IVacuum m_MainStageVac;
 
         // Serial
         public ISerialPort m_PolygonComPort;
@@ -92,6 +95,8 @@ namespace LWDicer.Control
 
 
         // Mechanical Layer
+
+        public MMeElevator m_MeElevator;            // Cassette Loader 용 Elevator
         public MMeHandler m_MeUpperHandler;         // UpperHandler of 2Layer
         public MMeHandler m_MeLowerHandler;         // LowerHandler of 2Layer
 
@@ -228,6 +233,16 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(151, out objInfo);
             CreateVacuum(objInfo, vacData, (int)EObjectVacuum.UHANDLER_SELF, out m_UHandlerSelfVac);
 
+            // Main Stage Self Vacuum
+            vacData = new CVacuumData();
+            vacData.VacuumType = EVacuumType.SINGLE_VACUUM_WBLOW;
+            vacData.Sensor[0] = iUHandler_Self_Vac_On;
+            vacData.Solenoid[0] = oUHandler_Self_Vac_On;
+            vacData.Solenoid[1] = oUHandler_Self_Vac_Off;
+
+            m_SystemInfo.GetObjectInfo(152, out objInfo);
+            CreateVacuum(objInfo, vacData, (int)EObjectVacuum.MAIN_STAGE, out m_MainStageVac);
+
             // Polygon Scanner Serial Com Port
             m_SystemInfo.GetObjectInfo(30, out objInfo);
             CreatePolygonSerialPort(objInfo, out m_PolygonComPort);
@@ -250,9 +265,9 @@ namespace LWDicer.Control
             // 2. Mechanical Layer
             ////////////////////////////////////////////////////////////////////////
 
-            // Vision 
-            m_SystemInfo.GetObjectInfo(320, out objInfo);
-            CreateVision(objInfo);
+            // Cassette Loader
+            m_SystemInfo.GetObjectInfo(310, out objInfo);
+            CreateMeElevator(objInfo);
 
             // Handler
             m_SystemInfo.GetObjectInfo(318, out objInfo);
@@ -260,6 +275,11 @@ namespace LWDicer.Control
 
             m_SystemInfo.GetObjectInfo(319, out objInfo);
             CreateMeLowerHandler(objInfo);
+
+
+            // Vision 
+            m_SystemInfo.GetObjectInfo(340, out objInfo);
+            CreateVision(objInfo);
 
             ////////////////////////////////////////////////////////////////////////
             // 3. Control Layer
@@ -800,6 +820,12 @@ namespace LWDicer.Control
             //////////////////////////////////////////////////////////////////
             // Mechanical Layer
 
+            // MeElevator
+            CMeElevatorData meElevatorData;
+            m_MeElevator.GetData(out meElevatorData);
+            meElevatorData.ElevatorZone.SafetyPos = m_DataManager.SystemData.MAxSafetyPos.Elevator_Pos;
+            m_MeElevator.SetData(meElevatorData);
+
             // MeHandler
             CMeHandlerData meHandlerData;
             m_MeUpperHandler.GetData(out meHandlerData);
@@ -954,6 +980,23 @@ namespace LWDicer.Control
                 Msg.Dispose();
                 return false;
             }
+        }
+
+        void CreateMeElevator(CObjectInfo objInfo)
+        {
+            CMeElevatorRefComp refComp = new CMeElevatorRefComp();
+            CMeElevatorData data = new CMeElevatorData();
+
+            refComp.IO = m_IO;
+            refComp.AxElevator = m_AxLoader;            
+
+            data.InDetectWafer = iUHandler_PanelDetect;
+
+            data.ElevatorZone.UseSafetyMove[DEF_Z] = true;
+            data.ElevatorZone.Axis[DEF_Z].ZoneAddr[(int)EHandlerZAxZone.SAFETY] = 111; // need updete io address
+
+            m_MeElevator = new MMeElevator(objInfo, refComp, data);
+
         }
 
         void CreateMeUpperHandler(CObjectInfo objInfo)

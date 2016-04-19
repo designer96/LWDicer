@@ -189,6 +189,7 @@ namespace LWDicer.Control
         public enum EObjectVacuum
         {
             STAGE1,
+            MAIN_STAGE,
             UHANDLER_SELF,  // Upper Handler
             LHANDLER_SELF,  // Lower Handler
             MAX_OBJ,
