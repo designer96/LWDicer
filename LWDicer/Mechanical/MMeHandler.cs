@@ -230,7 +230,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int Absorb(bool bSkipSensor)
+        public int Absorb(bool bSkipSensor = false)
         {
             bool bStatus;
             int iResult = SUCCESS;
@@ -585,50 +585,50 @@ namespace LWDicer.Control
         /// <param name="bMoveXYT"></param>
         /// <param name="bMoveZ"></param>
         /// <returns></returns>
-        public int MoveHandlerPos(int iPos, bool bMoveAllAxis, bool bMoveXYT, bool bMoveZ)
+        public int MoveHandlerPos(int iPos, bool bMoveXYT, bool bMoveZ, double[] dMoveOffset = null)
         {
             // 0. move all axis
-            if (bMoveAllAxis)
+            if (bMoveXYT && bMoveZ)
             {
-                return MoveHandlerPos(iPos);
+                return MoveHandlerPos(iPos, dMoveOffset : dMoveOffset);
             }
 
             // 1. move xyt only
             if (bMoveXYT)
             {
                 bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { true, true, true, false };
-                return MoveHandlerPos(iPos, true, bMoveFlag);
+                return MoveHandlerPos(iPos, true, bMoveFlag, dMoveOffset: dMoveOffset);
             }
 
             // 2. move z only
             if (bMoveZ)
             {
                 bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { false, false, false, true };
-                return MoveHandlerPos(iPos, false, bMoveFlag);
+                return MoveHandlerPos(iPos, false, bMoveFlag, dMoveOffset: dMoveOffset);
             }
 
             return SUCCESS;
         }
 
-        public int MoveHandlerToLoadPos(bool bMoveAllAxis = true, bool bMoveXYT = false, bool bMoveZ = false)
+        public int MoveHandlerToLoadPos(bool bMoveXYT = false, bool bMoveZ = false, double[] dMoveOffset = null)
         {
             int iPos = (int)EHandlerPos.LOAD;
 
-            return MoveHandlerPos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+            return MoveHandlerPos(iPos, bMoveXYT, bMoveZ, dMoveOffset);
         }
 
-        public int MoveHandlerToUnloadPos(bool bMoveAllAxis = true, bool bMoveXYT = false, bool bMoveZ = false)
+        public int MoveHandlerToUnloadPos(bool bMoveXYT = false, bool bMoveZ = false, double[] dMoveOffset = null)
         {
             int iPos = (int)EHandlerPos.UNLOAD;
 
-            return MoveHandlerPos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+            return MoveHandlerPos(iPos, bMoveXYT, bMoveZ, dMoveOffset);
         }
 
-        public int MoveHandlerToWaitPos(bool bMoveAllAxis = true, bool bMoveXYT = false, bool bMoveZ = false)
+        public int MoveHandlerToWaitPos(bool bMoveXYT = false, bool bMoveZ = false, double[] dMoveOffset = null)
         {
             int iPos = (int)EHandlerPos.WAIT;
 
-            return MoveHandlerPos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+            return MoveHandlerPos(iPos, bMoveXYT, bMoveZ, dMoveOffset);
         }
 
         /// <summary>
@@ -692,7 +692,7 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int GetHandlerPosInfo(out int posInfo, bool bUpdatePos = true, bool bCheckZAxis = false)
+        public int GetHandlerPosInfo(out int posInfo, bool bUpdatePos = true, bool bCheck_ZAxis = false)
         {
             posInfo = (int)EHandlerPos.NONE;
             bool bStatus;
@@ -704,7 +704,7 @@ namespace LWDicer.Control
             {
                 for (int i = 0; i < (int)EHandlerPos.MAX; i++)
                 {
-                    CompareHandlerPos(i, out bStatus, false, bCheckZAxis);
+                    CompareHandlerPos(i, out bStatus, false, bCheck_ZAxis);
                     if (bStatus)
                     {
                         AxHandlerInfo.PosInfo = i;
