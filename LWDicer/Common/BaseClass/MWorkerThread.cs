@@ -27,10 +27,10 @@ namespace LWDicer.Control
         private int selfChannel;
         Thread m_hThread;   // Thread Handle
 
-        protected int OpeartionMode;
-        protected int RunMode;
-        protected int RunStatus;        // RunStatus : STS_MANUAL, STS_RUN_READY, STS_RUN,..
-        protected int RunStatus_Old;    // Old RunStatus
+        protected EAutoManual eAutoManual;    // EAutoManual : AUTO, MANUAL
+        protected EOpMode eOpMode;            // EOpMode : NORMAL_RUN, PASS_RUN, DRY_RUN, REPAIR_RUN
+        protected int OpStatus;              // OpStatus : STS_MANUAL, STS_RUN_READY, STS_RUN,..
+        protected int OpStatus_Old;          // Old OpStatus
 
         public int ThreadStep { get; protected set; } = 0;
 
@@ -40,10 +40,10 @@ namespace LWDicer.Control
 
         public MWorkerThread(CObjectInfo objInfo, int selfChannel) : base(objInfo)
         {
-            OpeartionMode = (int)EOperationMode.OPERATION_MANUAL;
-            RunMode = (int)ERunMode.MODE_NORMAL_RUN;
-            RunStatus = STS_MANUAL;
-            RunStatus_Old = STS_RUN;
+            eAutoManual = EAutoManual.MANUAL;
+            eOpMode = EOpMode.NORMAL_RUN;
+            OpStatus = STS_MANUAL;
+            OpStatus_Old = STS_RUN;
 
             ThreadID = GetUniqueThreadID();
             this.selfChannel = selfChannel;
@@ -101,19 +101,29 @@ namespace LWDicer.Control
             return DEF_Error.SUCCESS;
         }
 
+        public void SetOperationMode(EOpMode mode)
+        {
+            eOpMode = mode;
+        }
+
+        public void SetAutoManual(EAutoManual mode)
+        {
+            eAutoManual = mode;
+        }
+
         protected int OnStartRun()
         {
-            SetRunStatus(RunStatus);
+            SetOpStatus(OpStatus);
 
             return 0;
         }
 
-        protected bool SetRunStatus(int Status)
+        protected bool SetOpStatus(int Status)
         {
-            if (RunStatus == Status) return false;
+            if (OpStatus == Status) return false;
 
-            RunStatus_Old = RunStatus;
-            RunStatus = Status;
+            OpStatus_Old = OpStatus;
+            OpStatus = Status;
             return true;
         }
 
@@ -128,7 +138,7 @@ namespace LWDicer.Control
             switch (evnt.Msg)
             {
                 case (int)MSG_MANUAL_CMD:
-                    SetRunStatus(STS_MANUAL);
+                    SetOpStatus(STS_MANUAL);
 
                     PostMsg(TrsAutoManager, (int)MSG_MANUAL_CNF);
                     break;
@@ -141,36 +151,36 @@ namespace LWDicer.Control
                     break;
 
                 case (int)MSG_START_CMD:
-                    if (RunStatus == STS_RUN_READY || RunStatus == STS_STEP_STOP ||
-                        RunStatus == STS_ERROR_STOP)
+                    if (OpStatus == STS_RUN_READY || OpStatus == STS_STEP_STOP ||
+                        OpStatus == STS_ERROR_STOP)
                     {
-                        SetRunStatus(STS_RUN);
+                        SetOpStatus(STS_RUN);
 
                         PostMsg(TrsAutoManager, (int)MSG_START_CNF);
                     }
                     break;
 
                 case (int)MSG_ERROR_STOP_CMD:
-                    SetRunStatus(STS_ERROR_STOP);
+                    SetOpStatus(STS_ERROR_STOP);
 
                     PostMsg(TrsAutoManager, (int)MSG_ERROR_STOP_CNF);
                     break;
 
                 case (int)MSG_STEP_STOP_CMD:
-                    if (RunStatus == STS_STEP_STOP || RunStatus == STS_ERROR_STOP)
+                    if (OpStatus == STS_STEP_STOP || OpStatus == STS_ERROR_STOP)
                     {
-                        SetRunStatus(STS_MANUAL);
+                        SetOpStatus(STS_MANUAL);
                     }
                     else
                     {
-                        SetRunStatus(STS_STEP_STOP);
+                        SetOpStatus(STS_STEP_STOP);
                     }
 
                     PostMsg(TrsAutoManager, (int)MSG_STEP_STOP_CNF);
                     break;
 
                 case (int)MSG_CYCLE_STOP_CMD:
-                    SetRunStatus(STS_CYCLE_STOP);
+                    SetOpStatus(STS_CYCLE_STOP);
                     PostMsg(TrsAutoManager, (int)MSG_CYCLE_STOP_CNF);
                     break;
 
@@ -194,10 +204,10 @@ namespace LWDicer.Control
                 // check message from other thread
                 CheckMsg(1);
 
-                switch (RunStatus)
+                switch (OpStatus)
                 {
                     case STS_MANUAL: // Manual Mode
-                        //m_RefComp.m_pC_CtrlStage1->SetAutoManual(OPERATION_MANUAL);
+                        //m_RefComp.m_pC_CtrlStage1->SetAutoManual(MANUAL);
                         break;
 
                     case STS_ERROR_STOP: // Error Stop
@@ -214,7 +224,7 @@ namespace LWDicer.Control
                         break;
 
                     case STS_RUN: // auto run
-                        //m_RefComp.m_pC_CtrlStage1->SetAutoManual(OPERATION_AUTO);
+                        //m_RefComp.m_pC_CtrlStage1->SetAutoManual(AUTO);
 
                         switch (ThreadStep)
                         {
@@ -302,7 +312,7 @@ namespace LWDicer.Control
 
         public int SendAlarmTo(int iAlaramCode, int iChannel = TrsAutoManager)
         {
-            RunStatus = STS_ERROR_STOP;
+            OpStatus = STS_ERROR_STOP;
 
             MEvent evnt = new MEvent((int)MSG_PROCESS_ALARM, iAlaramCode, iChannel, ThreadID);
             return PostMsg(iChannel, evnt);

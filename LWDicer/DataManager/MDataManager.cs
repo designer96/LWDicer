@@ -141,7 +141,7 @@ namespace LWDicer.Control
 
             public int SystemType;      // 작업변
             public bool UseSafetySensor;
-            public DEF_Thread.ERunMode eOpModeStatus;
+            public DEF_Thread.EOpMode eOpModeStatus;
             public bool UseStepDisplay;
             public string LineControllerIP;
             public int LineControllerPort;

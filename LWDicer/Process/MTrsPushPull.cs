@@ -9,7 +9,7 @@ using System.Diagnostics;
 using static LWDicer.Control.DEF_Thread;
 using static LWDicer.Control.DEF_Thread.ETrsPushPullStep;
 using static LWDicer.Control.DEF_Thread.EThreadMessage;
-using static LWDicer.Control.DEF_Thread.ERunMode;
+using static LWDicer.Control.DEF_Thread.EOpMode;
 using static LWDicer.Control.DEF_Error;
 using static LWDicer.Control.DEF_Common;
 
@@ -253,10 +253,10 @@ namespace LWDicer.Control
                 // check message from other thread
                 CheckMsg(1);
 
-                switch (RunStatus)
+                switch (OpStatus)
                 {
                     case STS_MANUAL: // Manual Mode
-                        //m_RefComp.ctrlPushPull.SetAutoManual(OPERATION_MANUAL);
+                        //m_RefComp.ctrlPushPull.SetAutoManual(MANUAL);
                         break;
 
                     case STS_ERROR_STOP: // Error Stop
@@ -273,7 +273,7 @@ namespace LWDicer.Control
                         break;
 
                     case STS_RUN: // auto run
-                        //m_RefComp.ctrlPushPull.SetAutoManual(OPERATION_AUTO);
+                        //m_RefComp.ctrlPushPull.SetAutoManual(AUTO);
 
                         switch (ThreadStep)
                         {

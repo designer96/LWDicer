@@ -210,8 +210,8 @@ namespace LWDicer.Control
         private COpPanelData m_Data;
 
         COpPanelIOAddr m_IOAddrTable;
-        EOperationMode m_eAutoManual;
-        ERunMode m_eOpMode;
+        EAutoManual m_eAutoManual;
+        EOpMode m_eOpMode;
 
         CJogTable m_JogTable;
 
@@ -2619,7 +2619,7 @@ namespace LWDicer.Control
         * @param	EAutoManual eAutoManual (반영하고자 하는 Auto/Manual Mode)
         * @return	void
 */
-        public void SetAutoManual(EOperationMode eAutoManual)
+        public void SetAutoManual(EAutoManual eAutoManual)
         {
             m_eAutoManual = eAutoManual;
         }
@@ -2628,10 +2628,10 @@ namespace LWDicer.Control
         * System의 운전 Mode를 반영한다.
         * 화면에서 운전 Mode 변경 시 각 Control들의 운전 Mode에 반영한다.
         *
-        * @param	ERunMode eOpMode (반영하고자 하는 운전 Mode)
+        * @param	EOpMode eOpMode (반영하고자 하는 운전 Mode)
         * @return	void
 */
-        public void SetOpMode(ERunMode eOpMode)
+        public void SetOpMode(EOpMode eOpMode)
         {
             m_eOpMode = eOpMode;
         }

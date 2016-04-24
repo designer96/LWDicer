@@ -32,6 +32,8 @@ using static LWDicer.Control.DEF_MeStage;
 using static LWDicer.Control.DEF_SerialPort;
 using static LWDicer.Control.DEF_PolygonScanner;
 
+using static LWDicer.Control.DEF_CtrlHandler;
+
 namespace LWDicer.Control
 {
     public class MLWDicer : MObject, IDisposable
@@ -71,6 +73,8 @@ namespace LWDicer.Control
         // IO
         public IIO m_IO { get; private set; }
 
+        ///////////////////////////////////////////////////////////////////////
+        // Mechanical Layer
         // Cylinder
         public ICylinder m_UHandlerUDCyl;
         public ICylinder m_UHandlerUDCyl2;
@@ -91,7 +95,8 @@ namespace LWDicer.Control
         public MVisionCamera[] m_VisionCamera;
         public MVisionView[] m_VisionView;
 
-
+        // Vision
+        public MVision m_Vision { get; set; }
 
         // Mechanical Layer
 
@@ -99,8 +104,6 @@ namespace LWDicer.Control
         public MMeHandler m_MeUpperHandler;         // UpperHandler of 2Layer
         public MMeHandler m_MeLowerHandler;         // LowerHandler of 2Layer
         public MMeStage m_MeStage;         // LowerHandler of 2Layer
-
-        public MVision m_Vision { get; set; }
 
         ///////////////////////////////////////////////////////////////////////
         // Control Layer
@@ -142,14 +145,22 @@ namespace LWDicer.Control
             m_DataManager?.SetLogin(login);
         }
 
-        public void TestFunction()
+        public void TestFunction_BeforeInit()
         {
 
         }
 
+        public void TestFunction_AfterInit()
+        {
+            bool bStatus;
+            m_ctrlHandler.IsObjectDetected(EHandlerIndex.LOAD_UPPER, out bStatus);
+            m_ctrlHandler.IsObjectDetected(EHandlerIndex.UNLOAD_LOWER, out bStatus);
+            m_ctrlHandler.IsObjectDetected(EHandlerIndex.LOAD_UPPER, out bStatus);
+        }
+
         public int Initialize(CMainFrame form1 = null)
         {
-            TestFunction();
+            TestFunction_BeforeInit();
 
             ////////////////////////////////////////////////////////////////////////
             // 0. Common Class
@@ -327,6 +338,7 @@ namespace LWDicer.Control
             StartThreads();
 
 
+            TestFunction_AfterInit();
 
             return SUCCESS;
         }
@@ -660,6 +672,9 @@ namespace LWDicer.Control
         {
             CCtrlHandlerRefComp refComp = new CCtrlHandlerRefComp();
             CCtrlHandlerData data = new CCtrlHandlerData();
+
+            refComp.UpperHandler = m_MeUpperHandler;
+            refComp.LowerHandler = m_MeLowerHandler;
 
             m_ctrlHandler = new MCtrlHandler(objInfo, refComp, data);
         }

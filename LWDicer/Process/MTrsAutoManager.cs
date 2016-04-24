@@ -9,7 +9,7 @@ using System.Diagnostics;
 using static LWDicer.Control.DEF_Thread;
 using static LWDicer.Control.DEF_Thread.EThreadMessage;
 using static LWDicer.Control.DEF_Thread.EWindowMessage;
-using static LWDicer.Control.DEF_Thread.ERunMode;
+using static LWDicer.Control.DEF_Thread.EOpMode;
 using static LWDicer.Control.DEF_Error;
 using static LWDicer.Control.DEF_Common;
 
@@ -182,7 +182,7 @@ namespace LWDicer.Control
             switch (evnt.Msg)
             {
                 case (int)MSG_MANUAL_CMD:
-                    SetRunStatus(STS_MANUAL);
+                    SetOpStatus(STS_MANUAL);
 
                     PostMsg(TrsAutoManager, (int)MSG_MANUAL_CNF);
                     break;
@@ -201,7 +201,7 @@ namespace LWDicer.Control
 
                         SendMessageToMainWnd((int)WM_START_MANUAL_MSG);
 
-                        //m_RefComp.m_pManageOpPanel->SetAutoManual(OPERATION_MANUAL);
+                        //m_RefComp.m_pManageOpPanel->SetAutoManual(MANUAL);
                     }
                     break;
 
@@ -214,36 +214,36 @@ namespace LWDicer.Control
                     break;
 
                 case (int)MSG_START_CMD:
-                    if (RunStatus == STS_RUN_READY || RunStatus == STS_STEP_STOP ||
-                        RunStatus == STS_ERROR_STOP)
+                    if (OpStatus == STS_RUN_READY || OpStatus == STS_STEP_STOP ||
+                        OpStatus == STS_ERROR_STOP)
                     {
-                        SetRunStatus(STS_RUN);
+                        SetOpStatus(STS_RUN);
 
                         PostMsg(TrsAutoManager, (int)MSG_START_CNF);
                     }
                     break;
 
                 case (int)MSG_ERROR_STOP_CMD:
-                    SetRunStatus(STS_ERROR_STOP);
+                    SetOpStatus(STS_ERROR_STOP);
 
                     PostMsg(TrsAutoManager, (int)MSG_ERROR_STOP_CNF);
                     break;
 
                 case (int)MSG_STEP_STOP_CMD:
-                    if (RunStatus == STS_STEP_STOP || RunStatus == STS_ERROR_STOP)
+                    if (OpStatus == STS_STEP_STOP || OpStatus == STS_ERROR_STOP)
                     {
-                        SetRunStatus(STS_MANUAL);
+                        SetOpStatus(STS_MANUAL);
                     }
                     else
                     {
-                        SetRunStatus(STS_STEP_STOP);
+                        SetOpStatus(STS_STEP_STOP);
                     }
 
                     PostMsg(TrsAutoManager, (int)MSG_STEP_STOP_CNF);
                     break;
 
                 case (int)MSG_CYCLE_STOP_CMD:
-                    SetRunStatus(STS_CYCLE_STOP);
+                    SetOpStatus(STS_CYCLE_STOP);
                     PostMsg(TrsAutoManager, (int)MSG_CYCLE_STOP_CNF);
                     break;
 
@@ -292,10 +292,10 @@ namespace LWDicer.Control
                 // check message from other thread
                 CheckMsg(1);
 
-                switch (RunStatus)
+                switch (OpStatus)
                 {
                     case STS_MANUAL: // Manual Mode
-                        //m_RefComp.ctrlAutoManager.SetAutoManual(OPERATION_MANUAL);
+                        //m_RefComp.ctrlAutoManager.SetAutoManual(MANUAL);
                         break;
 
                     case STS_ERROR_STOP: // Error Stop
@@ -312,7 +312,7 @@ namespace LWDicer.Control
                         break;
 
                     case STS_RUN: // auto run
-                        //m_RefComp.ctrlAutoManager.SetAutoManual(OPERATION_AUTO);
+                        //m_RefComp.ctrlAutoManager.SetAutoManual(AUTO);
 
                         switch (ThreadStep)
                         {
@@ -358,11 +358,11 @@ namespace LWDicer.Control
 
         void SetSystemStatus(int iStatus)
         {
-            if (SetRunStatus(iStatus) == false) return;
+            if (SetOpStatus(iStatus) == false) return;
 
             bool bStatus;
 
-            if (RunStatus == STS_RUN)
+            if (OpStatus == STS_RUN)
             {
                 // 설비가 Live 상태임을 알리는 oUpper_Alive 신호는 On
                 //m_RefComp.m_pC_InterfaceCtrl->SendInterfaceOnMsg(PRE_EQ, oUpper_Alive);
@@ -370,7 +370,7 @@ namespace LWDicer.Control
             }
             else
             {
-                if (RunStatus_Old == STS_RUN)
+                if (OpStatus_Old == STS_RUN)
                 {
                     //// 설비가 Live 상태임을 알리는 oUpper_Alive 신호는 On
                     //m_RefComp.m_pC_InterfaceCtrl->SendInterfaceOffMsg(PRE_EQ, oUpper_Alive);

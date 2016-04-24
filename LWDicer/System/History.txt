@@ -111,6 +111,15 @@ LWDicer의 DataManager에서 데이터를 읽어오기 위한 3가지 함수 : S
 4. MCtrlHandler : skeleton code 작성 시작
 5. MMechanicalLayer, MCtrlLayer의 필수 특성들을 위한 각 Layer의 Parent class 작성
 
+// Version : 0.0.12
+// Grade : ★
+// Date : 2016-04-19
+// Context
+1. MCtrlHandler : 1차 작업 완료. 
+   *** Upper/Lower Handler를 일단 Load/Unload Handler로 전용하는 개념으로 함수들을 만들었으나, 
+   실제로 상위에서 알아서 반대로 호출해야할지, ctrl에서 알아서 반대로 실행해야할지, 
+   혹은 애초에 저장 pos을 다르게 해야할지는 좀더 고민하는걸로 남겨둠.
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LJJ
 // Version : 0.0.1

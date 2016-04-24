@@ -670,18 +670,24 @@ namespace LWDicer.Control
 
     public class DEF_Thread
     {
-        public enum EOperationMode
+        /// <summary>
+        /// define auto / manual mode
+        /// </summary>
+        public enum EAutoManual
         {
-            OPERATION_AUTO,     // 자동 동작 모드
-            OPERATION_MANUAL,   // 수동 동작 모드
+            AUTO,     // 자동 동작 모드
+            MANUAL,   // 수동 동작 모드
         }
 
-        public enum ERunMode
+        /// <summary>
+        /// define each mode when auto run
+        /// </summary>
+        public enum EOpMode
         {
-            MODE_NORMAL_RUN,    // 정상 운전
-            MODE_PASS_RUN,      // 통과 운전
-            MODE_DRY_RUN,       // 물류 흐름 없는 운전
-            MODE_REPAIR_RUN,    // 수리후 운전 for Rework Panel
+            NORMAL_RUN,    // 정상 운전
+            PASS_RUN,      // 통과 운전
+            DRY_RUN,       // 물류 흐름 없는 운전
+            REPAIR_RUN,    // 수리후 운전 for Rework Panel
         }
 
         // Thread ID

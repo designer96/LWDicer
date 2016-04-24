@@ -50,8 +50,8 @@ namespace LWDicer.Control
         // Blink Rate
         double m_dBlinkRate;
 
-        EOperationMode m_eAutoManual;
-        ERunMode m_eOpMode;
+        EAutoManual m_eAutoManual;
+        EOpMode m_eOpMode;
 
         // SafeSensor Check 여부
         bool m_bSafeSensorUse;
@@ -132,10 +132,10 @@ namespace LWDicer.Control
          * System의 Auto / Manual Mode를 반영한다.
          * Mode 변환이 생길때마다 TrsAutoManager에 의해 각 Control들의 Mode에 반영한다.
          *
-         * @param	EOperationMode eAutoManual (반영하고자 하는 Auto/Manual Mode)
+         * @param	EAutoManual eAutoManual (반영하고자 하는 Auto/Manual Mode)
          * @return	void
          */
-        void SetAutoManual(EOperationMode eAutoManual)
+        void SetAutoManual(EAutoManual eAutoManual)
         {
             m_eAutoManual = eAutoManual;
         }
@@ -144,10 +144,10 @@ namespace LWDicer.Control
          * System의 운전 Mode를 반영한다.
          * 화면에서 운전 Mode 변경 시 각 Control들의 운전 Mode에 반영한다.
          *
-         * @param	ERunMode eOpMode (반영하고자 하는 운전 Mode)
+         * @param	EOpMode eOpMode (반영하고자 하는 운전 Mode)
          * @return	void
          */
-        void SetOpMode(ERunMode eOpMode)
+        void SetOpMode(EOpMode eOpMode)
         {
             m_eOpMode = eOpMode;
         }
@@ -213,7 +213,7 @@ namespace LWDicer.Control
             //		return GenerateErrorCode(ERR_MNGOPPANEL_CP_TRIP);
 
             // 4. Silicone 잔량 확인 
-            if (m_eOpMode != ERunMode.MODE_DRY_RUN)
+            if (m_eOpMode != EOpMode.DRY_RUN)
             {
                 iResult = CheckSiliconeRemain(out bEmptyAll, out bEmptyPart);
                 if (iResult != SUCCESS) return iResult;
@@ -306,7 +306,7 @@ namespace LWDicer.Control
             //		return GenerateErrorCode(ERR_MNGOPPANEL_CP_TRIP);
 
             // 4. Silicone 잔량 확인 
-            if (m_eOpMode != ERunMode.MODE_DRY_RUN)
+            if (m_eOpMode != EOpMode.DRY_RUN)
             {
                 iResult = CheckSiliconeRemain(out bEmptyAll, out bEmptyPart);
                 if (iResult != SUCCESS) return iResult;
