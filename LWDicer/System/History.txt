@@ -131,9 +131,16 @@ LWDicer의 DataManager에서 데이터를 읽어오기 위한 3가지 함수 : S
 
 // Version : 0.0.3
 // Grade : ★
-// Date : 2016-04-14 ~2016-04-20
+// Date : 2016-04-14 ~2016-04-19
 // Context
 1. MMeElevator : 초기 Class 제작
+2. 이동 및 확인에 검색에 대한 기능 구현
+
+// Version : 0.0.4
+// Grade : ★
+// Date : 2016-04-19 ~2016-04-20
+// Context
+1. MMeStage : 초기 Class 제작
 2. 이동 및 확인에 검색에 대한 기능 구현
 
 

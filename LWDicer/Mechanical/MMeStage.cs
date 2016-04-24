@@ -15,147 +15,153 @@ namespace LWDicer.Control
 {
     public class DEF_MeStage
     {
-        public const int ERR_Stage_UNABLE_TO_USE_IO                           = 1;
-        public const int ERR_Stage_UNABLE_TO_USE_CYL                          = 2;
-        public const int ERR_Stage_UNABLE_TO_USE_VCC                          = 3;
-        public const int ERR_Stage_UNABLE_TO_USE_AXIS                         = 4;
-        public const int ERR_Stage_UNABLE_TO_USE_VISION                       = 5;
-        public const int ERR_Stage_NOT_ORIGIN_RETURNED                        = 6;
-        public const int ERR_Stage_INVALID_AXIS                               = 7;
-        public const int ERR_Stage_INVALID_PRIORITY                           = 8;
-        public const int ERR_Stage_NOT_SAME_POSITION                          = 20;
-        public const int ERR_Stage_UNABLE_TO_USE_POSITION                     = 21;
-        public const int ERR_Stage_MOVE_FAIL                                  = 22;
-        public const int ERR_Stage_EMPTY_SLOT_MOVE_FAIL                       = 23;
-        public const int ERR_Stage_CASSETTE_NOT_READY                         = 24;
-        public const int ERR_Stage_VACUUM_ON_TIME_OUT                         = 40;
-        public const int ERR_Stage_VACUUM_OFF_TIME_OUT                        = 41;
-        public const int ERR_Stage_INVALID_PARAMETER                          = 42;
-        public const int ERR_Stage_OBJECT_DETECTED_BUT_NOT_ABSORBED           = 43;
-        public const int ERR_Stage_OBJECT_NOT_DETECTED_BUT_NOT_RELEASED       = 44;
+        #region Data Define
 
+        // Error Define
+        public const int ERR_Stage_UNABLE_TO_USE_IO                         = 1;
+        public const int ERR_Stage_UNABLE_TO_USE_CYL                        = 2;
+        public const int ERR_Stage_UNABLE_TO_USE_VCC                        = 3;
+        public const int ERR_Stage_UNABLE_TO_USE_AXIS                       = 4;
+        public const int ERR_Stage_UNABLE_TO_USE_VISION                     = 5;
+        public const int ERR_Stage_NOT_ORIGIN_RETURNED                      = 6;
+        public const int ERR_Stage_INVALID_AXIS                             = 7;
+        public const int ERR_Stage_INVALID_PRIORITY                         = 8;
+        public const int ERR_Stage_NOT_SAME_POSITION                        = 20;
+        public const int ERR_Stage_UNABLE_TO_USE_POSITION                   = 21;
+        public const int ERR_Stage_MOVE_FAIL                                = 22;
+        public const int ERR_Stage_READ_CURRENT_POSITION                    = 23;
+        public const int ERR_Stage_CASSETTE_NOT_READY                       = 24;
+        public const int ERR_Stage_VACUUM_ON_TIME_OUT                       = 40;
+        public const int ERR_Stage_VACUUM_OFF_TIME_OUT                      = 41;
+        public const int ERR_Stage_INVALID_PARAMETER                        = 42;
+        public const int ERR_Stage_OBJECT_DETECTED_BUT_NOT_ABSORBED         = 43;
+        public const int ERR_Stage_OBJECT_NOT_DETECTED_BUT_NOT_RELEASED     = 44;
+
+        // System Define
+        public const int WAFER_CLAMP_CYL_1                                  = 0;
+        public const int WAFER_CLAMP_CYL_2                                  = 1;
+        public const int WAFER_CLAMP_CYL_NUM                                = 2;
+
+        public enum EStageCtlMode
+        {
+            LASER =0,
+            PC
+        }
+        public enum EStageVacuum
+        {
+            SELF,           // 자체 발생 진공
+            FACTORY,        // 공장 진공
+            OBJECT,         // LCD 패널의 PCB같은 걸 집는 용도
+            EXTRA_SELF,     // 
+            EXTRA_FACTORY,  //
+            EXTRA_OBJECT,   //
+            MAX,
+        }
 
         public enum EStagePos
         {
             NONE = -1,
-            BOTTOM = 0,
-            LOAD,
-            SLOT,
-            TOP,
+            LOAD = 0,
+            WAIT,
+            UNLOAD,
+            EDGE_ALIGN_1,           // EDGE Detect "0"도 위치
+            EDGE_ALIGN_2,           // EDGE Detect "90"도 위치
+            EDGE_ALIGN_3,           // EDGE Detect "180"도 위치
+            EDGE_ALIGN_4,           // EDGE Detect "270"도 위치
+            MACRO_ALIGN,            // MACRO Align "A" Mark 위치
+            MICRO_ALIGN,           // MICRO Align "A" Mark 위치
+            MICRO_ALIGN_TURN,     // MICRO Align Turn 후 "A" Mark 위치
+            LASER_PROCESS,          // Laser Cutting할 첫 위치 (가로 방향)
+            LASER_PROCESS_TURN,     // Laser Cutting할 첫 위치 (세로 방향)
             MAX,
         }
 
         public enum EStageXAxZone
         {
             NONE = -1,
-            SAFETY,
+            LOAD,
+            WAIT,
+            UNLOAD,
             MAX,
         }
 
         public enum EStageYAxZone
         {
             NONE = -1,
-            SAFETY,
+            LOAD,
+            WAIT,
+            UNLOAD,
             MAX,
         }
 
         public enum EStageTAxZone
         {
             NONE = -1,
-            SAFETY,
+            LOAD,
+            WAIT,
+            UNLOAD,
             MAX,
         }
 
         public enum EStageZAxZone
         {
             NONE = -1,
-            BOTTOM = 0,
-            LOAD,
-            SLOT,
-            TOP,
             SAFETY,
             MAX,
         }
 
-        //===============================================================================
-        //  Cassette Info
-        public const int CASSETTE_MAX_SLOT_NUM = 20;
-        public const int CASSETTE_DETECT_SENSOR_NUM = 4;
-        public const double CASSETTE_DEFAULT_PITCH = 10.0;
-
-        public enum ECassetteWaferInfo
-        {
-            NONE = -1,
-            EMPTY   = 0,
-            PRE_PROCESS,
-            AFTER_PROCESS,
-            MAX,
-        }
-        public enum ECassetteWaferType
-        {
-            NONE = -1,
-            INCH_8 = 0,
-            INCH_12,
-            MAX,
-        }
-
-        public class CCassetteData
-        {
-            public int nSlotNum;
-            public ECassetteWaferType nWaferType;
-            public double dSlotPitch;
-            public int[] nWaferData = new int[CASSETTE_MAX_SLOT_NUM];
-        }
-
-        //===============================================================================
-
         public class CMeStageRefComp
         {
-            public IIO IO;        
+            public IIO IO;
+
+            // Cylinder (Wafer Clamp 1,2)
+            public ICylinder[] MainCyl = new ICylinder[WAFER_CLAMP_CYL_NUM];
+
+            // Vacuum
+            public IVacuum[] Vacuum = new IVacuum[(int)EStageVacuum.MAX];
+
             // MultiAxes
             public MMultiAxes_YMC AxStage;
         }
 
         public class CMeStageData
         {
-            // Cassette Info 
-            public CCassetteData CassetteData = new CCassetteData();
-
-            public int CurrentSlotNum = 0;
+            // Index Move Length
+            public double IndexWidth = 0.0;
+            public double IndexHeight = 0.0;
+            public double AlignMarkWidthLen = 0.0;
+            public double AlignMarkWidthRatio = 0.0;
+            public double VisionLaserDistance = 0.0;
 
             // Detect Object Sensor Address
-            public int InDetectWafer   = IO_ADDR_NOT_DEFINED;
-            public int[] InDetectCassette = new int[CASSETTE_DETECT_SENSOR_NUM] 
-                {IO_ADDR_NOT_DEFINED, IO_ADDR_NOT_DEFINED, IO_ADDR_NOT_DEFINED, IO_ADDR_NOT_DEFINED };
-            
+            public int InDetectObject   = IO_ADDR_NOT_DEFINED;
+
+            // IO Address for manual control cylinder
+            public int InClampOpen1     = IO_ADDR_NOT_DEFINED;
+            public int InClampClose1    = IO_ADDR_NOT_DEFINED;
+            public int InClampOpen2     = IO_ADDR_NOT_DEFINED;            
+            public int InClampClose2    = IO_ADDR_NOT_DEFINED;
+
+            public int OutClampOpen1    = IO_ADDR_NOT_DEFINED;
+            public int OutClampClose1   = IO_ADDR_NOT_DEFINED;
+            public int OutClampOpen2    = IO_ADDR_NOT_DEFINED;
+            public int OutClampClose2   = IO_ADDR_NOT_DEFINED;
+
             // Physical check zone sensor. 원점복귀 여부와 상관없이 축의 물리적인 위치를 체크 및
             // 안전위치 이동 check
             public CMAxisZoneCheck StageZone;
 
-            public CMeStageData(CCassetteData CassetteData = null)
+            public CMeStageData()
             {
-                // Cassette Info Copy 
-                if (CassetteData == null) // Cassette Data Init
-                {   
-                    this.CassetteData.nWaferType = ECassetteWaferType.INCH_12;
-                    this.CassetteData.nSlotNum = CASSETTE_MAX_SLOT_NUM;
-                    this.CassetteData.dSlotPitch = CASSETTE_DEFAULT_PITCH;
-                    for (int i = 0; i < this.CassetteData.nWaferData.Length; i++)
-                    {
-                        this.CassetteData.nWaferData[i] = (int)ECassetteWaferInfo.NONE;
-                    }
-                }
-                else  // Cassette Data Copy
-                {
-                    this.CassetteData = CassetteData;
-                }
-
                 StageZone = new CMAxisZoneCheck((int)EStageXAxZone.MAX, (int)EStageYAxZone.MAX,
                     (int)EStageTAxZone.MAX, (int)EStageZAxZone.MAX);
             }
+            
         }
+
+        #endregion
     }
-    
+
     public class MMeStage : MMechanicalLayer
     {
         private CMeStageRefComp m_RefComp;
@@ -163,7 +169,15 @@ namespace LWDicer.Control
 
         // MovingObject
         private CMovingObject AxStageInfo = new CMovingObject((int)EStagePos.MAX);
-    
+
+        // Cylinder
+        private bool[] UseMainCylFlag   = new bool[WAFER_CLAMP_CYL_NUM];
+        private bool[] UseSubCylFlag    = new bool[WAFER_CLAMP_CYL_NUM];
+        private bool[] UseGuideCylFlag  = new bool[WAFER_CLAMP_CYL_NUM];
+
+        // Vacuum
+        private bool[] UseVccFlag = new bool[(int)EStageVacuum.MAX];
+
         MTickTimer m_waitTimer = new MTickTimer();
 
         public MMeStage(CObjectInfo objInfo, CMeStageRefComp refComp, CMeStageData data)
@@ -171,8 +185,15 @@ namespace LWDicer.Control
         {
             m_RefComp = refComp;
             SetData(data);
+
+            for (int i = 0; i < UseVccFlag.Length; i++)
+            {
+                UseVccFlag[i] = false;
+            }
         }
 
+        // Data & Flag 설정
+        #region Data & Flag 설정
         public int SetData(CMeStageData source)
         {
             m_Data = ObjectExtensions.Copy(source);
@@ -189,23 +210,245 @@ namespace LWDicer.Control
         public int SetStagePosition(CUnitPos FixedPos, CUnitPos ModelPos, CUnitPos OffsetPos)
         {
             AxStageInfo.SetPosition(FixedPos, ModelPos, OffsetPos);
-            
             return SUCCESS;
-        }        
+        }
+
+        public int SetVccUseFlag(bool[] UseVccFlag = null)
+        {
+            if(UseVccFlag != null)
+            {
+                Array.Copy(UseVccFlag, this.UseVccFlag, UseVccFlag.Length);
+            }
+            return SUCCESS;
+        }
+
+        public int SetCylUseFlag(bool[] UseMainCylFlag = null, bool[] UseSubCylFlag = null, bool[] UseGuideCylFlag = null)
+        {
+            if(UseMainCylFlag != null)
+            {
+                Array.Copy(UseMainCylFlag, this.UseMainCylFlag, UseMainCylFlag.Length);
+            }
+            if (UseSubCylFlag != null)
+            {
+                Array.Copy(UseSubCylFlag, this.UseSubCylFlag, UseSubCylFlag.Length);
+            }
+            if (UseGuideCylFlag != null)
+            {
+                Array.Copy(UseGuideCylFlag, this.UseGuideCylFlag, UseGuideCylFlag.Length);
+            }
+
+            return SUCCESS;
+        }
+
+        #endregion
+
+        // Air 흡착 관련 
+        #region Air Vaccum 동작
+        public int Absorb(bool bSkipSensor)
+        {
+            bool bStatus;
+            int iResult = SUCCESS;
+            bool[] bWaitFlag = new bool[(int)EStageVacuum.MAX];
+            CVacuumTime[] sData = new CVacuumTime[(int)EStageVacuum.MAX];
+            bool bNeedWait = false;
+
+            for (int i = 0; i < (int)EStageVacuum.MAX; i++)
+            {
+                if (UseVccFlag[i] == false) continue;
+
+                m_RefComp.Vacuum[i].GetVacuumTime(out sData[i]);
+                iResult = m_RefComp.Vacuum[i].IsOn(out bStatus);
+                if (iResult != SUCCESS) return iResult;
+
+                // 흡착되지 않은 상태라면 흡착시킴  
+                if (bStatus == false)
+                {
+                    iResult = m_RefComp.Vacuum[i].On(true);
+                    if (iResult != SUCCESS) return iResult;
+
+                    bWaitFlag[i] = true;
+                    bNeedWait = true;
+                }
+
+                Sleep(10);
+            }
+
+            if (bSkipSensor == true) return SUCCESS;
+
+            m_waitTimer.StartTimer();
+            while (bNeedWait)
+            {
+                bNeedWait = false;
+
+                for (int i = 0; i < (int)EStageVacuum.MAX; i++)
+                {
+                    if (bWaitFlag[i] == false) continue;
+
+                    iResult = m_RefComp.Vacuum[i].IsOn(out bStatus);
+                    if (iResult != SUCCESS) return iResult;
+
+                    if (bStatus == true) // if on
+                    {
+                        bWaitFlag[i] = false;
+                        //Sleep(sData[i].OnSettlingTime * 1000);
+                    }
+                    else // if off
+                    {
+                        bNeedWait = true;
+                        if (m_waitTimer.MoreThan(sData[i].TurningTime * 1000))
+                        {
+                            return GenerateErrorCode(ERR_Stage_VACUUM_ON_TIME_OUT);
+                        }
+                    }
+
+                }
+            }
+
+            return SUCCESS;
+        }
+
+        public int Release(bool bSkipSensor)
+        {
+            bool bStatus;
+            int iResult = SUCCESS;
+            bool[] bWaitFlag = new bool[(int)EStageVacuum.MAX];
+            CVacuumTime[] sData = new CVacuumTime[(int)EStageVacuum.MAX];
+            bool bNeedWait = false;
+
+            for (int i = 0; i < (int)EStageVacuum.MAX; i++)
+            {
+                if (UseVccFlag[i] == false) continue;
+
+                m_RefComp.Vacuum[i].GetVacuumTime(out sData[i]);
+                iResult = m_RefComp.Vacuum[i].IsOff(out bStatus);
+                if (iResult != SUCCESS) return iResult;
+
+                if (bStatus == false)
+                {
+                    iResult = m_RefComp.Vacuum[i].Off(true);
+                    if (iResult != SUCCESS) return iResult;
+
+                    bWaitFlag[i] = true;
+                    bNeedWait = true;
+                }
+
+                Sleep(10);
+            }
+
+            if (bSkipSensor == true) return SUCCESS;
+
+            m_waitTimer.StartTimer();
+            while (bNeedWait)
+            {
+                bNeedWait = false;
+
+                for (int i = 0; i < (int)EStageVacuum.MAX; i++)
+                {
+                    if (bWaitFlag[i] == false) continue;
+
+                    iResult = m_RefComp.Vacuum[i].IsOff(out bStatus);
+                    if (iResult != SUCCESS) return iResult;
+
+                    if (bStatus == true) // if on
+                    {
+                        bWaitFlag[i] = false;
+                        //Sleep(sData[i].OffSettlingTime * 1000);
+                    }
+                    else // if off
+                    {
+                        bNeedWait = true;
+                        if (m_waitTimer.MoreThan(sData[i].TurningTime * 1000))
+                        {
+                            return GenerateErrorCode(ERR_Stage_VACUUM_OFF_TIME_OUT);
+                        }
+                    }
+
+                }
+            }
+
+            return SUCCESS;
+        }
+
+        public int IsAbsorbed(out bool bStatus)
+        {
+            int iResult = SUCCESS;
+            bStatus = false;
+            bool bTemp;
+
+            for (int i = 0; i < (int)EStageVacuum.MAX; i++)
+            {
+                if (UseVccFlag[i] == false) continue;
+
+                iResult = m_RefComp.Vacuum[i].IsOn(out bTemp);
+                if (iResult != SUCCESS) return iResult;
+
+                if (bTemp == false) return SUCCESS;
+            }
+
+            bStatus = true;
+            return SUCCESS;
+        }
+
+        public int IsReleased(out bool bStatus)
+        {
+            int iResult = SUCCESS;
+            bStatus = false;
+            bool bTemp;
+
+            for (int i = 0; i < (int)EStageVacuum.MAX; i++)
+            {
+                if (UseVccFlag[i] == false) continue;
+
+                iResult = m_RefComp.Vacuum[i].IsOff(out bTemp);
+                if (iResult != SUCCESS) return iResult;
+
+                if (bTemp == false) return SUCCESS;
+            }
+
+            bStatus = true;
+            return SUCCESS;
+        }
+
+        //===============================================================================================
+
+        #endregion
         
+        // Stage Servo 구동
+        #region Stage Move 동작
+
         public int GetStageCurPos(out CPos_XYTZ pos)
         {
             m_RefComp.AxStage.GetCurPos(out pos);
             return SUCCESS;
         }
 
-        public void SetSlevatorSlotData(int nSlotNum, ECassetteWaferInfo WaferInfo)
+        public int MoveStageToSafetyPos(int axis)
         {
-            m_Data.CassetteData.nWaferData[nSlotNum] = (int)WaferInfo;
-        }
-        public void GetSlevatorSlotData(int nSlotNum, out int nData)
-        {
-            nData = m_Data.CassetteData.nWaferData[nSlotNum];
+            int iResult = SUCCESS;
+            string str;
+            // 0. safety check
+            iResult = CheckForStageAxisMove();
+            if (iResult != SUCCESS) return iResult;
+
+            // 0.1 trans to array
+            double[] dPos = new double[1] { m_Data.StageZone.SafetyPos.GetAt(axis) };
+
+            // 0.2 set use flag
+            bool[] bTempFlag = new bool[1] { true };
+
+            // 1. Move
+            iResult = m_RefComp.AxStage.Move(axis, bTempFlag, dPos);
+            if (iResult != SUCCESS)
+            {
+                str = $"fail : move Stage to safety pos [axis={axis}]";
+                WriteLog(str, ELogType.Debug, ELogWType.Error);
+                return iResult;
+            }
+
+            str = $"success : move Stage to safety pos [axis={axis}";
+            WriteLog(str, ELogType.Debug, ELogWType.Normal);
+
+            return SUCCESS;
         }
 
         /// <summary>
@@ -225,14 +468,15 @@ namespace LWDicer.Control
             iResult = CheckForStageAxisMove();
             if (iResult != SUCCESS) return iResult;
 
-            // assume move Z axis if bMoveFlag is null
+            // assume move all axis if bMoveFlag is null
             if(bMoveFlag == null)
             {
-                bMoveFlag = new bool[DEF_MAX_COORDINATE] { false, false, false, true };
+                // Stage는 Z축이 없다 (X,Y,T축)
+                bMoveFlag = new bool[DEF_MAX_COORDINATE] { true, true, true, false };
             }
 
-            // Bottom Position으로 가는 것이면 Align Offset을 초기화해야 한다.
-            if (iPos == (int)EStagePos.BOTTOM)
+            // Load / Unload Position으로 가는 것이면 Align Offset을 초기화해야 한다.
+            if (iPos == (int)EStagePos.LOAD || iPos == (int)EStagePos.UNLOAD)
             {
                 AxStageInfo.InitAlignOffset();
             }
@@ -246,7 +490,7 @@ namespace LWDicer.Control
             {
                 // 나중에 작업
             }
-            
+
             // 1. move X, Y, T
             if (bMoveFlag[DEF_X] == true || bMoveFlag[DEF_Y] == true || bMoveFlag[DEF_T] == true)
             {
@@ -294,7 +538,6 @@ namespace LWDicer.Control
         /// iPos 좌표로 선택된 축들을 이동시킨다.
         /// </summary>
         /// <param name="iPos">목표 위치</param>
-        /// <param name="SlotNum">목표 Slow 위치</param>
         /// <param name="bUpdatedPosInfo">목표위치값을 update 할지의 여부</param>
         /// <param name="bMoveFlag">이동시킬 축 선택 </param>
         /// <param name="dMoveOffset">임시 옵셋값 </param>
@@ -302,28 +545,19 @@ namespace LWDicer.Control
         /// <param name="bUsePriority">우선순위 이동시킬지 여부 </param>
         /// <param name="movePriority">우선순위 </param>
         /// <returns></returns>
-        public int MoveStagePos(int iPos, int SlotNum =0, bool bUpdatedPosInfo = true, 
-            bool[] bMoveFlag = null, double[] dMoveOffset = null, bool bUseBacklash = false,
+        public int MoveStagePos(int iPos, bool bUpdatedPosInfo = true, bool[] bMoveFlag = null, double[] dMoveOffset = null, bool bUseBacklash = false,
             bool bUsePriority = false, int[] movePriority = null)
         {
-            int iResult = SUCCESS;            
+            int iResult = SUCCESS;
 
-            // Load Position으로 가는 것이면 Align Offset을 초기화해야 한다.
-            if (iPos == (int)EStagePos.LOAD)
+            // Load / Unload Position으로 가는 것이면 Align Offset을 초기화해야 한다.
+            if (iPos == (int)EStagePos.LOAD || iPos == (int)EStagePos.UNLOAD)
             {
                 AxStageInfo.InitAlignOffset();
             }
-            // Slot Position으로 가는 것이면 Slot번호와 Pitch를 곱해서 Offset을 적용한다.
-            if (iPos == (int)EStagePos.SLOT)
-            {
-                dMoveOffset[DEF_X] = 0.0;
-                dMoveOffset[DEF_Y] = 0.0;
-                dMoveOffset[DEF_T] = 0.0;
-                dMoveOffset[DEF_Z] = (double)SlotNum * m_Data.CassetteData.dSlotPitch;
 
-            }
-            // 이동할 위치의 값을 읽어옴.
             CPos_XYTZ sTargetPos = AxStageInfo.GetTargetPos(iPos);
+
             if (dMoveOffset != null)
             {
                 sTargetPos = sTargetPos + dMoveOffset;
@@ -331,15 +565,98 @@ namespace LWDicer.Control
 
             if(bUpdatedPosInfo == false)
             {
-                //iPos = (int)EStagePos.NONE;
-                return GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_POSITION);
+                iPos = (int)EStagePos.NONE;
             }
             iResult = MoveStagePos(sTargetPos, iPos, bMoveFlag, bUseBacklash, bUsePriority, movePriority);
             if (iResult != SUCCESS) return iResult;
 
             return SUCCESS;
         }
-        
+
+        public int MoveStageIndexPos(int iAxis, double dMoveLength,  bool bUseBacklash = false)
+        {
+            int iResult = SUCCESS;
+
+            // 이동 Position 선택
+            int iPos = (int)EStagePos.NONE;
+
+            bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { false, false, false, false };           
+            bool bUsePriority = false;
+            int[] movePriority = null;
+
+            // 현재 위치를 읽어옴 (Command 값을 사용하는 것이 좋을 듯)
+            CPos_XYTZ sTargetPos;
+
+            iResult = GetStageCurPos(out sTargetPos);
+            if (iResult != SUCCESS) GenerateErrorCode(ERR_Stage_READ_CURRENT_POSITION);
+            // Index 거리를 해당 축에 더하여 거리를 산출함.
+
+            if (iAxis == DEF_X)
+            {
+                bMoveFlag[DEF_X] = true;
+                sTargetPos.dX += dMoveLength;
+            }
+            if (iAxis == DEF_Y)
+            {
+                bMoveFlag[DEF_Y] = true;
+                sTargetPos.dY += dMoveLength;
+            }
+            if (iAxis == DEF_T)
+            {
+                bMoveFlag[DEF_T] = true;
+                sTargetPos.dT += dMoveLength;
+            }
+            
+            iResult = MoveStagePos(sTargetPos, iPos, bMoveFlag, bUseBacklash, bUsePriority, movePriority);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+
+        public int MoveStageIndexPlus(int iAxis)
+        {
+            bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { false, false, false, false };
+            double dMoveLength = 0.0;
+
+            if (iAxis == DEF_X)
+            {
+                bMoveFlag[DEF_X] = true;
+                dMoveLength = m_Data.IndexWidth;
+            }
+            if (iAxis == DEF_Y)
+            {
+                bMoveFlag[DEF_Y] = true;
+                dMoveLength = m_Data.IndexHeight;
+            }
+
+            // + 방향으로 이동
+            MoveStageIndexPos(iAxis, dMoveLength);
+
+            return SUCCESS;
+        }
+
+        public int MoveStageIndexMinus(int iAxis)
+        {
+            bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { false, false, false, false };
+            double dMoveLength = 0.0;
+
+            if (iAxis == DEF_X)
+            {
+                bMoveFlag[DEF_X] = true;
+                dMoveLength = m_Data.IndexWidth;
+            }
+            if (iAxis == DEF_Y)
+            {
+                bMoveFlag[DEF_Y] = true;
+                dMoveLength = m_Data.IndexHeight;
+            }
+
+            // - 방향으로 이동
+            MoveStageIndexPos(iAxis, -dMoveLength);
+
+            return SUCCESS;
+        }
+
         /// <summary>
         /// Stage를 LOAD, UNLOAD등의 목표위치로 이동시킬때에 좀더 편하게 이동시킬수 있도록 간편화한 함수
         /// Z축만 움직일 경우엔 Position Info를 업데이트 하지 않는다. 
@@ -349,219 +666,173 @@ namespace LWDicer.Control
         /// <param name="bMoveXYT"></param>
         /// <param name="bMoveZ"></param>
         /// <returns></returns>
-        public int MoveStagePos(int iPos, int SlotNum=0, bool bMoveAllAxis=false, bool bMoveXYT=false, bool bMoveZ=true)
+        public int MoveStagePos(int iPos, bool bMoveAllAxis, bool bMoveXYT, bool bMoveZ)
         {
             // 0. move all axis
             if (bMoveAllAxis)
             {
-                bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { true, true, true, true };
-                return MoveStagePos(iPos, SlotNum, true, bMoveFlag);
+                return MoveStagePos(iPos);
             }
 
             // 1. move xyt only
             if (bMoveXYT)
             {
                 bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { true, true, true, false };
-                return MoveStagePos(iPos, SlotNum, true, bMoveFlag);
+                return MoveStagePos(iPos, true, bMoveFlag);
             }
 
             // 2. move z only
             if (bMoveZ)
             {
                 bool[] bMoveFlag = new bool[DEF_MAX_COORDINATE] { false, false, false, true };
-                return MoveStagePos(iPos, SlotNum, false, bMoveFlag);
+                return MoveStagePos(iPos, false, bMoveFlag);
             }
 
             return SUCCESS;
         }
 
-        public int MoveStageToBottomPos(bool bMoveAllAxis = false, bool bMoveXYT = false, bool bMoveZ = true)
-        {
-            int iPos = (int)EStagePos.BOTTOM;
-            int iSlotNum = 0;
-            
-            return MoveStagePos(iPos, iSlotNum, bMoveAllAxis, bMoveXYT, bMoveZ);
-        }
-
-        public int MoveStageToLoadPos(bool bMoveAllAxis = false, bool bMoveXYT = false, bool bMoveZ = true)
+        public int MoveStageToLoadPos(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
         {
             int iPos = (int)EStagePos.LOAD;
-            int iSlotNum = 0;
-            return MoveStagePos(iPos, iSlotNum, bMoveAllAxis, bMoveXYT, bMoveZ);
+
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
         }
 
-        public int MoveStageToSlotPos(int iSlotNum=0, bool bMoveAllAxis = false, bool bMoveXYT = false, bool bMoveZ = true)
+        public int MoveStageToUnloadPos(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
         {
-            int iPos = (int)EStagePos.SLOT;
-            return MoveStagePos(iPos, iSlotNum, bMoveAllAxis, bMoveXYT, bMoveZ);
-        }
-        public int MoveStageToTopPos(bool bMoveAllAxis = false, bool bMoveXYT = false, bool bMoveZ = true)
-        {
-            int iPos = (int)EStagePos.TOP;
-            int iSlotNum = 0;
-            return MoveStagePos(iPos, iSlotNum,bMoveAllAxis, bMoveXYT, bMoveZ);
-        }
-        /// <summary>
-        /// 다음 Slot으로 이동함. 
-        /// </summary>
-        /// <param name="bDirect"></param>
-        /// <returns></returns>
-        public int MoveStageNextSlot(bool bDirect=true)
-        {
-            bool bMoveAllAxis = false;
-            bool bMoveXYT = false;
-            bool bMoveZ = true;
+            int iPos = (int)EStagePos.UNLOAD;
 
-            int nStagePos;
-            int nSlotNum = 0;
-            int nCurSlotNum = 0;
-            
-            // 현재 위치를 읽어옴
-            GetStagePosInfo(out nStagePos, out nCurSlotNum);
-
-            if (nStagePos != (int)EStagePos.SLOT)
-                GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_POSITION);
-
-            // 현재 위치한 Slot 번호를 대입한다.
-            nSlotNum = nCurSlotNum;
-
-            // 방향에 따라 +1 / -1을 함.
-            if (bDirect) nSlotNum++;
-            else nSlotNum--;
-
-            return MoveStagePos(nStagePos, nSlotNum, bMoveAllAxis, bMoveXYT, bMoveZ);
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
         }
 
-        /// <summary>
-        /// Cassette의 Empty Slot을 차례로 아래부터 위 방향으로 이동한다.
-        /// </summary>
-        /// <returns></returns>
-        public int MoveStageNextEmptySlot()
+        public int MoveStageToWaitPos(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
         {
-            bool bMoveAllAxis = false;
-            bool bMoveXYT = false;
-            bool bMoveZ = true;
+            int iPos = (int)EStagePos.WAIT;
 
-            int nResult = 0;
-            int nStagePos = (int)EStagePos.SLOT;
-            int nSlotNum = (int)ECassetteWaferInfo.NONE;
-            int nCurSlotNum = 0;
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+        }
 
-            // Cassette의 Wafer Data를 아래부터 읽어 Empty Slot를 찾는다.
-            for(int nNum=0; nNum < m_Data.CassetteData.nSlotNum; nNum++ )
+        public int MoveStageToEdgeAlignPos1(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
+        {
+            int iPos = (int)EStagePos.EDGE_ALIGN_1;
+
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+        }
+
+        public int MoveStageToEdgeAlignPos2(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
+        {
+            int iPos = (int)EStagePos.EDGE_ALIGN_2;
+
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+        }
+
+        public int MoveStageToEdgeAlignPos3(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
+        {
+            int iPos = (int)EStagePos.EDGE_ALIGN_3;
+
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+        }
+
+        public int MoveStageToEdgeAlignPos4(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
+        {
+            int iPos = (int)EStagePos.EDGE_ALIGN_4;
+
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+        }
+
+        public int MoveStageToEdgeMacroAlignA(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
+        {
+            int iPos = (int)EStagePos.MACRO_ALIGN;
+
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+        }
+
+        public int MoveStageToEdgeMacroAlignB(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
+        {
+            int iResult = -1;
+            // Mark A 위치로 이동
+            iResult = MoveStageToEdgeMacroAlignA();
+            if (iResult != SUCCESS) return iResult;
+
+            // 수평으로 Align Mark 거리 만큼 이동함.
+            double dMoveDistance = m_Data.AlignMarkWidthLen;
+
+            iResult = MoveStageIndexPos(DEF_Y, dMoveDistance);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+        
+
+        public int MoveStageToEdgeMicroAlignA(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
+        {
+            int iPos = (int)EStagePos.MICRO_ALIGN;
+
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+        }
+        
+        public int MoveStageToEdgeMicroAlignTurn(bool bMoveAllAxis = false, bool bMoveXYT = true, bool bMoveZ = false)
+        {
+            int iPos = (int)EStagePos.MICRO_ALIGN_TURN;
+
+            return MoveStagePos(iPos, bMoveAllAxis, bMoveXYT, bMoveZ);
+        }
+
+        
+        #endregion
+
+        // 모드 변경 및 Align Data Set
+        #region Control Mode & Align Data Set
+        public void SetStageCtlMode(int nCtlMode)
+        {
+            if(nCtlMode == (int)EStageCtlMode.LASER)
             {
-                if (m_Data.CassetteData.nWaferData[nNum] == (int)ECassetteWaferInfo.EMPTY) nSlotNum = nNum;
+                // ACS Buffer에 모드 변경 Program을 작성... Buffer Call로 변경함.
             }
 
-            // 해당 Slot이 없을 경우 에러를 리턴함.
-            if (nSlotNum == (int)ECassetteWaferInfo.NONE) GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_POSITION);
+            if (nCtlMode == (int)EStageCtlMode.PC)
+            {
+                // ACS Buffer에 모드 변경 Program을 작성... Buffer Call로 변경함.
+            }
 
-            // 해당 위치로 이동함.
-            nResult = MoveStagePos(nStagePos, nSlotNum, bMoveAllAxis, bMoveXYT, bMoveZ);
-            if(nResult != SUCCESS ) GenerateErrorCode(ERR_Stage_MOVE_FAIL);
+        }
+        public int SetAlignData(CPos_XYTZ offset)
+        {
+            int iResult;
+            CPos_XYTZ curPos;
 
-            Sleep(500);
+            // 현재 Align Offset 값을 읽어옴
+            iResult = GetStageCurPos(out curPos);
+            if (iResult != SUCCESS) return iResult;
+            // AlignData 적용
+            curPos += offset;
 
-            // Wafer Frame 감지 센서를 확인하여 Empty 여부를 확인한다.
-            bool bStatus;
-            nResult = m_RefComp.IO.IsOn(m_Data.InDetectWafer, out bStatus);
-
-            // Input확인 동작 확인
-            if (nResult != SUCCESS) GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_IO);
-            // Wafer 유무 확인 ( Wafer 감지 센서 On이면 Err 리턴 )
-            if(bStatus) GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_IO);
+            // AlignOffet 적용
+            AxStageInfo.SetAlignOffset(curPos);
 
             return SUCCESS;
         }
 
-        public int MoveStageNextProcessWaferSlot()
+        public void SetAlignDataInit()
         {
-            bool bMoveAllAxis = false;
-            bool bMoveXYT = false;
-            bool bMoveZ = true;
-
-            int nResult = 0;
-            int nStagePos = (int)EStagePos.SLOT;
-            int nSlotNum = (int)ECassetteWaferInfo.NONE;
-            int nCurSlotNum = 0;
-
-            // Cassette의 Wafer Data를 아래부터 읽어 Empty Slot를 찾는다.
-            for (int nNum = 0; nNum < m_Data.CassetteData.nSlotNum; nNum++)
-            {
-                if (m_Data.CassetteData.nWaferData[nNum] == (int)ECassetteWaferInfo.PRE_PROCESS) nSlotNum = nNum;
-            }
-
-            // 해당 Slot이 없을 경우 에러를 리턴함.
-            if (nSlotNum == (int)ECassetteWaferInfo.NONE) GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_POSITION);
-
-            // 해당 위치로 이동함.
-            nResult = MoveStagePos(nStagePos, nSlotNum, bMoveAllAxis, bMoveXYT, bMoveZ);
-            if (nResult != SUCCESS) GenerateErrorCode(ERR_Stage_MOVE_FAIL);
-
-            Sleep(500);
-
-            // Wafer Frame 감지 센서를 확인하여 Empty 여부를 확인한다.
-            bool bStatus;
-            nResult = m_RefComp.IO.IsOn(m_Data.InDetectWafer, out bStatus);
-
-            // Input확인 동작 확인
-            if (nResult != SUCCESS) GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_IO);
-            // Wafer 유무 확인 ( Wafer 감지 센서 Off이면 Err 리턴 )
-            if (!bStatus) GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_IO);
-
-            return SUCCESS;
+            AxStageInfo.InitAlignOffset();
         }
 
-        public int SearchStageCassetteWafer()
-        {
-            bool bMoveAllAxis = false;
-            bool bMoveXYT = false;
-            bool bMoveZ = true;
-            bool bStatus = false;
+        #endregion
 
-            int nResult = -1;
-            int nStagePos = (int)EStagePos.SLOT;
+        // Stage Pos Data 확인 및 비교
+        #region Stage Pos Data
 
-            // Cassette 유무를 확인한다.
-
-
-            // Slot 위치를 확인하며 Wafer의 유무를 확인한다.            
-            for (int nNum = 0; nNum < m_Data.CassetteData.nSlotNum; nNum++)
-            {
-                // 해당 위치로 이동함.
-                nResult = MoveStagePos(nStagePos, nNum, bMoveAllAxis, bMoveXYT, bMoveZ);
-                if (nResult != SUCCESS) GenerateErrorCode(ERR_Stage_MOVE_FAIL);
-
-                // Wafer Frame 감지 센서를 확인하여 Empty 여부를 확인한다.               
-                nResult = m_RefComp.IO.IsOn(m_Data.InDetectWafer, out bStatus);
-                if (nResult != SUCCESS) return nResult;
-
-                if (bStatus)
-                {
-                    m_Data.CassetteData.nWaferData[nNum] = (int)ECassetteWaferInfo.PRE_PROCESS;
-                }
-                else
-                {
-                    m_Data.CassetteData.nWaferData[nNum] = (int)ECassetteWaferInfo.EMPTY;
-                }
-
-                Sleep(100);
-
-            }
-
-            return SUCCESS;
-        }
         /// <summary>
         /// 현재 위치와 목표위치의 위치차이 Tolerance check
         /// </summary>
-        /// <param name="sPos"> 목표 위치값</param>
+        /// <param name="sPos"></param>
         /// <param name="bResult"></param>
         /// <param name="bCheck_TAxis"></param>
         /// <param name="bCheck_ZAxis"></param>
         /// <param name="bSkipError">위치가 틀릴경우 에러 보고할지 여부</param>
         /// <returns></returns>
-        public int CompareStagePos(CPos_XYTZ sPos, out bool bResult, 
-                        bool bCheck_XAxis, bool bCheck_YAxis, bool bCheck_TAxis, bool bSkipError = true)
+        public int CompareStagePos(CPos_XYTZ sPos, out bool bResult, bool bCheck_TAxis, bool bCheck_ZAxis, bool bSkipError = true)
         {
             int iResult = SUCCESS;
 
@@ -576,9 +847,8 @@ namespace LWDicer.Control
             if (iResult != SUCCESS) return iResult;
 
             // skip axis
-            if (bCheck_XAxis == false) bJudge[DEF_X] = true;
-            if (bCheck_YAxis == false) bJudge[DEF_Y] = true;
-            if (bCheck_TAxis == false) bJudge[DEF_T] = true;            
+            if (bCheck_TAxis == false) bJudge[DEF_T] = true;
+            if (bCheck_ZAxis == false) bJudge[DEF_Z] = true;
 
             // error check
             bResult = true;
@@ -599,42 +869,24 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int CompareStagePos(int iPos, out bool bResult,out int nSlotNum, bool bSkipError = true)
+        public int CompareStagePos(int iPos, out bool bResult, bool bCheck_TAxis, bool bCheck_ZAxis, bool bSkipError = true)
         {
             int iResult = SUCCESS;
 
-            bool bCheck_XAxis = false;
-            bool bCheck_YAxis = false;
-            bool bCheck_TAxis = false;
-
             bResult = false;
-            nSlotNum = -1;
 
             CPos_XYTZ targetPos = AxStageInfo.GetTargetPos(iPos);
             if (iResult != SUCCESS) return iResult;
 
-            iResult = CompareStagePos(targetPos, out bResult, bCheck_XAxis, bCheck_YAxis, bCheck_TAxis, bSkipError);
+            iResult = CompareStagePos(targetPos, out bResult, bCheck_TAxis, bCheck_ZAxis, bSkipError);
             if (iResult != SUCCESS) return iResult;
-
-            // Slot Position Cals (Result가 true일 경우)
-            if(iPos== (int)EStagePos.SLOT && bResult)
-            {
-                double dReferencePos = 0.0;
-                CPos_XYTZ LoadPos = AxStageInfo.GetTargetPos((int)EUnitPos.LOAD);
-                dReferencePos = targetPos.dZ - LoadPos.dZ;
-                m_Data.CurrentSlotNum = (int)(dReferencePos / m_Data.CassetteData.dSlotPitch);
-
-                nSlotNum = m_Data.CurrentSlotNum;
-            }
 
             return SUCCESS;
         }
 
-        public int GetStagePosInfo(out int posInfo, out int nSlotNum, bool bUpdatePos = true, bool bSkipError = false)
+        public int GetStagePosInfo(out int posInfo, bool bUpdatePos = true, bool bCheckZAxis = false)
         {
             posInfo = (int)EStagePos.NONE;
-            nSlotNum = -1;
-
             bool bStatus;
             int iResult = IsStageOrignReturn(out bStatus);
             if (iResult != SUCCESS) return iResult;
@@ -644,7 +896,7 @@ namespace LWDicer.Control
             {
                 for (int i = 0; i < (int)EStagePos.MAX; i++)
                 {
-                    CompareStagePos(i, out bStatus, out nSlotNum, bSkipError);
+                    CompareStagePos(i, out bStatus, false, bCheckZAxis);
                     if (bStatus)
                     {
                         AxStageInfo.PosInfo = i;
@@ -670,21 +922,172 @@ namespace LWDicer.Control
             return SUCCESS;
         }
 
-        public int IsObjectDetected(out bool bStatus)
+        #endregion
+
+        // Stage Wafer Clamp 동작
+        #region Wafer Clamp
+
+        /// Cylinder
+        public int IsCylUp(out bool bStatus, int index = DEF_Z)
         {
-            int iResult = m_RefComp.IO.IsOn(m_Data.InDetectWafer, out bStatus);
+            int iResult;
+            bStatus = false;
+
+            if (UseMainCylFlag[index] == true)
+            {
+                if (m_RefComp.MainCyl[index] == null) return GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_CYL);
+                iResult = m_RefComp.MainCyl[index].IsUp(out bStatus);
+                if (iResult != SUCCESS) return iResult;
+                if (bStatus == false) return SUCCESS;
+            }
+
+            return SUCCESS;
+        }
+
+        public int IsCylDown(out bool bStatus, int index = DEF_Z)
+        {
+            int iResult;
+            bStatus = false;
+
+            if (UseMainCylFlag[index] == true)
+            {
+                if (m_RefComp.MainCyl[index] == null) return GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_CYL);
+                iResult = m_RefComp.MainCyl[index].IsDown(out bStatus);
+                if (iResult != SUCCESS) return iResult;
+                if (bStatus == false) return SUCCESS;
+            }
+
+
+            return SUCCESS;
+        }
+
+        public int CylUp(bool bSkipSensor = false, int index = DEF_Z)
+        {
+            // check for safety
+            int iResult = CheckForStageCylMove();
+            if (iResult != SUCCESS) return iResult;
+
+            if (UseMainCylFlag[index] == true)
+            {
+                if (m_RefComp.MainCyl[index] == null) return GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_CYL);
+                iResult = m_RefComp.MainCyl[index].Up(bSkipSensor);
+                if (iResult != SUCCESS) return iResult;
+            }
+
+
+            return SUCCESS;
+        }
+
+        public int CylDown(bool bSkipSensor = false, int index = DEF_Z)
+        {
+            // check for safety
+            int iResult = CheckForStageCylMove();
+            if (iResult != SUCCESS) return iResult;
+
+            if (UseMainCylFlag[index] == true)
+            {
+                if (m_RefComp.MainCyl[index] == null) return GenerateErrorCode(ERR_Stage_UNABLE_TO_USE_CYL);
+                iResult = m_RefComp.MainCyl[index].Down(bSkipSensor);
+                if (iResult != SUCCESS) return iResult;
+            }
+
+
+            return SUCCESS;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        /// Wafer Clamp
+        public int IsClampOpen(out bool bStatus)
+        {
+            int iResult = 0;
+            bStatus = false;
+            // Cylinder #1
+            iResult = IsCylUp(out bStatus, WAFER_CLAMP_CYL_1);
+            if (iResult != SUCCESS) return iResult;
+            // Cylinder #2
+            iResult = IsCylUp(out bStatus, WAFER_CLAMP_CYL_2);
             if (iResult != SUCCESS) return iResult;
 
             return SUCCESS;
         }
-        
+
+        public int IsClampClose(out bool bStatus)
+        {
+            int iResult = 0;
+            bStatus = false;
+            // Cylinder #1
+            iResult = IsCylDown(out bStatus, WAFER_CLAMP_CYL_1);
+            if (iResult != SUCCESS) return iResult;
+            // Cylinder #2
+            iResult = IsCylDown(out bStatus, WAFER_CLAMP_CYL_2);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+
+        public int ClampOpen(bool bSkipSensor = false)
+        {
+            int iResult = 0;
+            // Cylinder #1
+            iResult = CylUp(bSkipSensor, WAFER_CLAMP_CYL_1);
+            if (iResult != SUCCESS) return iResult;
+            // Cylinder #2
+            iResult = CylUp(bSkipSensor, WAFER_CLAMP_CYL_2);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+
+        public int ClampClose(bool bSkipSensor = false)
+        {
+            int iResult = 0;
+            // Cylinder #1
+            iResult = CylDown(bSkipSensor, WAFER_CLAMP_CYL_1);
+            if (iResult != SUCCESS) return iResult;
+            // Cylinder #2
+            iResult = CylDown(bSkipSensor, WAFER_CLAMP_CYL_2);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+
         ////////////////////////////////////////////////////////////////////////
+        #endregion
+
+        // Interlock 조건 확인
+        #region Interlock 확인
+        public int IsObjectDetected(out bool bStatus)
+        {
+            int iResult = m_RefComp.IO.IsOn(m_Data.InDetectObject, out bStatus);
+            if (iResult != SUCCESS) return iResult;
+
+            return SUCCESS;
+        }
+
+        /// <summary>
+        /// Stage Z축을 안전 Up 위치로 이동
+        /// </summary>
+        /// <returns></returns>
+        public int MoveStageToSafetyUp()
+        {
+            int nResult = -1;
+
+            nResult = MoveStageToSafetyPos(DEF_X);
+            if (nResult != SUCCESS) return nResult;
+            nResult = MoveStageToSafetyPos(DEF_Y);
+            if (nResult != SUCCESS) return nResult;
+            nResult = MoveStageToSafetyPos(DEF_T);
+            if (nResult != SUCCESS) return nResult;
+
+            return SUCCESS;
+        }
+
 
         public int GetStageAxZone(int axis, out int curZone)
         {
             bool bStatus;
             curZone = (int)EStageXAxZone.NONE;
-            for(int i = 0; i < (int)EStageXAxZone.MAX; i++)
+            for (int i = 0; i < (int)EStageXAxZone.MAX; i++)
             {
                 if (m_Data.StageZone.Axis[axis].ZoneAddr[i] == -1) continue; // if io is not allocated, continue;
                 int iResult = m_RefComp.IO.IsOn(m_Data.StageZone.Axis[axis].ZoneAddr[i], out bStatus);
@@ -705,23 +1108,15 @@ namespace LWDicer.Control
             int iResult = GetStageAxZone(axis, out curZone);
             if (iResult != SUCCESS) return iResult;
 
-            switch(axis)
+            switch (axis)
             {
                 case DEF_X:
                     break;
 
                 case DEF_Y:
-                    if (curZone == (int)EStageYAxZone.SAFETY)
-                    {
-                        bStatus = true;
-                    }
                     break;
 
                 case DEF_T:
-                    if (curZone == (int)EStageTAxZone.SAFETY)
-                    {
-                        bStatus = true;
-                    }
                     break;
 
                 case DEF_Z:
@@ -739,88 +1134,54 @@ namespace LWDicer.Control
             bool bStatus;
 
             // check origin
-            int nResult = IsStageOrignReturn(out bStatus);
-
-            if (nResult != SUCCESS) return nResult;
-            if(bStatus == false)
+            int iResult = IsStageOrignReturn(out bStatus);
+            if (iResult != SUCCESS) return iResult;
+            if (bStatus == false)
             {
                 return GenerateErrorCode(ERR_Stage_NOT_ORIGIN_RETURNED);
             }
 
-            // Cassette 감지 센서 확인 (정위치 확인 or Cassette없음 Check)
-            bool[] bCheckIO = new bool[CASSETTE_DETECT_SENSOR_NUM];
-
-            bool bCassetteExist;
-            bool bCassetteNone;
-            nResult = CheckForStageCassetteExist(out bCassetteExist);
-            if (nResult != SUCCESS) return nResult;
-
-            nResult = CheckForStageCassetteNone(out bCassetteNone);
-            if (nResult != SUCCESS) return nResult;
-
-            // 전체가 On 이거나 Off되어야 동작 가능함.
-            if (bCassetteExist || bCassetteNone)
-            {
-                return SUCCESS;
-            }
-            else
-            {
-                return GenerateErrorCode(ERR_Stage_CASSETTE_NOT_READY);
-            }
-            
-        }
-
-        public int CheckForStageCassetteExist(out bool bExist)
-        {
-            bExist = false;
-            int nResult = -1;
-
-            // Wafer Frame 감지 센서 확인
-            bool[] bCheckIO = new bool[CASSETTE_DETECT_SENSOR_NUM];
-
-            nResult = m_RefComp.IO.IsOn(m_Data.InDetectCassette[0], out bCheckIO[0]) +
-                      m_RefComp.IO.IsOn(m_Data.InDetectCassette[1], out bCheckIO[1]) +
-                      m_RefComp.IO.IsOn(m_Data.InDetectCassette[2], out bCheckIO[2]) +
-                      m_RefComp.IO.IsOn(m_Data.InDetectCassette[3], out bCheckIO[3]);
-
-            if (nResult != SUCCESS) return nResult;
-
-            // 전체가 On 일 경우에 True
-            if (bCheckIO[0] && bCheckIO[1] && bCheckIO[2] && bCheckIO[3])
-            {
-                bExist = true;                
-            }
+            // check object
+            iResult = CheckForStageCylMove();
+            if (iResult != SUCCESS) return iResult;
 
             return SUCCESS;
-
         }
 
-        public int CheckForStageCassetteNone(out bool bExist)
+        
+
+        public int CheckForStageCylMove(bool bCheckVacuum = true)
         {
-            bExist = false;
-            int nResult = -1;
+            bool bStatus=true;
 
-            // Wafer Frame 감지 센서 확인
-            bool[] bCheckIO = new bool[CASSETTE_DETECT_SENSOR_NUM];
+            // 조건없이 True
 
-            nResult = m_RefComp.IO.IsOn(m_Data.InDetectCassette[0], out bCheckIO[0]) +
-                      m_RefComp.IO.IsOn(m_Data.InDetectCassette[1], out bCheckIO[1]) +
-                      m_RefComp.IO.IsOn(m_Data.InDetectCassette[2], out bCheckIO[2]) +
-                      m_RefComp.IO.IsOn(m_Data.InDetectCassette[3], out bCheckIO[3]);
-
-            if (nResult != SUCCESS) return nResult;
-
-            // 전체가 Off 일 경우에 True
-            if (!bCheckIO[0] && !bCheckIO[1] && !bCheckIO[2] && !bCheckIO[3])
-            {
-                bExist = true;
-            }
+            //// check object
+            //int iResult = IsObjectDetected(out bStatus);
+            //if (iResult != SUCCESS) return iResult;
+            //if (bStatus)
+            //{
+            //    IsAbsorbed(out bStatus);
+            //    if (iResult != SUCCESS) return iResult;
+            //    if (bStatus == false)
+            //    {
+            //        return GenerateErrorCode(ERR_Stage_OBJECT_DETECTED_BUT_NOT_ABSORBED);
+            //    }
+            //}
+            //else
+            //{
+            //    IsReleased(out bStatus);
+            //    if (iResult != SUCCESS) return iResult;
+            //    if (bStatus == false)
+            //    {
+            //        return GenerateErrorCode(ERR_Stage_OBJECT_NOT_DETECTED_BUT_NOT_RELEASED);
+            //    }
+            //}
 
             return SUCCESS;
-
         }
 
-
+        #endregion
 
     }
 }

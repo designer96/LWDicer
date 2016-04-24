@@ -169,8 +169,8 @@
     <Compile Include="Hardware\YMC\ymcPCConst.cs" />
     <Compile Include="Hardware\YMC\ymcPCFunction.cs" />
     <Compile Include="Hardware\YMC\ymcPCStruct.cs" />
-    <Compile Include="Mechanical\MMeStage.cs" />
     <Compile Include="Mechanical\MMeElevator.cs" />
+    <Compile Include="Mechanical\MMeStage.cs" />
     <Compile Include="Mechanical\MMeHandler.cs" />
     <Compile Include="System\Define.cs" />
     <Compile Include="Common\ObjectExtensions.cs" />

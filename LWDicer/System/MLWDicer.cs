@@ -80,7 +80,6 @@ namespace LWDicer.Control
 
         public IVacuum m_UHandlerSelfVac;
         public IVacuum m_LHandlerSelfVac;
-        public IVacuum m_MainStageVac;
 
         // Serial
         public ISerialPort m_PolygonComPort;
@@ -99,6 +98,7 @@ namespace LWDicer.Control
         public MMeElevator m_MeElevator;            // Cassette Loader 용 Elevator
         public MMeHandler m_MeUpperHandler;         // UpperHandler of 2Layer
         public MMeHandler m_MeLowerHandler;         // LowerHandler of 2Layer
+        public MMeStage m_MeStage;         // LowerHandler of 2Layer
 
         public MVision m_Vision { get; set; }
 
@@ -130,7 +130,7 @@ namespace LWDicer.Control
         {
             // close handle
 
-                }
+        }
 
         public CLoginData GetLogin()
         {
@@ -233,16 +233,6 @@ namespace LWDicer.Control
             m_SystemInfo.GetObjectInfo(151, out objInfo);
             CreateVacuum(objInfo, vacData, (int)EObjectVacuum.UHANDLER_SELF, out m_UHandlerSelfVac);
 
-            // Main Stage Self Vacuum
-            vacData = new CVacuumData();
-            vacData.VacuumType = EVacuumType.SINGLE_VACUUM_WBLOW;
-            vacData.Sensor[0] = iUHandler_Self_Vac_On;
-            vacData.Solenoid[0] = oUHandler_Self_Vac_On;
-            vacData.Solenoid[1] = oUHandler_Self_Vac_Off;
-
-            m_SystemInfo.GetObjectInfo(152, out objInfo);
-            CreateVacuum(objInfo, vacData, (int)EObjectVacuum.MAIN_STAGE, out m_MainStageVac);
-
             // Polygon Scanner Serial Com Port
             m_SystemInfo.GetObjectInfo(30, out objInfo);
             CreatePolygonSerialPort(objInfo, out m_PolygonComPort);
@@ -275,6 +265,10 @@ namespace LWDicer.Control
 
             m_SystemInfo.GetObjectInfo(319, out objInfo);
             CreateMeLowerHandler(objInfo);
+
+            // Stage
+            m_SystemInfo.GetObjectInfo(325, out objInfo);
+            CreateMeStage(objInfo);
 
 
             // Vision 
@@ -1037,6 +1031,23 @@ namespace LWDicer.Control
             data.HandlerZone.Axis[DEF_Z].ZoneAddr[(int)EHandlerZAxZone.SAFETY] = 111; // need updete io address
 
             m_MeLowerHandler = new MMeHandler(objInfo, refComp, data);
+        }
+
+        void CreateMeStage(CObjectInfo objInfo)
+        {
+            CMeStageRefComp refComp = new CMeStageRefComp();
+            CMeStageData data = new CMeStageData();
+
+            refComp.IO = m_IO;
+            refComp.AxStage = m_AxStage1;
+            refComp.Vacuum[(int)EStageVacuum.SELF] = m_Stage1Vac;
+            
+            data.InDetectObject = iUHandler_PanelDetect;
+
+            data.StageZone.UseSafetyMove[DEF_Z] = true;
+            data.StageZone.Axis[DEF_Z].ZoneAddr[(int)EHandlerZAxZone.SAFETY] = 111; // need updete io address
+
+            m_MeStage = new MMeStage(objInfo, refComp, data);
         }
 
     }
