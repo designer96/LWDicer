@@ -148,7 +148,7 @@ namespace LWDicer.Control
             public int OutClampClose2   = IO_ADDR_NOT_DEFINED;
 
             // Physical check zone sensor. 원점복귀 여부와 상관없이 축의 물리적인 위치를 체크 및
-            // 안전위치 이동 check
+            // 안전위치 이동 check 
             public CMAxisZoneCheck StageZone;
 
             public CMeStageData()
